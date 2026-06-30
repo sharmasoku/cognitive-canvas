@@ -1,29 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Hero } from "@/components/home/Hero";
+import { Marquee } from "@/components/home/Marquee";
+import { Storyboard } from "@/components/home/Storyboard";
+import { Timeline } from "@/components/home/Timeline";
+import { PanOS } from "@/components/home/PanOS";
+import { Industries } from "@/components/home/Industries";
+import { Stats } from "@/components/home/Stats";
+import { Vision } from "@/components/home/Vision";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "TeleARGlass 2.0 — Cognitive Interfaces, Shipped." },
+      { name: "description", content: "The flagship neural-AR system: 16-channel BCI, 2400-nit waveguide lenses, and TeleOS spatial computing." },
+      { property: "og:title", content: "TeleARGlass 2.0" },
+      { property: "og:description", content: "The future doesn't wait for your hands. It understands your thoughts." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <>
+      <Hero />
+      <Marquee />
+      <Storyboard />
+      <Vision />
+      <Timeline />
+      <PanOS />
+      <Industries />
+      <Stats />
+    </>
   );
 }

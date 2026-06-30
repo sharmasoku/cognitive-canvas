@@ -7,10 +7,20 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ShopProvider, useShop } from "../context/ShopContext";
+import { LenisProvider } from "../components/shell/LenisProvider";
+import { Preloader } from "../components/shell/Preloader";
+import { AnnouncementBar } from "../components/shell/AnnouncementBar";
+import { Navbar } from "../components/shell/Navbar";
+import { Footer } from "../components/shell/Footer";
+import { CartDrawer } from "../components/shell/CartDrawer";
+import { WishlistDrawer } from "../components/shell/WishlistDrawer";
+import { SearchModal } from "../components/shell/SearchModal";
+import { CompareBar } from "../components/shell/CompareBar";
 
 function NotFoundComponent() {
   return (
@@ -77,14 +87,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "TeleARGlass 2.0 — Cognitive Interfaces, Shipped." },
+      { name: "description", content: "AI + AR + Brain Computer Interface — neural-AR smart glasses, dry EEG bands, and TeleOS for builders, clinicians, and enterprises." },
+      { name: "author", content: "TeleARGlass" },
+      { property: "og:title", content: "TeleARGlass 2.0" },
+      { property: "og:description", content: "The future doesn't wait for your hands. It understands your thoughts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@TeleARGlass" },
     ],
     links: [
       {
@@ -118,8 +128,44 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ShopProvider>
+        <Shell />
+      </ShopProvider>
     </QueryClientProvider>
+  );
+}
+
+function Shell() {
+  const { cartOpen, wishlistOpen, searchOpen } = useShop();
+  const [showPreloader, setShowPreloader] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const seen = window.sessionStorage.getItem("tele_preloader_completed");
+    if (!seen) setShowPreloader(true);
+  }, []);
+
+  const drawerOpen = cartOpen || wishlistOpen || searchOpen || showPreloader;
+
+  return (
+    <>
+      <LenisProvider disabled={drawerOpen} />
+      {showPreloader && (
+        <Preloader onDone={() => {
+          if (typeof window !== "undefined") window.sessionStorage.setItem("tele_preloader_completed", "1");
+          setShowPreloader(false);
+        }} />
+      )}
+      <AnnouncementBar />
+      <Navbar />
+      <main className="min-h-[60vh]">
+        <Outlet />
+      </main>
+      <Footer />
+      <CartDrawer />
+      <WishlistDrawer />
+      <SearchModal />
+      <CompareBar />
+    </>
   );
 }
