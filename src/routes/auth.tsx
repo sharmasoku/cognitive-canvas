@@ -36,12 +36,12 @@ function AuthPage() {
       const response = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: redirectUri,
       });
-      
+
       if (response?.error) {
         // Fallback for mock if supabase keys not set
         toast.error(`OAuth configuration issue: ${response.error.message}. Simulating mock success...`);
         console.log("Mocking OAuth session start...");
-        
+
         // Simulating mock success by storing a mock user token
         if (typeof window !== "undefined") {
           window.localStorage.setItem("tele_mock_user", JSON.stringify({
@@ -95,6 +95,8 @@ function AuthPage() {
             navigate({ to: "/" });
           } else {
             toast.success("Check your email for the confirmation link!");
+            setIsSignUp(false);
+            setPassword("");
           }
         }
       } else {
@@ -130,7 +132,7 @@ function AuthPage() {
   return (
     <div className="relative flex min-h-[90vh] items-center justify-center bg-[#f7f7f3] py-16 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-[460px] rounded-[32px] border border-[#e5e5df] bg-[#fdfdfb] p-8 sm:p-10 shadow-soft relative z-10">
-        
+
         {/* Top Header Logo */}
         <div className="flex items-center gap-2">
           <svg className="h-6 w-6 text-[#1b7a43]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -236,7 +238,7 @@ function AuthPage() {
               Forgot password?
             </a>
           )}
-          
+
           <div className="text-[#8c8c86]">
             {isSignUp ? (
               <>

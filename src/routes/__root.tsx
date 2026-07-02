@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -129,6 +130,8 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { Toaster } from "sonner";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -136,6 +139,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ShopProvider>
         <Shell />
+        <Toaster richColors position="top-center" />
       </ShopProvider>
     </QueryClientProvider>
   );
@@ -144,6 +148,8 @@ function RootComponent() {
 function Shell() {
   const { cartOpen, wishlistOpen, searchOpen } = useShop();
   const [showPreloader, setShowPreloader] = useState(false);
+  const { location } = useRouterState();
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -152,6 +158,14 @@ function Shell() {
   }, []);
 
   const drawerOpen = cartOpen || wishlistOpen || searchOpen || showPreloader;
+
+  if (isAdminRoute) {
+    return (
+      <main className="min-h-screen bg-[#f8f9fc]">
+        <Outlet />
+      </main>
+    );
+  }
 
   return (
     <>
