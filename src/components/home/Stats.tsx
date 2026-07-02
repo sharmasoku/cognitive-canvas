@@ -26,6 +26,11 @@ function useCountUp(target: number, active: boolean) {
   return v;
 }
 
+function formatNumber(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toLocaleString("en-IN")}`;
+  return v.toLocaleString("en-IN");
+}
+
 export function Stats() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
@@ -49,11 +54,10 @@ export function Stats() {
 
 function StatCard({ target, active, suffix, label }: { target: number; active: boolean; suffix: string; label: string }) {
   const v = useCountUp(target, active);
-  const display = v >= 1000 ? (v >= 1_000_000 ? `${Math.round(v / 1_000_000)}` : `${(v / 1000).toFixed(0)}K`) : v;
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border-light bg-background p-8 shadow-soft transition hover:-translate-y-1 hover:shadow-card-hover">
       <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl" />
-      <div className="text-5xl font-bold gradient-text">{display}{suffix}</div>
+      <div className="text-5xl font-bold gradient-text">{formatNumber(v)}{suffix}</div>
       <div className="mt-2 text-sm text-text-secondary">{label}</div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Brain, Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Twitter } from "lucide-react";
+import { Logo } from "@/components/shell/Logo";
 
 export function Footer() {
   return (
@@ -8,10 +9,8 @@ export function Footer() {
       <div className="orb" style={{ width: 400, height: 400, background: "#10b981", bottom: -200, right: -100, opacity: 0.1 }} />
       <div className="section-container relative grid gap-12 py-16 md:grid-cols-5">
         <div className="md:col-span-2">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary shadow-glow-primary">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
+          <div className="flex items-center gap-3">
+            <Logo className="h-11" />
             <div>
               <div className="text-base font-bold">TeleARGlass 2.0</div>
               <div className="text-xs text-text-muted">Cognitive interfaces, shipped from Bengaluru.</div>

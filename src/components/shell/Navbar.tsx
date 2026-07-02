@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutGroup, motion } from "framer-motion";
-import { Brain, Heart, Menu, Search, ShoppingBag, Sparkles, X } from "lucide-react";
+import { LayoutGroup, motion, AnimatePresence } from "framer-motion";
+import { Heart, Menu, Search, ShoppingBag, Sparkles, X, User, LogOut } from "lucide-react";
 import { useShop } from "@/context/ShopContext";
+import { Logo } from "@/components/shell/Logo";
+import { supabase } from "@/integrations/supabase/client";
 
 const LINKS = [
   { to: "/", label: "Home" },
@@ -17,8 +19,57 @@ const LINKS = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { setCartOpen, setWishlistOpen, setSearchOpen, cartCount, wishlist, compare } = useShop();
+
+  useEffect(() => {
+    // Check active Supabase session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+      }
+    });
+
+    // Check mock session
+    const checkMockSession = () => {
+      const mock = localStorage.getItem("tele_mock_user");
+      if (mock) {
+        setUser(JSON.parse(mock));
+      } else {
+        // Only reset if we don't have a supabase session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (!session?.user) setUser(null);
+        });
+      }
+    };
+    checkMockSession();
+
+    // Listen to changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+      } else if (!localStorage.getItem("tele_mock_user")) {
+        setUser(null);
+      }
+    });
+
+    // Also listen to storage events for mock logins
+    window.addEventListener("storage", checkMockSession);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("storage", checkMockSession);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("tele_mock_user");
+    setUser(null);
+    setShowProfileMenu(false);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -51,11 +102,7 @@ export function Navbar() {
     >
       <div className="section-container flex items-center justify-between gap-4 py-3">
         <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary shadow-glow-primary">
-            <Brain className="h-5 w-5 text-white" strokeWidth={2} />
-          </div>
-          <span className="text-base font-bold">TeleARGlass</span>
-          <span className="hidden text-[10px] font-mono uppercase tracking-widest text-primary sm:inline-block">2.0</span>
+          <Logo className="h-14" />
         </Link>
 
         <LayoutGroup>
@@ -66,16 +113,16 @@ export function Navbar() {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="relative rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-foreground"
+                  className="relative px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-foreground"
                 >
+                  {l.label}
                   {active && (
                     <motion.span
-                      layoutId="nav-active"
-                      className="absolute inset-0 -z-10 rounded-lg bg-surface-violet"
+                      layoutId="navbar-indicator"
+                      className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-gradient-to-r from-primary to-secondary"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                  {l.label}
                 </Link>
               );
             })}
@@ -86,9 +133,12 @@ export function Navbar() {
           <button
             onClick={() => setSearchOpen(true)}
             aria-label="Search"
-            className="grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+            className="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
           >
-            <Search className="h-4.5 w-4.5" />
+            <Search className="h-4 w-4" />
+            <kbd className="hidden rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline-block">
+              ⌘K
+            </kbd>
           </button>
           {compare.length > 0 && (
             <Link
@@ -97,7 +147,7 @@ export function Navbar() {
               className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
             >
               <Sparkles className="h-4.5 w-4.5" />
-              <Badge>{compare.length}</Badge>
+              <CountBadge>{compare.length}</CountBadge>
             </Link>
           )}
           <button
@@ -106,7 +156,7 @@ export function Navbar() {
             className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
           >
             <Heart className="h-4.5 w-4.5" />
-            {wishlist.length > 0 && <Badge>{wishlist.length}</Badge>}
+            {wishlist.length > 0 && <CountBadge>{wishlist.length}</CountBadge>}
           </button>
           <button
             onClick={() => setCartOpen(true)}
@@ -114,8 +164,58 @@ export function Navbar() {
             className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
           >
             <ShoppingBag className="h-4.5 w-4.5" />
-            {cartCount > 0 && <Badge>{cartCount}</Badge>}
+            {cartCount > 0 && <CountBadge>{cartCount}</CountBadge>}
           </button>
+          {/* Profile Menu Trigger */}
+          <div className="relative">
+            {user ? (
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+                aria-label="User profile"
+              >
+                <User className="h-4.5 w-4.5" />
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+                aria-label="Sign in"
+              >
+                <User className="h-4.5 w-4.5" />
+              </Link>
+            )}
+
+            {/* Profile Dropdown Menu */}
+            <AnimatePresence>
+              {showProfileMenu && user && (
+                <>
+                  {/* Backdrop overlay to close dropdown */}
+                  <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 z-50 w-56 rounded-2xl border border-border-light bg-background p-4 shadow-card"
+                  >
+                    <div className="border-b border-border-light pb-2 mb-2">
+                      <div className="text-xs font-mono text-text-muted">Logged in as</div>
+                      <div className="font-semibold text-sm truncate text-foreground">{user.user_metadata?.full_name || user.name || "TeleAR Explorer"}</div>
+                      <div className="text-[10px] text-text-muted truncate font-mono">{user.email}</div>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 transition"
+                    >
+                      <LogOut className="h-3.5 w-3.5" /> Sign Out
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
           <button
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
@@ -133,11 +233,20 @@ export function Navbar() {
           className="border-t border-border-light bg-background/95 backdrop-blur lg:hidden"
         >
           <nav className="section-container flex flex-col py-2">
-            {LINKS.map((l) => (
-              <Link key={l.to} to={l.to} className="rounded-lg px-3 py-3 text-sm font-medium text-text-secondary transition hover:bg-surface-violet hover:text-foreground">
-                {l.label}
-              </Link>
-            ))}
+            {LINKS.map((l) => {
+              const active = l.to === "/" ? pathname === "/" : pathname.startsWith(l.to);
+              return (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  className={`rounded-lg px-3 py-3 text-sm font-medium transition hover:bg-surface-violet ${
+                    active ? "text-primary font-semibold" : "text-text-secondary hover:text-foreground"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
           </nav>
         </motion.div>
       )}
@@ -145,7 +254,7 @@ export function Navbar() {
   );
 }
 
-function Badge({ children }: { children: React.ReactNode }) {
+function CountBadge({ children }: { children: React.ReactNode }) {
   return (
     <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white shadow-glow-primary">
       {children}

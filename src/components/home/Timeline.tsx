@@ -11,18 +11,69 @@ const NODES = [
 ];
 
 export function Timeline() {
-  const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !ref.current || !lineRef.current) return;
+    if (typeof window === "undefined" || !containerRef.current || !lineRef.current || !dotRef.current) return;
     gsap.registerPlugin(ScrollTrigger);
+
     const ctx = gsap.context(() => {
+      // Line progress animation
       gsap.fromTo(lineRef.current,
         { scaleY: 0 },
-        { scaleY: 1, transformOrigin: "top",
-          scrollTrigger: { trigger: ref.current, start: "top 70%", end: "bottom 30%", scrub: 1 } });
-    }, ref);
+        {
+          scaleY: 1,
+          transformOrigin: "top",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 70%",
+            end: "bottom 30%",
+            scrub: 0.5,
+          }
+        }
+      );
+
+      // Glowing dot tracer animation
+      gsap.fromTo(dotRef.current,
+        { y: 0, opacity: 0 },
+        {
+          y: () => {
+            const h = containerRef.current?.getBoundingClientRect().height || 0;
+            return h - 48; // offset to end of timeline path
+          },
+          opacity: 1,
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 70%",
+            end: "bottom 30%",
+            scrub: 0.5,
+          }
+        }
+      );
+
+      // Staggered card fade-up on scroll
+      cardRefs.current.forEach((card, idx) => {
+        if (!card) return;
+        gsap.fromTo(card,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none none",
+            }
+          }
+        );
+      });
+    }, containerRef);
+
     return () => ctx.revert();
   }, []);
 
@@ -36,9 +87,19 @@ export function Timeline() {
           <p className="mt-4 text-text-secondary">From the first spark in the cortex to the photon in front of your eye — in under 180 ms.</p>
         </div>
 
-        <div ref={ref} className="relative">
+        <div ref={containerRef} className="relative">
+          {/* Base timeline track */}
           <div className="absolute left-6 top-0 h-full w-px bg-border md:left-1/2 md:-translate-x-px" />
+          
+          {/* Active fill path */}
           <div ref={lineRef} className="absolute left-6 top-0 h-full w-px bg-gradient-to-b from-primary via-secondary to-accent md:left-1/2 md:-translate-x-px" style={{ transformOrigin: "top" }} />
+
+          {/* Tracer dot */}
+          <div
+            ref={dotRef}
+            className="glow-dot absolute left-6 top-0 z-20 h-3.5 w-3.5 -translate-x-1.5 rounded-full bg-primary md:left-1/2"
+            style={{ transform: "translateX(-50%)" }}
+          />
 
           <ol className="relative space-y-16">
             {NODES.map((n, i) => {
@@ -50,7 +111,12 @@ export function Timeline() {
                       <n.icon className="h-5 w-5 text-primary" />
                     </div>
                   </div>
-                  <TimelineCard className={`ml-16 md:ml-0 ${right ? "md:col-start-2" : ""}`} title={n.title} body={n.body} index={i} />
+                  <div
+                    ref={(el) => { cardRefs.current[i] = el; }}
+                    className={`ml-16 md:ml-0 ${right ? "md:col-start-2" : ""}`}
+                  >
+                    <TimelineCard index={i} title={n.title} body={n.body} />
+                  </div>
                 </li>
               );
             })}
@@ -61,9 +127,9 @@ export function Timeline() {
   );
 }
 
-function TimelineCard({ title, body, index, className }: { title: string; body: string; index: number; className?: string }) {
+function TimelineCard({ title, body, index }: { title: string; body: string; index: number }) {
   return (
-    <div className={`rounded-2xl border border-border-light bg-background p-6 shadow-soft ${className ?? ""}`}>
+    <div className="rounded-2xl border border-border-light bg-background p-6 shadow-soft transition hover:shadow-card">
       <div className="text-xs font-mono uppercase tracking-widest text-text-muted">Step {String(index + 1).padStart(2, "0")}</div>
       <h3 className="mt-1 text-xl font-semibold">{title}</h3>
       <p className="mt-2 text-sm text-text-secondary">{body}</p>

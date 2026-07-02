@@ -36,18 +36,29 @@ function OrderTracking() {
       <p className="mt-2 text-text-secondary">Placed {shortDate(order.createdAt)}</p>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
-        <div className="relative rounded-3xl border border-border-light bg-background p-8 shadow-card">
+        <div className="relative rounded-3xl border border-border-light bg-background p-8 shadow-card overflow-hidden">
           <div className="relative pl-8">
+            {/* Background line track */}
             <div className="absolute left-3 top-2 bottom-2 w-px bg-border" />
+            
+            {/* Active filled line track */}
+            <div 
+              className="absolute left-3 top-2 w-px bg-gradient-to-b from-primary to-accent transition-all duration-1000"
+              style={{ height: `${(currentIdx / (STAGES.length - 1)) * 90}%` }}
+            />
+
             {STAGES.map((s, i) => {
               const done = i <= currentIdx;
+              const isCurrent = i === currentIdx;
               return (
                 <motion.div key={s} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} className="relative pb-8 last:pb-0">
-                  <div className={`absolute -left-[22px] top-0 grid h-7 w-7 place-items-center rounded-full ${done ? "bg-gradient-primary text-white shadow-glow-primary" : "bg-surface text-text-muted"}`}>
+                  <div className={`absolute -left-[22.5px] top-0 grid h-7 w-7 place-items-center rounded-full transition-transform ${
+                    done ? "bg-gradient-primary text-white shadow-glow-primary scale-110" : "bg-surface text-text-muted"
+                  } ${isCurrent ? "glow-dot" : ""}`}>
                     {done ? <Check className="h-3.5 w-3.5" /> : <span className="text-xs">{i + 1}</span>}
                   </div>
-                  <div className={`font-semibold ${done ? "text-foreground" : "text-text-muted"}`}>{s}</div>
-                  <div className="text-xs text-text-muted">{done ? "Completed" : "Pending"}</div>
+                  <div className={`font-semibold ${done ? "text-foreground" : "text-text-muted"} ${isCurrent ? "text-primary" : ""}`}>{s}</div>
+                  <div className="text-xs text-text-muted">{done ? (isCurrent ? "Processing" : "Completed") : "Pending"}</div>
                 </motion.div>
               );
             })}

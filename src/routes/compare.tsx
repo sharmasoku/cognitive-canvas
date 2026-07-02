@@ -14,7 +14,7 @@ function Compare() {
   const { compare, removeFromCompare, addToCart } = useShop();
   return (
     <div className="section-container py-12">
-      <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Compare</h1>
+      <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Com<span className="gradient-text">pare</span></h1>
       <p className="mt-3 text-text-secondary">Up to three TeleProducts side by side.</p>
 
       <div className="mt-10 overflow-x-auto rounded-3xl border border-border-light bg-background shadow-card">

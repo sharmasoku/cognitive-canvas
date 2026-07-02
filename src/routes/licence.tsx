@@ -27,7 +27,7 @@ function Licence() {
 
   return (
     <div className="section-container py-16">
-      <h1 className="text-5xl font-bold tracking-tight md:text-6xl">TeleLicence</h1>
+      <h1 className="text-5xl font-bold tracking-tight md:text-6xl">Tele<span className="gradient-text">Licence</span></h1>
       <p className="mt-4 max-w-2xl text-lg text-text-secondary">Regulatory charter, developer tokens and enterprise contracts — all in one place.</p>
 
       <h2 className="mt-12 text-2xl font-bold">Registries</h2>
@@ -55,8 +55,19 @@ function Licence() {
                 <div className="text-xs text-text-muted">PDF · {p.size}</div>
                 {pct !== undefined && pct < 100 && <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-border"><motion.div className="h-full bg-gradient-primary" animate={{ width: `${pct}%` }} /></div>}
               </div>
-              <button onClick={() => startDownload(p.id, p.name)} className="grid h-9 w-9 place-items-center rounded-full border border-border hover:border-primary hover:text-primary">
-                {pct === undefined || pct >= 100 ? <Download className="h-4 w-4" /> : <Loader2 className="h-4 w-4 animate-spin" />}
+              <button 
+                onClick={() => startDownload(p.id, p.name)} 
+                className={`grid h-9 w-9 place-items-center rounded-full border transition-all duration-300 ${
+                  pct === 100 ? "border-accent bg-accent/15 text-accent" : "border-border hover:border-primary hover:text-primary"
+                }`}
+              >
+                {pct === undefined ? (
+                  <Download className="h-4 w-4" />
+                ) : pct < 100 ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
               </button>
             </div>
           );

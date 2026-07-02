@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Brain, Briefcase, Code2, Heart, Home, PencilRuler } from "lucide-react";
 
 const NODES = [
@@ -28,51 +29,95 @@ export function PanOS() {
             <span className="text-xs font-mono uppercase tracking-widest text-primary">PanOS Ecosystem</span>
             <h2 className="mt-4 text-4xl font-bold leading-tight md:text-5xl">One mind, every surface.</h2>
             <p className="mt-4 text-text-secondary">TeleOS connects your cortex to the devices you already use. Hover the nodes to see which surfaces light up.</p>
-            <div className="mt-8 rounded-2xl border border-border-light bg-background p-6 shadow-soft">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-surface-violet text-primary">
-                  <activeNode.icon className="h-5 w-5" />
+
+            {/* Active node description card */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="mt-8 rounded-2xl border border-border-light bg-background p-6 shadow-soft"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-surface-violet text-primary">
+                    <activeNode.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">{activeNode.label}</div>
+                    <div className="text-sm text-text-secondary">{activeNode.body}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-semibold">{activeNode.label}</div>
-                  <div className="text-sm text-text-secondary">{activeNode.body}</div>
-                </div>
-              </div>
-            </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
+          {/* Node constellation */}
           <div className="relative aspect-square w-full max-w-[520px] mx-auto">
             <svg viewBox="-260 -260 520 520" className="absolute inset-0 h-full w-full">
+              {/* Connection lines with animated gradient trace */}
               {NODES.map((n) => {
                 const p = pointOnCircle(n.angle, 200);
                 const isActive = active === n.id;
                 return (
-                  <line key={n.id} x1="0" y1="0" x2={p.x} y2={p.y} stroke={isActive ? "url(#linkg)" : "rgba(124,58,237,0.15)"} strokeWidth={isActive ? 1.5 : 1} />
+                  <g key={n.id}>
+                    {/* Base line */}
+                    <line
+                      x1="0" y1="0" x2={p.x} y2={p.y}
+                      stroke="rgba(124,58,237,0.12)"
+                      strokeWidth={1}
+                    />
+                    {/* Active gradient overlay with transition */}
+                    <motion.line
+                      x1="0" y1="0" x2={p.x} y2={p.y}
+                      stroke="url(#panos-linkg)"
+                      strokeWidth={2}
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: isActive ? 1 : 0, opacity: isActive ? 1 : 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </g>
                 );
               })}
               <defs>
-                <linearGradient id="linkg" x1="0" x2="1"><stop offset="0" stopColor="#7c3aed" /><stop offset="1" stopColor="#10b981" /></linearGradient>
+                <linearGradient id="panos-linkg" x1="0" x2="1"><stop offset="0" stopColor="#7c3aed" /><stop offset="1" stopColor="#10b981" /></linearGradient>
               </defs>
-              <circle cx="0" cy="0" r="220" fill="none" stroke="rgba(124,58,237,0.1)" />
-              <circle cx="0" cy="0" r="160" fill="none" stroke="rgba(124,58,237,0.08)" />
+              <circle cx="0" cy="0" r="220" fill="none" stroke="rgba(124,58,237,0.08)" strokeDasharray="4 6" />
+              <circle cx="0" cy="0" r="160" fill="none" stroke="rgba(124,58,237,0.06)" strokeDasharray="4 6" />
             </svg>
-            <div className="absolute left-1/2 top-1/2 grid h-24 w-24 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-primary shadow-glow-primary">
+
+            {/* Center brain node with pulse */}
+            <motion.div
+              className="absolute left-1/2 top-1/2 grid h-24 w-24 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-primary shadow-glow-primary"
+              animate={{ scale: [1, 1.06, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
               <Brain className="h-10 w-10 text-white" strokeWidth={1.5} />
-            </div>
+            </motion.div>
+
+            {/* Peripheral node buttons with labels */}
             {NODES.map((n) => {
               const p = pointOnCircle(n.angle, 200);
               const isActive = active === n.id;
               return (
-                <button
+                <div
                   key={n.id}
-                  onMouseEnter={() => setActive(n.id)}
-                  onFocus={() => setActive(n.id)}
-                  aria-label={n.label}
-                  className={`absolute grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-2xl border transition ${isActive ? "border-primary bg-background shadow-card-hover scale-110" : "border-border bg-background shadow-soft"}`}
+                  className="absolute -translate-x-1/2 -translate-y-1/2"
                   style={{ left: `calc(50% + ${p.x}px)`, top: `calc(50% + ${p.y}px)` }}
                 >
-                  <n.icon className={`h-5 w-5 ${isActive ? "text-primary" : "text-text-secondary"}`} />
-                </button>
+                  <button
+                    onMouseEnter={() => setActive(n.id)}
+                    onFocus={() => setActive(n.id)}
+                    aria-label={n.label}
+                    className={`grid h-14 w-14 place-items-center rounded-2xl border transition-all duration-300 ${isActive ? "border-primary bg-background shadow-card-hover scale-110" : "border-border bg-background shadow-soft hover:border-primary/40"}`}
+                  >
+                    <n.icon className={`h-5 w-5 transition-colors ${isActive ? "text-primary" : "text-text-secondary"}`} />
+                  </button>
+                  <div className={`mt-1.5 text-center text-[10px] font-medium transition-colors ${isActive ? "text-primary" : "text-text-muted"}`}>
+                    {n.label}
+                  </div>
+                </div>
               );
             })}
           </div>

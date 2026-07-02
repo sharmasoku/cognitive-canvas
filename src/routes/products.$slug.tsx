@@ -1,10 +1,12 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, Heart, Minus, Plus, RotateCw, ShieldCheck, Sparkles, Star, ThumbsUp } from "lucide-react";
 import { getProductBySlug, type Product } from "@/data/products";
 import { useShop } from "@/context/ShopContext";
 import { inr, shortDate } from "@/lib/format";
+import { pageTransition } from "@/lib/motion";
+import { fetchReviews, submitReview, type DbReview } from "@/lib/commerce";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: ({ params }) => {
@@ -54,26 +56,43 @@ function ProductDetail() {
             </div>
             {mode === "360" && (
               <div className="inline-flex items-center gap-2 text-xs text-text-muted">
-                <RotateCw className="h-3.5 w-3.5" /> Drag or use buttons
+                <RotateCw className="h-3.5 w-3.5 animate-spin-slow" /> Drag horizontal or use buttons
               </div>
             )}
           </div>
-          <div className="relative overflow-hidden rounded-3xl border border-border-light bg-gradient-dark aspect-square">
+          
+          <div className="relative overflow-hidden rounded-3xl border border-border-light bg-gradient-dark aspect-square flex items-center justify-center p-8 [perspective:1000px]">
             {mode === "gallery" ? (
               <motion.img key={imgIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={product.gallery[imgIdx]} alt={product.name} width={800} height={800} className="h-full w-full object-cover" />
             ) : (
-              <motion.img
-                src={product.image}
-                alt={`${product.name} 360°`}
-                width={800} height={800}
-                style={{ rotate: rotation }}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                onDrag={(_, info) => setRotation((r) => r + info.delta.x * 0.5)}
-                className="h-full w-full object-cover cursor-grab active:cursor-grabbing"
-              />
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* 360 shadow depth simulation */}
+                <div 
+                  className="absolute bottom-6 left-1/2 -translate-x-1/2 h-4 w-[75%] rounded-full bg-black/40 blur-md transition-transform duration-100"
+                  style={{ transform: `translateX(-50%) scale(${1 - Math.abs(rotation % 180) / 720})` }}
+                />
+                <motion.img
+                  src={product.image}
+                  alt={`${product.name} 360°`}
+                  width={800} height={800}
+                  style={{ 
+                    transform: `rotateY(${rotation}deg)`,
+                    transformStyle: "preserve-3d"
+                  }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  onDrag={(_, info) => setRotation((r) => r + info.delta.x * 0.8)}
+                  className="max-h-[85%] max-w-[85%] object-contain cursor-grab active:cursor-grabbing select-none"
+                />
+                {/* Moving glare sheen overlay */}
+                <div 
+                  className="pointer-events-none absolute inset-0 rounded-3xl bg-[linear-gradient(105deg,transparent_30%,rgba(255,255,255,0.06)_40%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.06)_60%,transparent_70%)] mix-blend-overlay transition-transform duration-100"
+                  style={{ transform: `translateX(${((rotation % 360) / 360) * 100}%)` }}
+                />
+              </div>
             )}
           </div>
+          
           {mode === "gallery" ? (
             <div className="mt-3 flex gap-2">
               {product.gallery.map((g: string, i: number) => (
@@ -84,9 +103,9 @@ function ProductDetail() {
             </div>
           ) : (
             <div className="mt-3 flex justify-center gap-2">
-              <button onClick={() => setRotation((r) => r - 30)} className="rounded-full border border-border bg-background px-4 py-2 text-sm">⟲ Left</button>
-              <button onClick={() => setRotation(0)} className="rounded-full border border-border bg-background px-4 py-2 text-sm">Reset</button>
-              <button onClick={() => setRotation((r) => r + 30)} className="rounded-full border border-border bg-background px-4 py-2 text-sm">Right ⟳</button>
+              <button onClick={() => setRotation((r) => r - 45)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">⟲ Left</button>
+              <button onClick={() => setRotation(0)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">Reset</button>
+              <button onClick={() => setRotation((r) => r + 45)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">Right ⟳</button>
             </div>
           )}
         </div>
@@ -197,12 +216,75 @@ function FaqList({ product }: { product: Product }) {
 function ReviewsList({ product }: { product: Product }) {
   const [sort, setSort] = useState<"new" | "helpful">("new");
   const [votes, setVotes] = useState<Record<string, number>>({});
-  const sorted = [...product.reviewsList].sort((a, b) => {
+  const [dbReviews, setDbReviews] = useState<DbReview[]>([]);
+  const [name, setName] = useState("");
+  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState(5);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchReviews(product.slug).then((r) => { if (active) setDbReviews(r); });
+    return () => { active = false; };
+  }, [product.slug]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comment.trim()) { setFeedback("Please write a few words."); return; }
+    setSubmitting(true);
+    setFeedback(null);
+    const res = await submitReview(product.slug, rating, comment.trim(), name.trim() || "TeleAR Customer");
+    setSubmitting(false);
+    if (res.ok) {
+      setComment("");
+      setName("");
+      setRating(5);
+      setFeedback("Thanks — your review is live.");
+      setDbReviews(await fetchReviews(product.slug));
+    } else {
+      setFeedback(res.error ?? "Could not submit your review.");
+    }
+  };
+
+  // DB reviews first (verified purchases), then the seeded showcase reviews.
+  const all = [...dbReviews, ...product.reviewsList];
+  const sorted = [...all].sort((a, b) => {
     if (sort === "helpful") return (b.helpfulVotes + (votes[b.id] ?? 0)) - (a.helpfulVotes + (votes[a.id] ?? 0));
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
   return (
     <div>
+      <form onSubmit={handleSubmit} className="mb-6 rounded-2xl border border-border-light bg-surface p-5">
+        <div className="text-sm font-semibold">Write a review</div>
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-sm text-text-muted">Rating:</span>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <button type="button" key={i} onClick={() => setRating(i)} className="transition hover:scale-110" aria-label={`${i} star`}>
+              <Star className={`h-5 w-5 ${i <= rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />
+            </button>
+          ))}
+        </div>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name (optional)"
+          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+        />
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={3}
+          placeholder="Share your experience with this product"
+          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+        />
+        <div className="mt-3 flex items-center gap-3">
+          <button type="submit" disabled={submitting} className="rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-semibold text-white magnetic disabled:opacity-60">
+            {submitting ? "Submitting…" : "Submit review"}
+          </button>
+          {feedback && <span className="text-xs text-text-secondary">{feedback}</span>}
+        </div>
+      </form>
       <div className="mb-4 flex items-center gap-2">
         <span className="text-sm text-text-secondary">Sort by:</span>
         <button onClick={() => setSort("new")} className={`rounded-full px-3 py-1 text-xs ${sort === "new" ? "bg-primary text-white" : "border border-border"}`}>Newest</button>

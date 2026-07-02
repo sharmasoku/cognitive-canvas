@@ -94,36 +94,47 @@ function ProductList() {
   );
 
   return (
-    <div className="section-container py-12">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">TeleProducts</h1>
-        <p className="mt-3 max-w-xl text-text-secondary">The full TeleAR catalogue — engineered, calibrated, and shipped from our Bengaluru atelier.</p>
-      </motion.div>
+    <div className="relative overflow-hidden py-12">
+      {/* Background Orbs */}
+      <div className="orb" style={{ width: 600, height: 600, background: "#7c3aed", top: -200, right: -150, opacity: 0.12 }} />
+      <div className="orb" style={{ width: 500, height: 500, background: "#2563eb", bottom: -200, left: -150, opacity: 0.08 }} />
 
-      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-        <div className="hidden lg:block">{Sidebar}</div>
+      <div className="section-container relative">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Tele<span className="gradient-text">Products</span></h1>
+          <p className="mt-3 max-w-xl text-text-secondary">The full TeleAR catalogue — engineered, calibrated, and shipped from our Bengaluru atelier.</p>
+        </motion.div>
 
-        <div>
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="w-full rounded-full border border-border bg-background py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+        <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+          <div className="hidden lg:block">{Sidebar}</div>
+
+          <div>
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products" className="w-full rounded-full border border-border bg-background py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+              </div>
+              <button onClick={() => setFilterOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm lg:hidden">
+                <SlidersHorizontal className="h-4 w-4" /> Filters
+              </button>
+              <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="rounded-full border border-border bg-background py-2.5 px-4 text-sm">
+                {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </select>
             </div>
-            <button onClick={() => setFilterOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-sm lg:hidden">
-              <SlidersHorizontal className="h-4 w-4" /> Filters
-            </button>
-            <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} className="rounded-full border border-border bg-background py-2.5 px-4 text-sm">
-              {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
+
+            <div className="mb-4 flex items-center justify-between text-xs font-mono uppercase tracking-widest text-text-muted">
+              <span>Results count</span>
+              <span>Showing {filtered.length} {filtered.length === 1 ? "product" : "products"}</span>
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-border bg-surface p-16 text-center text-text-secondary">No products match those filters.</div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+              </div>
+            )}
           </div>
-
-          {filtered.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border bg-surface p-16 text-center text-text-secondary">No products match those filters.</div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
-            </div>
-          )}
         </div>
       </div>
 

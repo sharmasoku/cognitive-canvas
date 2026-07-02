@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Product } from "@/data/products";
+import { persistOrder } from "@/lib/commerce";
 
 export interface CartItem { product: Product; quantity: number; }
 export interface WishlistItem { product: Product; addedAt: string; }
@@ -56,7 +57,7 @@ interface ShopAPI extends UIState {
   clearCompare: () => void;
   applyCoupon: (code: string) => boolean;
   clearCoupon: () => void;
-  placeOrder: (addr: ShippingAddress, speed: "standard" | "priority") => Order;
+  placeOrder: (addr: ShippingAddress, speed: "standard" | "priority") => Promise<Order>;
   getOrder: (id: string) => Order | undefined;
   cartCount: number;
   cartSubtotal: number;
@@ -164,13 +165,18 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const cartSubtotal = useMemo(() => cart.reduce((s, c) => s + c.product.price * c.quantity, 0), [cart]);
   const cartCount = useMemo(() => cart.reduce((s, c) => s + c.quantity, 0), [cart]);
 
-  const placeOrder = useCallback((addr: ShippingAddress, speed: "standard" | "priority") => {
+  const placeOrder = useCallback(async (addr: ShippingAddress, speed: "standard" | "priority") => {
     const subtotal = cartSubtotal;
     const shipping = speed === "priority" ? 499 : 0;
     const discount = Math.round(subtotal * discountPct);
     const tax = Math.round((subtotal - discount) * 0.18);
     const total = subtotal - discount + shipping + tax;
-    const id = `TLG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+    // Best-effort server persistence for signed-in users (atomic stock + order).
+    // Guests, or an unconfigured/unseeded DB, fall back to a local order id.
+    const remoteId = await persistOrder({ items: cart, address: addr, speed, shipping, tax, discount });
+    const id = remoteId ?? `TLG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
     const order: Order = {
       id, items: cart, subtotal, discount, shipping, tax, total,
       shippingAddress: addr, deliverySpeed: speed, status: "Placed",

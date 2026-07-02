@@ -10,6 +10,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import logoUrl from "../assets/logo.png";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ShopProvider, useShop } from "../context/ShopContext";
 import { LenisProvider } from "../components/shell/LenisProvider";
@@ -21,6 +22,7 @@ import { CartDrawer } from "../components/shell/CartDrawer";
 import { WishlistDrawer } from "../components/shell/WishlistDrawer";
 import { SearchModal } from "../components/shell/SearchModal";
 import { CompareBar } from "../components/shell/CompareBar";
+import { ParticleField } from "../components/home/ParticleField";
 
 function NotFoundComponent() {
   return (
@@ -93,14 +95,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "TeleARGlass 2.0" },
       { property: "og:description", content: "The future doesn't wait for your hands. It understands your thoughts." },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: logoUrl },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@TeleARGlass" },
+      { name: "twitter:image", content: logoUrl },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", type: "image/png", href: logoUrl },
+      { rel: "apple-touch-icon", href: logoUrl },
     ],
   }),
   shellComponent: RootShell,
@@ -149,6 +155,7 @@ function Shell() {
 
   return (
     <>
+      <ParticleField />
       <LenisProvider disabled={drawerOpen} />
       {showPreloader && (
         <Preloader onDone={() => {

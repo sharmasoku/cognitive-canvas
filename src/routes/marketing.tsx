@@ -18,7 +18,7 @@ function Marketing() {
 
   return (
     <div className="section-container py-16">
-      <h1 className="text-5xl font-bold tracking-tight md:text-6xl">Newsroom</h1>
+      <h1 className="text-5xl font-bold tracking-tight md:text-6xl">Tele<span className="gradient-text">Marketing</span></h1>
       <p className="mt-4 max-w-2xl text-lg text-text-secondary">Research notes, product launches and field stories from TeleAR.</p>
 
       <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -37,9 +37,13 @@ function Marketing() {
         {filtered.map((p, i) => (
           <motion.article key={p.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
             className="group flex flex-col overflow-hidden rounded-3xl border border-border-light bg-background transition hover:-translate-y-2 hover:border-primary/30 hover:shadow-card-hover">
-            <div className="aspect-[16/9] bg-gradient-to-br from-primary/30 via-secondary/20 to-accent/30 relative">
-              <div className="absolute inset-0 bg-grid opacity-30" />
-              <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-xs font-medium backdrop-blur">{p.tag}</span>
+            <div className="aspect-[16/9] bg-gradient-to-br from-primary/20 via-[#0a0d14] to-secondary/20 relative overflow-hidden flex items-center justify-center border-b border-border-light">
+              <div className="absolute inset-0 bg-grid opacity-25" />
+              {/* Glowing decorative circles */}
+              <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-primary/20 blur-xl group-hover:scale-125 transition-transform duration-500" />
+              <div className="absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-accent/15 blur-xl group-hover:scale-125 transition-transform duration-500" />
+              
+              <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[10px] font-mono uppercase tracking-widest backdrop-blur border border-border-light">{p.tag}</span>
             </div>
             <div className="flex flex-1 flex-col p-6">
               <div className="text-xs text-text-muted">{shortDate(p.date)} · {p.readTime}</div>
