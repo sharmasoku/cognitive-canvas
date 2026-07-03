@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { oauth } from "@/integrations/supabase/oauth";
 import { pageTransition } from "@/lib/motion";
 import { toast } from "sonner";
 
@@ -33,7 +33,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/auth` : undefined;
-      const response = await lovable.auth.signInWithOAuth(provider, {
+      const response = await oauth.signInWithOAuth(provider, {
         redirect_uri: redirectUri,
       });
 
