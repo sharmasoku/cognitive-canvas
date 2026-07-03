@@ -13,6 +13,7 @@ import {
   type UserAddress,
 } from "@/hooks/useAdminData";
 import { useShop } from "@/context/ShopContext";
+import { GlowCard } from "@/components/ui/GlowCard";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, shortDate } from "@/lib/format";
 import { toast } from "sonner";
@@ -36,6 +37,13 @@ function AccountPage() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading, signOut, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
+
+  // Overview stats (best-effort; hooks guard on a missing user id).
+  const { orders: dbOrders } = useUserOrders(user?.id);
+  const { reviews: myReviews } = useUserReviews(user?.id);
+  const { wishlist, orders: localOrders } = useShop();
+  const dbOrderIds = new Set(dbOrders.map((o) => o.id));
+  const orderCount = dbOrders.length + localOrders.filter((o) => !dbOrderIds.has(o.id)).length;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -63,11 +71,19 @@ function AccountPage() {
           className="mb-8"
         >
           <h1 className="text-3xl font-bold tracking-tight text-[#1c1d1a] lg:text-4xl">
-            My Account
+            My<span className="gradient-text">Account</span>
           </h1>
           <p className="mt-1 text-sm text-[#5c5c56]">
-            Manage your profile, orders, and preferences.
+            Welcome back, {(profile?.full_name || user.user_metadata?.full_name || "Explorer").split(" ")[0]}. Manage your profile, orders, and preferences.
           </p>
+
+          {/* Overview stats */}
+          <div className="mt-6 grid grid-cols-2 items-stretch gap-3 sm:grid-cols-4">
+            <StatCard icon={Package} label="Orders" value={orderCount} onClick={() => setActiveTab("orders")} />
+            <StatCard icon={Heart} label="Wishlist" value={wishlist.length} onClick={() => setActiveTab("wishlist")} />
+            <StatCard icon={Star} label="Reviews" value={myReviews.length} onClick={() => setActiveTab("reviews")} />
+            <StatCard icon={Calendar} label="Member since" value={profile?.created_at ? shortDate(profile.created_at) : "—"} />
+          </div>
         </motion.div>
 
         <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
@@ -106,7 +122,7 @@ function AccountPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                       active
-                        ? "bg-[#1b7a43]/10 text-[#1b7a43]"
+                        ? "bg-primary/10 text-primary"
                         : "text-[#5c5c56] hover:bg-[#f0f0ec] hover:text-[#1c1d1a]"
                     }`}
                   >
@@ -238,7 +254,7 @@ function ProfileTab({
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-4 py-3 text-sm text-[#1c1d1a] outline-none focus:border-[#1b7a43] transition"
+                  className="mt-1 w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-4 py-3 text-sm text-[#1c1d1a] outline-none focus:border-primary transition"
                 />
               </div>
               <div>
@@ -247,11 +263,11 @@ function ProfileTab({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 ..."
-                  className="mt-1 w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-4 py-3 text-sm text-[#1c1d1a] outline-none focus:border-[#1b7a43] transition"
+                  className="mt-1 w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-4 py-3 text-sm text-[#1c1d1a] outline-none focus:border-primary transition"
                 />
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSave} disabled={saving} className="rounded-full bg-[#1b7a43] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#166534] transition disabled:opacity-50 flex items-center gap-2">
+                <button onClick={handleSave} disabled={saving} className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition disabled:opacity-50 flex items-center gap-2">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                   Save
                 </button>
@@ -276,7 +292,7 @@ function ProfileTab({
       {/* Security Section */}
       <div className="rounded-2xl border border-[#e5e5df] bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#1b7a43]/10 text-[#1b7a43]">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
@@ -332,7 +348,7 @@ function OrdersTab({ userId }: { userId: string }) {
               key={order.id}
               to="/orders/$id"
               params={{ id: order.id }}
-              className="flex items-center justify-between rounded-2xl border border-[#e5e5df] bg-white p-5 shadow-sm hover:shadow-md hover:border-[#1b7a43]/30 transition-all group"
+              className="flex items-center justify-between rounded-2xl border border-[#e5e5df] bg-white p-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
             >
               <div className="min-w-0">
                 <div className="font-semibold text-[#1c1d1a] text-sm truncate font-mono">{order.id}</div>
@@ -343,7 +359,7 @@ function OrdersTab({ userId }: { userId: string }) {
               <div className="flex items-center gap-3 shrink-0">
                 <StatusBadge status={order.status} />
                 <div className="font-semibold text-[#1c1d1a] text-sm">{inr(order.total)}</div>
-                <ChevronRight className="h-4 w-4 text-[#a3a39e] group-hover:text-[#1b7a43] transition" />
+                <ChevronRight className="h-4 w-4 text-[#a3a39e] group-hover:text-primary transition" />
               </div>
             </Link>
           ))}
@@ -367,7 +383,7 @@ function AddressesTab({ userId }: { userId: string }) {
         <SectionHeader title="Addresses" subtitle="Manage your saved addresses" />
         <button
           onClick={() => { setEditAddr(null); setShowForm(true); }}
-          className="flex items-center gap-2 rounded-full bg-[#1b7a43] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#166534] transition"
+          className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition"
         >
           <Plus className="h-4 w-4" /> Add Address
         </button>
@@ -389,7 +405,7 @@ function AddressesTab({ userId }: { userId: string }) {
           {addresses.map((addr) => (
             <div key={addr.id} className="rounded-2xl border border-[#e5e5df] bg-white p-5 shadow-sm relative">
               {addr.is_default && (
-                <span className="absolute top-3 right-3 rounded-full bg-[#1b7a43]/10 px-2.5 py-0.5 text-[10px] font-semibold text-[#1b7a43] uppercase tracking-wider">Default</span>
+                <span className="absolute top-3 right-3 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary uppercase tracking-wider">Default</span>
               )}
               <div className="font-semibold text-[#1c1d1a] text-sm">{addr.name}</div>
               <div className="mt-1 text-xs text-[#5c5c56] leading-relaxed">
@@ -461,7 +477,7 @@ function AddressForm({
     setSaving(false);
   };
 
-  const inputCls = "w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-4 py-3 text-sm text-[#1c1d1a] outline-none focus:border-[#1b7a43] transition";
+  const inputCls = "w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-4 py-3 text-sm text-[#1c1d1a] outline-none focus:border-primary transition";
 
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl border border-[#e5e5df] bg-white p-6 shadow-sm space-y-4">
@@ -481,7 +497,7 @@ function AddressForm({
         Set as default address
       </label>
       <div className="flex gap-3 pt-2">
-        <button type="submit" disabled={saving} className="rounded-full bg-[#1b7a43] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#166534] transition disabled:opacity-50 flex items-center gap-2">
+        <button type="submit" disabled={saving} className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition disabled:opacity-50 flex items-center gap-2">
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           {address ? "Update" : "Add"} Address
         </button>
@@ -513,7 +529,7 @@ function WishlistTab() {
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => { addToCart(w.product); toast.success("Added to cart"); }}
-                    className="rounded-lg bg-[#1b7a43] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#166534] transition"
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-hover transition"
                   >
                     Add to Cart
                   </button>
@@ -577,6 +593,25 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
   );
 }
 
+function StatCard({ icon: Icon, label, value, onClick }: { icon: typeof User; label: string; value: string | number; onClick?: () => void }) {
+  const Comp: any = onClick ? "button" : "div";
+  return (
+    <Comp onClick={onClick} className="h-full w-full text-left">
+      <GlowCard className="h-full">
+        <div className="flex items-center gap-3 p-4">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Icon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium uppercase tracking-wider text-[#8c8c86]">{label}</div>
+            <div className="truncate text-lg font-bold text-[#1c1d1a]">{value}</div>
+          </div>
+        </div>
+      </GlowCard>
+    </Comp>
+  );
+}
+
 function InfoRow({ icon: Icon, label, value }: { icon: typeof User; label: string; value: string }) {
   return (
     <div className="flex items-center gap-3">
@@ -625,7 +660,7 @@ function EmptyState({ icon: Icon, title, subtitle }: { icon: typeof User; title:
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center py-16">
-      <Loader2 className="h-6 w-6 animate-spin text-[#1b7a43]" />
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
     </div>
   );
 }

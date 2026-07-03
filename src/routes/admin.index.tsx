@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
-  DollarSign, ShoppingCart, Users, Clock, TrendingUp,
-  ArrowUpRight, Loader2, Package, Activity
+  DollarSign, ShoppingCart, Clock, Loader2, Package, Activity, AlertTriangle,
 } from "lucide-react";
 import { useDashboardStats } from "@/hooks/useAdminData";
+import { AdminHeading } from "@/components/admin/AdminHeading";
+import { GlowCard } from "@/components/ui/GlowCard";
 import { inr, shortDate } from "@/lib/format";
 import { AreaChart, Area, XAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
 });
 
-const PIE_COLORS = ["#10b981", "#3b82f6", "#f59e0b"];
+const PIE_COLORS = ["#10b981", "#f59e0b", "#7c3aed", "#3b82f6", "#ef4444"];
 
 function AdminDashboard() {
   const { stats, loading } = useDashboardStats();
@@ -20,65 +21,30 @@ function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
 
   const cards = [
-    {
-      label: "Total Revenue",
-      value: inr(stats.totalRevenue),
-      icon: DollarSign,
-      color: "text-emerald-600 bg-emerald-100",
-    },
-    {
-      label: "Total Orders",
-      value: stats.totalOrders.toString(),
-      icon: ShoppingCart,
-      color: "text-blue-600 bg-blue-100",
-    },
-    {
-      label: "Pending Orders",
-      value: stats.pendingOrders.toString(),
-      icon: Clock,
-      color: "text-amber-600 bg-amber-100",
-    },
+    { label: "Total Revenue", value: inr(stats.totalRevenue), icon: DollarSign, color: "text-emerald-600 bg-emerald-100" },
+    { label: "Total Orders", value: stats.totalOrders.toString(), icon: ShoppingCart, color: "text-blue-600 bg-blue-100" },
+    { label: "Pending Orders", value: stats.pendingOrders.toString(), icon: Clock, color: "text-amber-600 bg-amber-100" },
     {
       label: "Average Order Value",
-      value: inr(stats.totalOrders > 0 ? stats.totalRevenue / stats.totalOrders : 0),
+      value: inr(stats.totalOrders > 0 ? Math.round(stats.totalRevenue / stats.totalOrders) : 0),
       icon: Activity,
       color: "text-indigo-600 bg-indigo-100",
     },
-    {
-      label: "Active Users",
-      value: stats.totalUsers.toString(),
-      icon: Users,
-      color: "text-purple-600 bg-purple-100",
-    },
+    { label: "Active Products", value: `${stats.activeProducts}/${stats.totalProducts}`, icon: Package, color: "text-violet-600 bg-violet-100" },
   ];
 
-  // Dummy chart data from recent orders or just dummy data
-  const chartData = [
-    { name: "Mon", total: 0 },
-    { name: "Tue", total: 105 },
-    { name: "Wed", total: 0 },
-    { name: "Thu", total: 0 },
-    { name: "Fri", total: 0 },
-    { name: "Sat", total: 0 },
-    { name: "Sun", total: 0 },
-  ];
-
-  const pieData = [
-    { name: "Completed", value: stats.totalOrders - stats.pendingOrders },
-    { name: "Pending", value: stats.pendingOrders },
-  ];
+  const hasSales = stats.salesByDay.some((d) => d.total > 0);
 
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight lg:text-3xl font-serif">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">Overview of your store performance.</p>
+        <AdminHeading word="Dashboard" sub="Overview of your store performance." />
       </motion.div>
 
       {/* Stat Cards */}
@@ -91,17 +57,19 @@ function AdminDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="relative min-w-[200px] flex-1 overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+              className="min-w-[200px] flex-1"
             >
-              <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.color}`}>
-                  <Icon className="h-5 w-5" />
+              <GlowCard className="h-full">
+                <div className="flex items-center gap-3 p-5">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.color}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">{card.label}</div>
+                    <div className="text-2xl font-bold text-gray-900">{card.value}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-500">{card.label}</div>
-                  <div className="text-2xl font-bold text-gray-900">{card.value}</div>
-                </div>
-              </div>
+              </GlowCard>
             </motion.div>
           );
         })}
@@ -116,22 +84,29 @@ function AdminDashboard() {
           className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col h-full"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 font-serif">Sales Analytics (7 Days)</h2>
+            <h2 className="font-bold text-gray-900">Sales Analytics (7 Days)</h2>
           </div>
           <div className="flex-1 min-h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} dy={10} />
-                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                <Area type="monotone" dataKey="total" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorTotal)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {hasSales ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats.salesByDay} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#9ca3af" }} dy={10} />
+                  <RechartsTooltip
+                    formatter={(v: number) => [inr(v), "Sales"]}
+                    contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                  />
+                  <Area type="monotone" dataKey="total" stroke="#7c3aed" strokeWidth={2} fillOpacity={1} fill="url(#colorTotal)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-gray-400">No sales in the last 7 days</div>
+            )}
           </div>
         </motion.div>
 
@@ -143,22 +118,14 @@ function AdminDashboard() {
           className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col h-full"
         >
           <div className="mb-4">
-            <h2 className="font-bold text-gray-900 font-serif">Order Fulfillment Status</h2>
+            <h2 className="font-bold text-gray-900">Order Status Breakdown</h2>
           </div>
           <div className="flex-1 min-h-[200px] flex items-center justify-center">
-            {stats.totalOrders > 0 ? (
+            {stats.statusBreakdown.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
+                  <Pie data={stats.statusBreakdown} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={4} dataKey="value" nameKey="name">
+                    {stats.statusBreakdown.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
                   </Pie>
@@ -172,6 +139,27 @@ function AdminDashboard() {
         </motion.div>
       </div>
 
+      {/* Low stock alert */}
+      {stats.lowStock.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="rounded-2xl border border-amber-200 bg-amber-50 p-5"
+        >
+          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-amber-700">
+            <AlertTriangle className="h-4 w-4" /> Low stock — needs restocking
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {stats.lowStock.map((p) => (
+              <span key={p.id} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-amber-700 shadow-sm">
+                {p.name} · <span className="font-bold">{p.stock}</span> left
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Recent Orders Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -180,8 +168,8 @@ function AdminDashboard() {
         className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm mt-6"
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="font-bold text-gray-900 font-serif">Recent Orders</h2>
-          <span className="text-sm text-emerald-600 font-medium hover:underline cursor-pointer">View all &rarr;</span>
+          <h2 className="font-bold text-gray-900">Recent Orders</h2>
+          <Link to="/admin/orders" className="text-sm text-primary font-medium hover:underline">View all &rarr;</Link>
         </div>
 
         {stats.recentOrders.length === 0 ? (

@@ -8,6 +8,7 @@ import { PanOS } from "@/components/home/PanOS";
 import { Industries } from "@/components/home/Industries";
 import { Stats } from "@/components/home/Stats";
 import { Vision } from "@/components/home/Vision";
+import { Policies } from "@/components/home/Policies";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,6 +34,7 @@ function Index() {
       <PanOS />
       <Industries />
       <Stats />
+      <Policies />
     </>
   );
 }

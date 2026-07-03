@@ -2,13 +2,14 @@ import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Package, ShoppingCart, Users, MessageSquare,
-  BookOpen, Loader2, Menu, X, ChevronLeft
+  LayoutDashboard, Package, ShoppingCart, MessageSquare,
+  Loader2, Menu, X
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { Logo } from "@/components/shell/Logo";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin Panel — AJANTA'S ADUSOL." }] }),
+  head: () => ({ meta: [{ title: "Admin Panel — TeleARGlass" }] }),
   component: AdminLayout,
 });
 
@@ -16,7 +17,6 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/products", label: "Products", icon: Package, exact: false },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart, exact: false },
-  { to: "/admin/blogs", label: "Blogs", icon: BookOpen, exact: false },
   { to: "/admin/messages", label: "Messages", icon: MessageSquare, exact: false },
 ] as const;
 
@@ -42,7 +42,7 @@ function AdminLayout() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f8f9fc]">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -53,9 +53,9 @@ function AdminLayout() {
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col lg:flex-row">
       {/* Mobile header */}
       <div className="flex items-center justify-between border-b border-gray-800 bg-[#121620] px-4 py-3 lg:hidden">
-        <div>
-          <div className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest font-mono leading-none">CARRIER</div>
-          <div className="text-sm font-bold text-emerald-400 font-serif">CLASSES.</div>
+        <div className="flex items-center gap-2">
+          <Logo className="h-12" />
+          <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Admin</span>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-lg p-2 text-gray-400 hover:text-white transition">
           {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -73,9 +73,8 @@ function AdminLayout() {
         >
           {/* Logo */}
           <div className="mb-8 px-2 border-b border-gray-800/40 pb-5">
-            <div className="text-[9px] text-emerald-400 font-extrabold uppercase tracking-widest font-mono">CARRIER</div>
-            <div className="text-2xl font-black text-emerald-400 tracking-tight font-serif">CLASSES.</div>
-            <div className="text-[9px] text-gray-500 font-bold tracking-wider uppercase mt-1">ADMIN CONTROL PANEL</div>
+            <Logo className="h-16" />
+            <div className="text-[9px] text-gray-500 font-bold tracking-wider uppercase mt-3">Admin Control Panel</div>
           </div>
 
           {/* Nav */}
@@ -91,11 +90,11 @@ function AdminLayout() {
                   to={item.to}
                   className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
                     active
-                      ? "bg-emerald-500/10 text-emerald-400 font-semibold"
+                      ? "bg-primary/15 text-white font-semibold border-l-2 border-primary"
                       : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                   }`}
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
+                  <Icon className={`h-4 w-4 shrink-0 ${active ? "text-primary-light" : ""}`} />
                   {item.label}
                 </Link>
               );

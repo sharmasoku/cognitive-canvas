@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { GlowCard } from "@/components/ui/GlowCard";
 
 const STATS = [
   { value: 50000, suffix: "+", label: "Units shipped" },
@@ -43,7 +44,7 @@ export function Stats() {
 
   return (
     <section ref={ref} className="section-container py-24 lg:py-32">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STATS.map((s, i) => (
           <StatCard key={i} target={s.value} active={active} suffix={s.suffix} label={s.label} />
         ))}
@@ -55,10 +56,11 @@ export function Stats() {
 function StatCard({ target, active, suffix, label }: { target: number; active: boolean; suffix: string; label: string }) {
   const v = useCountUp(target, active);
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border-light bg-background p-8 shadow-soft transition hover:-translate-y-1 hover:shadow-card-hover">
-      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-primary opacity-10 blur-2xl" />
-      <div className="text-5xl font-bold gradient-text">{formatNumber(v)}{suffix}</div>
-      <div className="mt-2 text-sm text-text-secondary">{label}</div>
-    </div>
+    <GlowCard className="h-full">
+      <div className="p-8">
+        <div className="text-5xl font-bold gradient-text">{formatNumber(v)}{suffix}</div>
+        <div className="mt-2 text-sm text-text-secondary">{label}</div>
+      </div>
+    </GlowCard>
   );
 }

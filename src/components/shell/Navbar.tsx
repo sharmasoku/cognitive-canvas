@@ -61,7 +61,7 @@ export function Navbar() {
     >
       <div className="section-container flex items-center justify-between gap-4 py-3">
         <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-          <Logo className="h-14" />
+          <Logo className="h-20" />
         </Link>
 
         <LayoutGroup>
@@ -92,12 +92,9 @@ export function Navbar() {
           <button
             onClick={() => setSearchOpen(true)}
             aria-label="Search"
-            className="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+            className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
           >
-            <Search className="h-4 w-4" />
-            <kbd className="hidden rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline-block">
-              ⌘K
-            </kbd>
+            <Search className="h-4.5 w-4.5" />
           </button>
           {compare.length > 0 && (
             <Link

@@ -100,10 +100,13 @@ export function useAllOrders() {
   return { orders, loading, refetch: fetch };
 }
 
+type OrderStatusValue = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+type PaymentStatusValue = "pending" | "paid" | "failed" | "refunded";
+
 export async function updateOrderStatus(orderId: string, status: string) {
   const { error } = await supabase
     .from("orders")
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({ status: status as OrderStatusValue, updated_at: new Date().toISOString() })
     .eq("id", orderId);
   return { ok: !error, error: error?.message };
 }
@@ -111,7 +114,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 export async function updatePaymentStatus(orderId: string, paymentStatus: string) {
   const { error } = await supabase
     .from("orders")
-    .update({ payment_status: paymentStatus, updated_at: new Date().toISOString() })
+    .update({ payment_status: paymentStatus as PaymentStatusValue, updated_at: new Date().toISOString() })
     .eq("id", orderId);
   return { ok: !error, error: error?.message };
 }

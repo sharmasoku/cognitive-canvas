@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, Heart, Minus, Plus, RotateCw, ShieldCheck, Sparkles, Star, ThumbsUp } from "lucide-react";
 import { getProductBySlug, type Product } from "@/data/products";
@@ -43,6 +43,17 @@ function ProductDetail() {
   const [rotation, setRotation] = useState(0);
   const wished = inWishlist(product.id);
   const compared = inCompare(product.id);
+
+  const [reviews, setReviews] = useState<DbReview[]>([]);
+  const loadReviews = useCallback(() => {
+    fetchReviews(product.slug).then(setReviews);
+  }, [product.slug]);
+  useEffect(() => { loadReviews(); }, [loadReviews]);
+
+  const reviewCount = reviews.length;
+  const avgRating = reviews.length
+    ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
+    : null;
 
   return (
     <div className="section-container py-10">
@@ -117,11 +128,17 @@ function ProductDetail() {
           <h1 className="mt-4 text-4xl font-bold leading-tight lg:text-5xl">{product.name}</h1>
           <p className="mt-2 italic text-text-secondary">{product.tagline}</p>
           <div className="mt-4 flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-0.5">
-              {[1,2,3,4,5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= Math.round(product.rating) ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
-            </div>
-            <span className="font-semibold">{product.rating}</span>
-            <span className="text-text-muted">· {product.reviewCount} reviews</span>
+            {avgRating !== null ? (
+              <>
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
+                </div>
+                <span className="font-semibold">{avgRating}</span>
+                <span className="text-text-muted">· {reviewCount} review{reviewCount !== 1 ? "s" : ""}</span>
+              </>
+            ) : (
+              <span className="text-text-muted">No reviews yet</span>
+            )}
             <span className="inline-flex items-center gap-1 text-accent"><ShieldCheck className="h-3.5 w-3.5" />In stock</span>
           </div>
           <div className="mt-6 flex items-end gap-3">
@@ -161,7 +178,7 @@ function ProductDetail() {
             { id: "tech", label: "Technology" },
             { id: "warranty", label: "Warranty" },
             { id: "faq", label: "FAQs" },
-            { id: "reviews", label: `Reviews (${product.reviewsList.length})` },
+            { id: "reviews", label: `Reviews (${reviewCount})` },
           ].map((t) => (
             <button key={t.id} onClick={() => setTab(t.id as typeof tab)} className={`relative -mb-px border-b-2 px-4 py-3 text-sm font-medium ${tab === t.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-foreground"}`}>{t.label}</button>
           ))}
@@ -173,7 +190,7 @@ function ProductDetail() {
               {tab === "tech" && <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">{product.technologyStory}</p>}
               {tab === "warranty" && <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">{product.warranty}</p>}
               {tab === "faq" && <FaqList product={product} />}
-              {tab === "reviews" && <ReviewsList product={product} />}
+              {tab === "reviews" && <ReviewsList product={product} reviews={reviews} onSubmitted={loadReviews} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -213,21 +230,14 @@ function FaqList({ product }: { product: Product }) {
     </div>
   );
 }
-function ReviewsList({ product }: { product: Product }) {
+function ReviewsList({ product, reviews, onSubmitted }: { product: Product; reviews: DbReview[]; onSubmitted: () => void }) {
   const [sort, setSort] = useState<"new" | "helpful">("new");
   const [votes, setVotes] = useState<Record<string, number>>({});
-  const [dbReviews, setDbReviews] = useState<DbReview[]>([]);
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    fetchReviews(product.slug).then((r) => { if (active) setDbReviews(r); });
-    return () => { active = false; };
-  }, [product.slug]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,18 +251,18 @@ function ReviewsList({ product }: { product: Product }) {
       setName("");
       setRating(5);
       setFeedback("Thanks — your review is live.");
-      setDbReviews(await fetchReviews(product.slug));
+      onSubmitted();
     } else {
       setFeedback(res.error ?? "Could not submit your review.");
     }
   };
 
-  // DB reviews first (verified purchases), then the seeded showcase reviews.
-  const all = [...dbReviews, ...product.reviewsList];
-  const sorted = [...all].sort((a, b) => {
+  // Genuine customer reviews only — sourced entirely from the database.
+  const sorted = [...reviews].sort((a, b) => {
     if (sort === "helpful") return (b.helpfulVotes + (votes[b.id] ?? 0)) - (a.helpfulVotes + (votes[a.id] ?? 0));
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="mb-6 rounded-2xl border border-border-light bg-surface p-5">
@@ -285,30 +295,39 @@ function ReviewsList({ product }: { product: Product }) {
           {feedback && <span className="text-xs text-text-secondary">{feedback}</span>}
         </div>
       </form>
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-sm text-text-secondary">Sort by:</span>
-        <button onClick={() => setSort("new")} className={`rounded-full px-3 py-1 text-xs ${sort === "new" ? "bg-primary text-white" : "border border-border"}`}>Newest</button>
-        <button onClick={() => setSort("helpful")} className={`rounded-full px-3 py-1 text-xs ${sort === "helpful" ? "bg-primary text-white" : "border border-border"}`}>Most helpful</button>
-      </div>
-      <div className="space-y-3">
-        {sorted.map((r) => (
-          <div key={r.id} className="rounded-2xl border border-border-light bg-background p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 font-semibold">{r.userName}{r.verified && <span className="rounded-full bg-surface-green px-2 py-0.5 text-[10px] font-medium text-accent-dark">Verified</span>}</div>
-                <div className="text-xs text-text-muted">{shortDate(r.date)}</div>
-              </div>
-              <div className="flex items-center gap-0.5">
-                {[1,2,3,4,5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= r.rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
-              </div>
-            </div>
-            <p className="mt-3 text-text-secondary">{r.comment}</p>
-            <button onClick={() => setVotes((v) => ({ ...v, [r.id]: (v[r.id] ?? 0) + 1 }))} className="mt-3 inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary">
-              <ThumbsUp className="h-3.5 w-3.5" /> Helpful · {r.helpfulVotes + (votes[r.id] ?? 0)}
-            </button>
+
+      {sorted.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border-light bg-background p-10 text-center text-sm text-text-muted">
+          No reviews yet — be the first to review the {product.name}.
+        </div>
+      ) : (
+        <>
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-sm text-text-secondary">Sort by:</span>
+            <button onClick={() => setSort("new")} className={`rounded-full px-3 py-1 text-xs ${sort === "new" ? "bg-primary text-white" : "border border-border"}`}>Newest</button>
+            <button onClick={() => setSort("helpful")} className={`rounded-full px-3 py-1 text-xs ${sort === "helpful" ? "bg-primary text-white" : "border border-border"}`}>Most helpful</button>
           </div>
-        ))}
-      </div>
+          <div className="space-y-3">
+            {sorted.map((r) => (
+              <div key={r.id} className="rounded-2xl border border-border-light bg-background p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 font-semibold">{r.userName}{r.verified && <span className="rounded-full bg-surface-green px-2 py-0.5 text-[10px] font-medium text-accent-dark">Verified</span>}</div>
+                    <div className="text-xs text-text-muted">{shortDate(r.date)}</div>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= r.rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
+                  </div>
+                </div>
+                <p className="mt-3 text-text-secondary">{r.comment}</p>
+                <button onClick={() => setVotes((v) => ({ ...v, [r.id]: (v[r.id] ?? 0) + 1 }))} className="mt-3 inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary">
+                  <ThumbsUp className="h-3.5 w-3.5" /> Helpful · {r.helpfulVotes + (votes[r.id] ?? 0)}
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

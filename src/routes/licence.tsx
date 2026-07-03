@@ -1,87 +1,228 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Check, Download, FileText, Loader2 } from "lucide-react";
-import { compliancePdfs, licences } from "@/data/content";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
+import {
+  Glasses, Accessibility, Cpu, BrainCircuit, LayoutGrid, PackageCheck,
+  Brush, Radar, Sparkles, Check, ArrowRight,
+} from "lucide-react";
+import BorderGlow from "@/components/ui/BorderGlow";
 
 export const Route = createFileRoute("/licence")({
-  head: () => ({ meta: [{ title: "TeleLicence — Compliance" }] }),
+  head: () => ({ meta: [{ title: "TeleLicence — Patent Licensing" }] }),
   component: Licence,
 });
 
+const GLOW_COLORS = ["#7c3aed", "#2563eb", "#10b981"];
+
+const FEATURES = [
+  { icon: Glasses, title: "Thinking Immersive AR Display", desc: "Cutting-edge augmented reality with depth perception and real-time environment mapping." },
+  { icon: Accessibility, title: "Speaking Accessibility", desc: "Voice-first navigation and screen-reader integration for inclusive technology." },
+  { icon: Cpu, title: "PanOS Operating System", desc: "Proprietary OS built from the ground up for security, speed, and seamless AR integration." },
+  { icon: BrainCircuit, title: "AI Data Interpretation", desc: "On-device AI that understands context and delivers actionable insights." },
+  { icon: LayoutGrid, title: "30+ Product Apps", desc: "A rich ecosystem of productivity, entertainment, and specialized applications." },
+  { icon: PackageCheck, title: "Complete Solution Package", desc: "Everything you need — hardware, software, and support — in one license." },
+];
+
+const CUSTOMIZABLE = [
+  "ISRO Space Communication",
+  "DRDO Applications",
+  "Legacy Mobile Features",
+  "Accessibility Tools",
+  "Social Media Integration",
+  "Gaming & Entertainment",
+  "Home Automation",
+  "Robotics Control",
+];
+
+const DESIGN_FEATURES = [
+  { icon: Brush, title: "Aesthetic Design & Ergonomics", desc: "A sleek, lightweight frame engineered for all-day comfort and a premium feel on every wear." },
+  { icon: Radar, title: "Data-Capturing Sensor Design", desc: "High-precision sensors capture accurate environment and user data to power every experience." },
+];
+
+const HIGHLIGHTS = ["PanOS Operating System", "Immersive AR Display", "Speaking Accessibility", "30+ Software Apps"];
+
+const LICENSE_INCLUDES = [
+  "Full patent & platform license",
+  "PanOS + the entire 30+ app suite",
+  "Priority onboarding, training & support",
+];
+
 function Licence() {
-  const [progress, setProgress] = useState<Record<string, number>>({});
-  const [toast, setToast] = useState<string | null>(null);
-
-  const startDownload = (id: string, name: string) => {
-    if (progress[id] !== undefined && progress[id] < 100) return;
-    setProgress((p) => ({ ...p, [id]: 0 }));
-    const t = window.setInterval(() => {
-      setProgress((prev) => {
-        const cur = prev[id] ?? 0;
-        if (cur >= 100) { clearInterval(t); setToast(`${name} downloaded`); window.setTimeout(() => setToast(null), 2500); return prev; }
-        return { ...prev, [id]: Math.min(100, cur + 9) };
-      });
-    }, 90);
-  };
-
   return (
-    <div className="section-container py-16">
-      <h1 className="text-5xl font-bold tracking-tight md:text-6xl">Tele<span className="gradient-text">Licence</span></h1>
-      <p className="mt-4 max-w-2xl text-lg text-text-secondary">Regulatory charter, developer tokens and enterprise contracts — all in one place.</p>
+    <div className="relative overflow-hidden bg-background text-foreground">
+      {/* Ambient background */}
+      <div className="orb" style={{ width: 680, height: 680, background: "#7c3aed", top: -260, left: -180, opacity: 0.12 }} />
+      <div className="orb" style={{ width: 560, height: 560, background: "#2563eb", top: 240, right: -220, opacity: 0.08 }} />
+      <div className="orb" style={{ width: 520, height: 520, background: "#10b981", bottom: -220, left: "35%", opacity: 0.06 }} />
 
-      <h2 className="mt-12 text-2xl font-bold">Registries</h2>
-      <div className="mt-6 grid gap-5 md:grid-cols-2">
-        {licences.map((l, i) => (
-          <motion.div key={l.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-            className="rounded-3xl border border-border-light bg-background p-6 transition hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover">
-            <div className="text-xs uppercase tracking-widest text-primary font-mono">{l.scope}</div>
-            <h3 className="mt-2 text-xl font-semibold">{l.name}</h3>
-            <p className="mt-2 text-sm text-text-secondary">{l.description}</p>
-            <div className="mt-5 flex items-center justify-between"><span className="font-bold">{l.price}</span><button className="rounded-full bg-gradient-primary px-4 py-2 text-xs font-semibold text-white magnetic">Request token</button></div>
-          </motion.div>
-        ))}
-      </div>
+      <div className="section-container relative py-20 lg:py-28">
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface px-4 py-1.5 text-xs font-mono uppercase tracking-widest text-text-secondary">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Make-in-India · Patented Product
+          </div>
+          <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl">
+            Our Innovative, Sustainable{" "}
+            <span className="gradient-text">Make-in-India</span> Patented Product
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-text-secondary">
+            TeleARGlass runs on our proprietary <span className="font-semibold text-foreground">PanOS Operating System</span> with a customizable
+            range of <span className="font-semibold text-foreground">30+ product software apps</span> — delivering immersive Augmented Reality and
+            advanced Speaking Accessibility, and much more.
+          </p>
 
-      <h2 className="mt-16 text-2xl font-bold">Compliance downloads</h2>
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
-        {compliancePdfs.map((p) => {
-          const pct = progress[p.id];
-          return (
-            <div key={p.id} className="flex items-center gap-4 rounded-2xl border border-border-light bg-background p-4">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-surface-violet text-primary"><FileText className="h-5 w-5" /></div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">{p.name}</div>
-                <div className="text-xs text-text-muted">PDF · {p.size}</div>
-                {pct !== undefined && pct < 100 && <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-border"><motion.div className="h-full bg-gradient-primary" animate={{ width: `${pct}%` }} /></div>}
-              </div>
-              <button 
-                onClick={() => startDownload(p.id, p.name)} 
-                className={`grid h-9 w-9 place-items-center rounded-full border transition-all duration-300 ${
-                  pct === 100 ? "border-accent bg-accent/15 text-accent" : "border-border hover:border-primary hover:text-primary"
-                }`}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
+            {HIGHLIGHTS.map((h) => (
+              <span key={h} className="rounded-full border border-border-light bg-surface px-3.5 py-1.5 text-xs font-medium text-text-secondary">
+                {h}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Feature bento — glowing cards */}
+        <div className="mt-20 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ delay: (i % 3) * 0.08, duration: 0.5 }}
+              className="h-full"
+            >
+              <BorderGlow
+                backgroundColor="#ffffff"
+                borderRadius={24}
+                glowColor="265 85 62"
+                glowIntensity={1}
+                glowRadius={26}
+                coneSpread={22}
+                colors={GLOW_COLORS}
+                className="h-full"
               >
-                {pct === undefined ? (
-                  <Download className="h-4 w-4" />
-                ) : pct < 100 ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+                <div className="flex h-full flex-col p-7">
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-violet text-primary">
+                    <f.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-foreground">{f.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-text-secondary">{f.desc}</p>
+                </div>
+              </BorderGlow>
+            </motion.div>
+          ))}
+        </div>
 
-      <AnimatePresence>
-        {toast && (
-          <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}
-            className="fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-full bg-foreground px-5 py-2.5 text-sm text-background shadow-card-hover inline-flex items-center gap-2">
-            <Check className="h-4 w-4 text-accent" /> {toast}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Customizable software */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-8 rounded-[28px] border border-border-light bg-surface p-8"
+        >
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Customizable Software
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {CUSTOMIZABLE.map((c) => (
+              <span
+                key={c}
+                className="rounded-full border border-border-light bg-background px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-primary/50 hover:text-primary"
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Design highlights */}
+        <div className="mt-8 grid items-stretch gap-6 md:grid-cols-2">
+          {DESIGN_FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className="h-full"
+            >
+              <BorderGlow
+                backgroundColor="#ffffff"
+                borderRadius={24}
+                glowColor="160 84 42"
+                glowIntensity={1}
+                glowRadius={30}
+                coneSpread={22}
+                colors={GLOW_COLORS}
+                className="h-full"
+              >
+                <div className="flex h-full items-start gap-5 p-8">
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-surface-green text-accent-dark">
+                    <f.icon className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground">{f.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-text-secondary">{f.desc}</p>
+                  </div>
+                </div>
+              </BorderGlow>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Pricing centerpiece */}
+        <div className="mt-16 flex justify-center">
+          <BorderGlow
+            animated
+            backgroundColor="#ffffff"
+            borderRadius={32}
+            glowColor="265 88 60"
+            glowIntensity={1.2}
+            glowRadius={44}
+            coneSpread={26}
+            colors={GLOW_COLORS}
+            className="w-full max-w-2xl"
+          >
+            <div className="px-8 py-14 text-center md:px-16">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface px-3.5 py-1.5 text-[11px] font-mono uppercase tracking-widest text-text-secondary">
+                Limited-Time Patent Licensing
+              </div>
+              <h2 className="mt-6 text-2xl font-bold leading-snug text-foreground md:text-[2rem]">
+                TeleARGlass Patent Licensing
+              </h2>
+              <p className="mt-2 text-text-secondary">For innovative &amp; sustainable organisations only.</p>
+
+              <div className="mt-9 flex items-end justify-center gap-2.5">
+                <span className="text-6xl font-extrabold gradient-text md:text-7xl">₹9 Cr</span>
+                <span className="mb-2 text-text-muted">/ year</span>
+              </div>
+
+              <ul className="mx-auto mt-8 max-w-sm space-y-3 text-left">
+                {LICENSE_INCLUDES.map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm text-text-secondary">
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                to="/feedback"
+                className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-primary px-10 py-4 text-sm font-semibold text-white shadow-glow-primary transition hover:translate-y-[-2px]"
+              >
+                Subscribe <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <p className="mt-4 text-xs text-text-muted">Enquire for onboarding &amp; contract terms.</p>
+            </div>
+          </BorderGlow>
+        </div>
+      </div>
     </div>
   );
 }

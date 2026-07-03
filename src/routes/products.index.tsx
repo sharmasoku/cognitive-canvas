@@ -18,8 +18,9 @@ export const Route = createFileRoute("/products/")({
   component: ProductList,
 });
 
-const CATEGORIES: ("All" | Category)[] = ["All", "Smart Glasses", "BCI Devices", "Developer Tools", "Accessories"];
+const CATEGORIES: ("All" | Category)[] = ["All", "Smart Glasses", "Home Automation", "Gaming", "Enterprise"];
 const TECHS: ("All" | Technology)[] = ["All", "BCI + AR", "AR", "BCI", "Standard"];
+const MAX_PRICE = 1600000;
 const SORTS = [
   { id: "featured", label: "Featured" },
   { id: "price-asc", label: "Price · Low to High" },
@@ -30,7 +31,7 @@ const SORTS = [
 function ProductList() {
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]>("All");
   const [tech, setTech] = useState<(typeof TECHS)[number]>("All");
-  const [maxPrice, setMaxPrice] = useState(60000);
+  const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
   const [minRating, setMinRating] = useState(0);
   const [inStock, setInStock] = useState(false);
   const [q, setQ] = useState("");
@@ -57,7 +58,7 @@ function ProductList() {
     <aside className="space-y-6 rounded-3xl border border-border-light bg-background p-6 shadow-soft">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold"><Filter className="h-4 w-4 text-primary" /> Filters</h2>
-        <button onClick={() => { setCat("All"); setTech("All"); setMaxPrice(60000); setMinRating(0); setInStock(false); setQ(""); }} className="text-xs text-text-muted hover:text-primary">Clear all</button>
+        <button onClick={() => { setCat("All"); setTech("All"); setMaxPrice(MAX_PRICE); setMinRating(0); setInStock(false); setQ(""); }} className="text-xs text-text-muted hover:text-primary">Clear all</button>
       </div>
       <FilterGroup label="Category">
         <div className="space-y-1">
@@ -74,8 +75,8 @@ function ProductList() {
         </div>
       </FilterGroup>
       <FilterGroup label={`Max price · ${inr(maxPrice)}`}>
-        <input type="range" min={1999} max={60000} step={1000} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-[--color-primary]" />
-        <div className="mt-1 flex justify-between text-[10px] text-text-muted"><span>{inr(1999)}</span><span>{inr(60000)}</span></div>
+        <input type="range" min={30000} max={MAX_PRICE} step={10000} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-[--color-primary]" />
+        <div className="mt-1 flex justify-between text-[10px] text-text-muted"><span>{inr(30000)}</span><span>{inr(MAX_PRICE)}</span></div>
       </FilterGroup>
       <FilterGroup label="Rating">
         <div className="flex flex-wrap gap-2">

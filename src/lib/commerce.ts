@@ -123,6 +123,29 @@ export async function fetchReviews(productSlug: string): Promise<DbReview[]> {
   }
 }
 
+/** All reviews across the catalogue, newest first (for the feedback page). */
+export async function fetchAllReviews(limit = 60): Promise<DbReview[]> {
+  try {
+    const { data } = await supabase
+      .from("reviews")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (!data) return [];
+    return data.map((r) => ({
+      id: r.id,
+      userName: r.reviewer_name || "TeleAR Customer",
+      rating: r.rating,
+      comment: r.comment,
+      date: r.created_at,
+      verified: r.verified,
+      helpfulVotes: r.helpful_votes,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 /** Submit a review (auth required). One review per user per product (DB-enforced). */
 export async function submitReview(
   productSlug: string,
