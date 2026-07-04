@@ -6,6 +6,7 @@
 @import "@fontsource/sora/600.css";
 @import "@fontsource/sora/700.css";
 @import "@fontsource/sora/800.css";
+@import "@fontsource-variable/caveat";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -70,6 +71,7 @@
   --font-heading: 'Sora', 'Inter Variable', system-ui, sans-serif;
   --font-body: 'Inter Variable', system-ui, sans-serif;
   --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-script: 'Caveat Variable', 'Comic Sans MS', cursive;
 }
 
 :root {
@@ -278,6 +280,19 @@
     50% { transform: translateY(-12px); }
   }
   .animate-float { animation: float 6s ease-in-out infinite; }
+
+  /* Soft light sweep across the product visor */
+  @keyframes visor-sweep {
+    0%   { transform: translateX(-150%) skewX(-12deg); opacity: 0; }
+    18%  { opacity: 0.55; }
+    55%  { opacity: 0; }
+    100% { transform: translateX(340%) skewX(-12deg); opacity: 0; }
+  }
+  .animate-visor-sweep { animation: visor-sweep 7s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float, .animate-visor-sweep { animation: none; }
+  }
 
   @keyframes pulse-ring {
     0% { transform: scale(0.95); opacity: 0.8; }
