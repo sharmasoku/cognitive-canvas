@@ -100,6 +100,47 @@ export function useAllOrders() {
   return { orders, loading, refetch: fetch };
 }
 
+export function useOrder(id: string | undefined) {
+  const [order, setOrder] = useState<DbOrder | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!id) { setLoading(false); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, order_items(*), profiles!orders_user_id_fkey(full_name, email)")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (!error && data) {
+        const o: any = data;
+        setOrder({
+          ...o,
+          items: o.order_items ?? [],
+          profile: Array.isArray(o.profiles) ? o.profiles[0] ?? null : o.profiles ?? null,
+        });
+      } else if (error) {
+        // Fallback: fetch without the profiles join if the FK alias fails.
+        const { data: d2 } = await supabase
+          .from("orders")
+          .select("*, order_items(*)")
+          .eq("id", id)
+          .maybeSingle();
+        setOrder(d2 ? { ...(d2 as any), items: (d2 as any).order_items ?? [], profile: null } : null);
+      } else {
+        setOrder(null);
+      }
+    } catch { /* */ }
+    setLoading(false);
+  }, [id]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { order, loading, refetch: fetch };
+}
+
 type OrderStatusValue = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 type PaymentStatusValue = "pending" | "paid" | "failed" | "refunded";
 
@@ -115,6 +156,18 @@ export async function updatePaymentStatus(orderId: string, paymentStatus: string
   const { error } = await supabase
     .from("orders")
     .update({ payment_status: paymentStatus as PaymentStatusValue, updated_at: new Date().toISOString() })
+    .eq("id", orderId);
+  return { ok: !error, error: error?.message };
+}
+
+export async function updateOrderTracking(orderId: string, carrier: string, trackingNumber: string) {
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      carrier: carrier.trim() || null,
+      tracking_number: trackingNumber.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", orderId);
   return { ok: !error, error: error?.message };
 }

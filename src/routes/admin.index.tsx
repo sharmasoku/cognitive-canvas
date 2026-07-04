@@ -48,7 +48,7 @@ function AdminDashboard() {
       </motion.div>
 
       {/* Stat Cards */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {cards.map((card, i) => {
           const Icon = card.icon;
           return (
@@ -57,7 +57,6 @@ function AdminDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="min-w-[200px] flex-1"
             >
               <GlowCard className="h-full">
                 <div className="flex items-center gap-3 p-5">

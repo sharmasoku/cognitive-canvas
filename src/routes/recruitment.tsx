@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Upload } from "lucide-react";
+import { submitRecruitmentFn } from "@/lib/email.functions";
 
 export const Route = createFileRoute("/recruitment")({
   head: () => ({ meta: [{ title: "Join TeleARGlass - Careers" }] }),
@@ -12,6 +13,8 @@ function Recruitment() {
   const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const timer = useRef<number | null>(null);
 
   const [formData, setFormData] = useState({
@@ -82,7 +85,7 @@ function Recruitment() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
@@ -150,7 +153,25 @@ function Recruitment() {
       return;
     }
 
-    setDone(true);
+    // Persist the application server-side and email the applicant.
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const res = await submitRecruitmentFn({ data: formData });
+      if (!res.ok) {
+        setSubmitError(
+          "We couldn't submit your application right now. Please try again.",
+        );
+        return;
+      }
+      setDone(true);
+    } catch {
+      setSubmitError(
+        "Something went wrong submitting your application. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -404,11 +425,17 @@ function Recruitment() {
 
             </div>
 
+            {submitError && (
+              <div className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                {submitError}
+              </div>
+            )}
+
             <button
-              disabled={!!fileName && progress < 100}
+              disabled={submitting || (!!fileName && progress < 100)}
               className="w-full rounded-xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-white hover:shadow-glow-primary transition disabled:opacity-50 mt-2 select-none cursor-pointer text-center"
             >
-              Submit Application
+              {submitting ? "Submitting…" : "Submit Application"}
             </button>
           </form>
         )}

@@ -50,9 +50,9 @@ function AdminLayout() {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#f8f9fc] flex flex-col lg:flex-row print:block print:min-h-0 print:bg-white">
       {/* Mobile header */}
-      <div className="flex items-center justify-between border-b border-gray-800 bg-[#121620] px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between border-b border-gray-800 bg-[#121620] px-4 py-3 lg:hidden print:hidden">
         <div className="flex items-center gap-2">
           <Logo className="h-12" />
           <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Admin</span>
@@ -62,12 +62,12 @@ function AdminLayout() {
         </button>
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 print:block">
         {/* Sidebar */}
         <motion.aside
           initial={{ x: -280 }}
           animate={{ x: 0 }}
-          className={`fixed inset-y-0 left-0 z-30 w-[260px] bg-[#121620] border-r border-gray-800 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static shrink-0 ${
+          className={`fixed inset-y-0 left-0 z-30 w-[260px] bg-[#121620] border-r border-gray-800 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static shrink-0 print:hidden ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           }`}
         >
@@ -130,7 +130,7 @@ function AdminLayout() {
         )}
 
         {/* Content */}
-        <main className="flex-1 min-w-0 p-6 lg:p-10 overflow-y-auto">
+        <main className="flex-1 min-w-0 p-6 lg:p-10 overflow-y-auto print:p-0 print:overflow-visible">
           <Outlet />
         </main>
       </div>

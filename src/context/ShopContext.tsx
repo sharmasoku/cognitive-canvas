@@ -1,9 +1,24 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Product } from "@/data/products";
 import { persistOrder } from "@/lib/commerce";
+import { sendOrderEmailFn } from "@/lib/email.functions";
 
-export interface CartItem { product: Product; quantity: number; }
-export interface WishlistItem { product: Product; addedAt: string; }
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+export interface WishlistItem {
+  product: Product;
+  addedAt: string;
+}
 
 export interface ShippingAddress {
   fullName: string;
@@ -14,7 +29,8 @@ export interface ShippingAddress {
   phone: string;
 }
 
-export type OrderStatus = "Placed" | "Confirmed" | "Packed" | "Shipped" | "Out for Delivery" | "Delivered";
+export type OrderStatus =
+  "Placed" | "Confirmed" | "Packed" | "Shipped" | "Out for Delivery" | "Delivered";
 
 export interface Order {
   id: string;
@@ -86,12 +102,16 @@ function saveLS<T>(key: string, value: T) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {/* quota */}
+  } catch {
+    /* quota */
+  }
 }
 
 export function ShopProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => loadLS<CartItem[]>(LS.cart, []));
-  const [wishlist, setWishlist] = useState<WishlistItem[]>(() => loadLS<WishlistItem[]>(LS.wishlist, []));
+  const [wishlist, setWishlist] = useState<WishlistItem[]>(() =>
+    loadLS<WishlistItem[]>(LS.wishlist, []),
+  );
   const [compare, setCompare] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>(() => loadLS<Order[]>(LS.orders, []));
   const [coupon, setCoupon] = useState<string | null>(() => loadLS<string | null>(LS.coupon, null));
@@ -139,74 +159,180 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const inWishlist = useCallback((id: string) => wishlist.some((w) => w.product.id === id), [wishlist]);
+  const inWishlist = useCallback(
+    (id: string) => wishlist.some((w) => w.product.id === id),
+    [wishlist],
+  );
 
   const addToCompare = useCallback((p: Product) => {
     let ok = false;
     setCompare((prev) => {
-      if (prev.some((c) => c.id === p.id)) { ok = true; return prev; }
-      if (prev.length >= 3) { ok = false; return prev; }
+      if (prev.some((c) => c.id === p.id)) {
+        ok = true;
+        return prev;
+      }
+      if (prev.length >= 3) {
+        ok = false;
+        return prev;
+      }
       ok = true;
       return [...prev, p];
     });
     return ok;
   }, []);
-  const removeFromCompare = useCallback((id: string) => setCompare((p) => p.filter((c) => c.id !== id)), []);
+  const removeFromCompare = useCallback(
+    (id: string) => setCompare((p) => p.filter((c) => c.id !== id)),
+    [],
+  );
   const inCompare = useCallback((id: string) => compare.some((c) => c.id === id), [compare]);
   const clearCompare = useCallback(() => setCompare([]), []);
 
   const applyCoupon = useCallback((code: string) => {
-    if (code.trim().toUpperCase() === "FUTURE10") { setCoupon("FUTURE10"); return true; }
+    if (code.trim().toUpperCase() === "FUTURE10") {
+      setCoupon("FUTURE10");
+      return true;
+    }
     setCoupon(null);
     return false;
   }, []);
   const clearCoupon = useCallback(() => setCoupon(null), []);
 
-  const cartSubtotal = useMemo(() => cart.reduce((s, c) => s + c.product.price * c.quantity, 0), [cart]);
+  const cartSubtotal = useMemo(
+    () => cart.reduce((s, c) => s + c.product.price * c.quantity, 0),
+    [cart],
+  );
   const cartCount = useMemo(() => cart.reduce((s, c) => s + c.quantity, 0), [cart]);
 
-  const placeOrder = useCallback(async (addr: ShippingAddress, speed: "standard" | "priority") => {
-    const subtotal = cartSubtotal;
-    const shipping = speed === "priority" ? 499 : 0;
-    const discount = Math.round(subtotal * discountPct);
-    const tax = Math.round((subtotal - discount) * 0.18);
-    const total = subtotal - discount + shipping + tax;
+  const placeOrder = useCallback(
+    async (addr: ShippingAddress, speed: "standard" | "priority") => {
+      const subtotal = cartSubtotal;
+      const shipping = speed === "priority" ? 499 : 0;
+      const discount = Math.round(subtotal * discountPct);
+      const tax = Math.round((subtotal - discount) * 0.18);
+      const total = subtotal - discount + shipping + tax;
 
-    // Best-effort server persistence for signed-in users (atomic stock + order).
-    // Guests, or an unconfigured/unseeded DB, fall back to a local order id.
-    const remoteId = await persistOrder({ items: cart, address: addr, speed, shipping, tax, discount });
-    const id = remoteId ?? `TLG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      // Best-effort server persistence for signed-in users (atomic stock + order).
+      // Guests, or an unconfigured/unseeded DB, fall back to a local order id.
+      const remoteId = await persistOrder({
+        items: cart,
+        address: addr,
+        speed,
+        shipping,
+        tax,
+        discount,
+      });
+      const id = remoteId ?? `TLG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
-    const order: Order = {
-      id, items: cart, subtotal, discount, shipping, tax, total,
-      shippingAddress: addr, deliverySpeed: speed, status: "Placed",
-      createdAt: new Date().toISOString(),
-    };
-    setOrders((prev) => [order, ...prev]);
-    setCart([]);
-    setCoupon(null);
-    return order;
-  }, [cart, cartSubtotal, discountPct]);
+      const order: Order = {
+        id,
+        items: cart,
+        subtotal,
+        discount,
+        shipping,
+        tax,
+        total,
+        shippingAddress: addr,
+        deliverySpeed: speed,
+        status: "Placed",
+        createdAt: new Date().toISOString(),
+      };
+      setOrders((prev) => [order, ...prev]);
+      setCart([]);
+      setCoupon(null);
+
+      // Fire-and-forget order confirmation email for all orders (guests + signed-in).
+      // Never block checkout or surface a failure to the shopper.
+      const eta = new Date(Date.now() + (speed === "priority" ? 2 : 5) * 86_400_000);
+      void sendOrderEmailFn({
+        data: {
+          orderId: order.id,
+          items: order.items.map((c) => ({
+            name: c.product.name,
+            qty: c.quantity,
+            unitPrice: c.product.price,
+            lineTotal: c.product.price * c.quantity,
+          })),
+          subtotal,
+          discount,
+          shipping,
+          tax,
+          total,
+          shippingAddress: addr,
+          deliverySpeed: speed,
+          estimatedDate: eta.toLocaleDateString("en-IN", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          }),
+        },
+      }).catch(() => {
+        /* best-effort */
+      });
+
+      return order;
+    },
+    [cart, cartSubtotal, discountPct],
+  );
 
   const getOrder = useCallback((id: string) => orders.find((o) => o.id === id), [orders]);
 
-  const value = useMemo<ShopAPI>(() => ({
-    cart, wishlist, compare, orders, coupon, discountPct,
-    cartOpen, wishlistOpen, searchOpen, setCartOpen, setWishlistOpen, setSearchOpen,
-    addToCart, removeFromCart, updateCartQty,
-    toggleWishlist, inWishlist,
-    addToCompare, removeFromCompare, inCompare, clearCompare,
-    applyCoupon, clearCoupon, placeOrder, getOrder,
-    cartCount, cartSubtotal,
-  }), [
-    cart, wishlist, compare, orders, coupon, discountPct,
-    cartOpen, wishlistOpen, searchOpen,
-    addToCart, removeFromCart, updateCartQty,
-    toggleWishlist, inWishlist,
-    addToCompare, removeFromCompare, inCompare, clearCompare,
-    applyCoupon, clearCoupon, placeOrder, getOrder,
-    cartCount, cartSubtotal,
-  ]);
+  const value = useMemo<ShopAPI>(
+    () => ({
+      cart,
+      wishlist,
+      compare,
+      orders,
+      coupon,
+      discountPct,
+      cartOpen,
+      wishlistOpen,
+      searchOpen,
+      setCartOpen,
+      setWishlistOpen,
+      setSearchOpen,
+      addToCart,
+      removeFromCart,
+      updateCartQty,
+      toggleWishlist,
+      inWishlist,
+      addToCompare,
+      removeFromCompare,
+      inCompare,
+      clearCompare,
+      applyCoupon,
+      clearCoupon,
+      placeOrder,
+      getOrder,
+      cartCount,
+      cartSubtotal,
+    }),
+    [
+      cart,
+      wishlist,
+      compare,
+      orders,
+      coupon,
+      discountPct,
+      cartOpen,
+      wishlistOpen,
+      searchOpen,
+      addToCart,
+      removeFromCart,
+      updateCartQty,
+      toggleWishlist,
+      inWishlist,
+      addToCompare,
+      removeFromCompare,
+      inCompare,
+      clearCompare,
+      applyCoupon,
+      clearCoupon,
+      placeOrder,
+      getOrder,
+      cartCount,
+      cartSubtotal,
+    ],
+  );
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
