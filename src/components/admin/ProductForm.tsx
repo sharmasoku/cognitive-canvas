@@ -60,6 +60,7 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
   const [uploading, setUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<ProductInput | null>(null);
 
   const handleNameChange = (v: string) => {
     setName(v);
@@ -127,6 +128,14 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
       faqs: cleanFaqs,
     };
 
+    if (isEdit) {
+      setPendingPayload(payload);
+      return;
+    }
+    await doSave(payload);
+  };
+
+  const doSave = async (payload: ProductInput) => {
     setSaving(true);
     const res = isEdit ? await updateProduct(product!.id, payload) : await createProduct(payload);
     setSaving(false);
@@ -139,6 +148,7 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <motion.div
         initial={{ x: 60, opacity: 0 }}
@@ -359,6 +369,33 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
         </form>
       </motion.div>
     </div>
+
+    {pendingPayload && (
+      <div className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" onClick={() => setPendingPayload(null)}>
+        <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-lg font-bold text-gray-900">Save changes?</h3>
+          <p className="mt-2 text-sm text-gray-500">
+            Save changes to <span className="font-semibold text-gray-700">{name}</span>? This will update the live product listing.
+          </p>
+          <div className="mt-5 flex justify-end gap-3">
+            <button onClick={() => setPendingPayload(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                const payload = pendingPayload;
+                setPendingPayload(null);
+                await doSave(payload);
+              }}
+              className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            >
+              Save changes
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

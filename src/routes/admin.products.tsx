@@ -23,6 +23,7 @@ function AdminProductsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<AdminProduct | null>(null);
+  const [confirmToggle, setConfirmToggle] = useState<{ product: AdminProduct; type: "active" | "featured" } | null>(null);
 
   const categories = [...new Set(products.map((p) => p.category))];
 
@@ -39,6 +40,21 @@ function AdminProductsPage() {
     const { ok, error } = await deleteProduct(p.id);
     if (ok) { toast.success("Product deleted"); setConfirmDelete(null); refetch(); }
     else toast.error(error || "Failed to delete");
+  };
+
+  const handleConfirmToggle = async () => {
+    if (!confirmToggle) return;
+    const { product, type } = confirmToggle;
+    setConfirmToggle(null);
+    if (type === "active") {
+      const { ok, error } = await toggleProductActive(product.id, !product.is_active);
+      if (ok) { toast.success(`Product ${!product.is_active ? "activated" : "deactivated"}`); refetch(); }
+      else toast.error(error || "Failed");
+    } else {
+      const { ok, error } = await toggleProductFeatured(product.id, !product.is_featured);
+      if (ok) { toast.success(product.is_featured ? "Removed from homepage" : "Now showing on homepage"); refetch(); }
+      else toast.error(error || "Failed");
+    }
   };
 
   if (loading) {
@@ -144,11 +160,7 @@ function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={async () => {
-                          const { ok, error } = await toggleProductActive(product.id, !product.is_active);
-                          if (ok) { toast.success(`Product ${!product.is_active ? "activated" : "deactivated"}`); refetch(); }
-                          else toast.error(error || "Failed");
-                        }}
+                        onClick={() => setConfirmToggle({ product, type: "active" })}
                         className="transition hover:opacity-80"
                       >
                         {product.is_active
@@ -158,11 +170,7 @@ function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={async () => {
-                          const { ok, error } = await toggleProductFeatured(product.id, !product.is_featured);
-                          if (ok) { toast.success(product.is_featured ? "Removed from homepage" : "Now showing on homepage"); refetch(); }
-                          else toast.error(error || "Failed");
-                        }}
+                        onClick={() => setConfirmToggle({ product, type: "featured" })}
                         title="Show on homepage"
                         className="transition hover:opacity-80"
                       >
@@ -234,6 +242,38 @@ function AdminProductsPage() {
             <div className="mt-5 flex justify-end gap-3">
               <button onClick={() => setConfirmDelete(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">Cancel</button>
               <button onClick={() => handleDelete(confirmDelete)} className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active / Homepage toggle confirmation */}
+      {confirmToggle && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setConfirmToggle(null)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900">
+              {confirmToggle.type === "active"
+                ? confirmToggle.product.is_active ? "Deactivate product?" : "Activate product?"
+                : confirmToggle.product.is_featured ? "Remove from homepage?" : "Show on homepage?"}
+            </h3>
+            <p className="mt-2 text-sm text-gray-500">
+              {confirmToggle.type === "active" ? (
+                <>
+                  Are you sure you want to {confirmToggle.product.is_active ? "deactivate" : "activate"}{" "}
+                  <span className="font-semibold text-gray-700">{confirmToggle.product.name}</span>?
+                  {confirmToggle.product.is_active && " It will no longer be visible to customers."}
+                </>
+              ) : (
+                <>
+                  Are you sure you want to {confirmToggle.product.is_featured ? "remove" : "add"}{" "}
+                  <span className="font-semibold text-gray-700">{confirmToggle.product.name}</span>{" "}
+                  {confirmToggle.product.is_featured ? "from" : "to"} the homepage?
+                </>
+              )}
+            </p>
+            <div className="mt-5 flex justify-end gap-3">
+              <button onClick={() => setConfirmToggle(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">Cancel</button>
+              <button onClick={handleConfirmToggle} className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">Confirm</button>
             </div>
           </div>
         </div>

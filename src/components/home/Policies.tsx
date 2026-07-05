@@ -1,5 +1,12 @@
 import { motion } from "framer-motion";
 import { Ban, ShieldCheck, ScrollText } from "lucide-react";
+import { GlowCard } from "@/components/ui/GlowCard";
+
+const GLOW_COLORS_BY_TITLE: Record<string, string> = {
+  "Return & Refund Policy": "265 85 62",
+  "Security & Privacy Policy": "221 83 53",
+  "Terms & Conditions": "160 84 42",
+};
 
 const POLICIES = [
   {
@@ -32,7 +39,7 @@ const POLICIES = [
 
 export function Policies() {
   return (
-    <section className="py-24 lg:py-32">
+    <section id="policies" className="scroll-mt-28 py-24 lg:py-32">
       <div className="section-container">
         <div className="max-w-2xl">
           <span className="text-xs font-mono uppercase tracking-widest text-primary">Policies</span>
@@ -48,23 +55,27 @@ export function Policies() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="relative overflow-hidden rounded-3xl border border-border-light bg-background p-8 shadow-card"
+              className="h-full"
             >
-              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-primary opacity-10 blur-3xl" />
-              <div className="relative">
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-violet text-primary">
-                  <p.icon className="h-6 w-6" />
+              <GlowCard glowColor={GLOW_COLORS_BY_TITLE[p.title]} className="h-full">
+                <div className="relative overflow-hidden p-8">
+                  <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-primary opacity-10 blur-3xl" />
+                  <div className="relative">
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-violet text-primary">
+                      <p.icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-bold">{p.title}</h3>
+                    <ul className="mt-4 space-y-3">
+                      {p.points.map((pt, j) => (
+                        <li key={j} className="flex gap-2.5 text-sm leading-relaxed text-text-secondary">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                          <span>{pt}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <h3 className="mt-5 text-xl font-bold">{p.title}</h3>
-                <ul className="mt-4 space-y-3">
-                  {p.points.map((pt, j) => (
-                    <li key={j} className="flex gap-2.5 text-sm leading-relaxed text-text-secondary">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              </GlowCard>
             </motion.div>
           ))}
         </div>

@@ -52,13 +52,19 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  const iconBtnClass = "text-white/70 hover:bg-white/10 hover:text-white";
+
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-        scrolled ? "glass border-b border-primary/10" : "bg-transparent"
+      // Always the violet-dark stage — mirrors Hero/Footer instead of falling back to a white/transparent/grey bar.
+      // Opacity is kept high (85-95%) so the tint reads as violet on its own, regardless of what's behind it.
+      className={`sticky top-0 z-40 w-full border-b transition-all duration-300 ${
+        scrolled
+          ? "border-primary/25 bg-[#170b34]/95 shadow-[0_8px_30px_-10px_rgba(124,58,237,0.45)] backdrop-blur-xl"
+          : "border-primary/15 bg-[#170b34]/85 backdrop-blur-md"
       }`}
     >
       <div className="section-container flex items-center justify-between gap-4 py-2">
@@ -74,7 +80,7 @@ export function Navbar() {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="relative px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-foreground"
+                  className="relative px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:text-white"
                 >
                   {l.label}
                   {active && (
@@ -94,14 +100,14 @@ export function Navbar() {
           <button
             onClick={() => setSearchOpen(true)}
             aria-label="Search"
-            className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+            className={`relative grid h-9 w-9 place-items-center rounded-lg transition ${iconBtnClass}`}
           >
             <Search className="h-4.5 w-4.5" />
           </button>
           <button
             onClick={() => setWishlistOpen(true)}
             aria-label="Wishlist"
-            className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+            className={`relative grid h-9 w-9 place-items-center rounded-lg transition ${iconBtnClass}`}
           >
             <Heart className="h-4.5 w-4.5" />
             {wishlist.length > 0 && <CountBadge>{wishlist.length}</CountBadge>}
@@ -109,7 +115,7 @@ export function Navbar() {
           <button
             onClick={() => setCartOpen(true)}
             aria-label="Cart"
-            className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+            className={`relative grid h-9 w-9 place-items-center rounded-lg transition ${iconBtnClass}`}
           >
             <ShoppingBag className="h-4.5 w-4.5" />
             {cartCount > 0 && <CountBadge>{cartCount}</CountBadge>}
@@ -119,7 +125,7 @@ export function Navbar() {
             {user ? (
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+                className={`grid h-9 w-9 place-items-center rounded-lg transition ${iconBtnClass}`}
                 aria-label="User profile"
               >
                 <User className="h-4.5 w-4.5" />
@@ -127,7 +133,7 @@ export function Navbar() {
             ) : (
               <Link
                 to="/auth"
-                className="grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
+                className={`grid h-9 w-9 place-items-center rounded-lg transition ${iconBtnClass}`}
                 aria-label="Sign in"
               >
                 <User className="h-4.5 w-4.5" />
@@ -202,7 +208,7 @@ export function Navbar() {
           <button
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
-            className="ml-1 grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground lg:hidden"
+            className={`ml-1 grid h-9 w-9 place-items-center rounded-lg transition lg:hidden ${iconBtnClass}`}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -213,7 +219,7 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="border-t border-border-light bg-background/95 backdrop-blur lg:hidden"
+          className="border-t border-primary/15 bg-[#170b34]/95 backdrop-blur-xl lg:hidden"
         >
           <nav className="section-container flex flex-col py-2">
             {LINKS.map((l) => {
@@ -222,10 +228,8 @@ export function Navbar() {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className={`rounded-lg px-3 py-3 text-sm font-medium transition hover:bg-surface-violet ${
-                    active
-                      ? "text-primary font-semibold"
-                      : "text-text-secondary hover:text-foreground"
+                  className={`rounded-lg px-3 py-3 text-sm font-medium transition hover:bg-white/10 ${
+                    active ? "text-[#a78bfa] font-semibold" : "text-white/70 hover:text-white"
                   }`}
                 >
                   {l.label}

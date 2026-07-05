@@ -1,6 +1,10 @@
 import { motion } from "framer-motion";
 import { Compass, Gamepad2, GraduationCap } from "lucide-react";
 import logo from "@/assets/logo.png";
+import BorderGlow from "@/components/ui/BorderGlow";
+import { GlowCard } from "@/components/ui/GlowCard";
+
+const GLOW_COLORS = ["#7c3aed", "#2563eb", "#10b981"];
 
 export function Mission() {
   return (
@@ -49,27 +53,39 @@ export function Mission() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="rounded-[32px] border border-[#e5e5df] bg-white p-8 sm:p-12 shadow-soft max-w-4xl mx-auto"
+          className="max-w-4xl mx-auto"
         >
-          <p className="text-[#3c3c36] text-lg sm:text-xl leading-relaxed text-justify font-sans">
-            At <strong>TeleARGlass</strong>, We are Functioning Sustainable Innovation by building
-            the User Friendly TeleARGlass Minimum Viable Products that Works with Technologies
-            including <strong>Indian ARMY & Defence</strong>, <strong>ISRO Communication</strong>,{" "}
-            <strong>Forensic Science Laboratories</strong>, Social Media, Gaming, Mobile, Computer,
-            Home Automation, Auto EV & Robotics, Education etc. From User's Think, Immersive AR
-            Display, Speaking Accessibility & More.
-          </p>
+          <BorderGlow
+            backgroundColor="#ffffff"
+            borderRadius={32}
+            glowColor="265 85 62"
+            glowIntensity={1}
+            glowRadius={30}
+            coneSpread={22}
+            colors={GLOW_COLORS}
+          >
+            <div className="p-8 sm:p-12">
+              <p className="text-[#3c3c36] text-lg sm:text-xl leading-relaxed text-justify font-sans">
+                At <strong>TeleARGlass</strong>, We are Functioning Sustainable Innovation by building
+                the User Friendly TeleARGlass Minimum Viable Products that Works with Technologies
+                including <strong>Indian ARMY & Defence</strong>, <strong>ISRO Communication</strong>,{" "}
+                <strong>Forensic Science Laboratories</strong>, Social Media, Gaming, Mobile, Computer,
+                Home Automation, Auto EV & Robotics, Education etc. From User's Think, Immersive AR
+                Display, Speaking Accessibility & More.
+              </p>
 
-          <div className="my-8 border-t border-[#e5e5df]/60" />
+              <div className="my-8 border-t border-[#e5e5df]/60" />
 
-          <p className="text-[#3c3c36] text-lg sm:text-xl leading-relaxed text-justify font-sans">
-            It works by Our Operating System <strong>PanOS</strong> & its{" "}
-            <strong>33 Customize Apps</strong>. The TeleARGlass' User Interface(UI) Allows to take
-            Think Inputs from Targeted Head Skin Nerve pulse Vibrations through inbuilt Telepathy
-            Sensor in its frame to generate the Meaningful Output. Thus, TeleARGlass converts our
-            Thought into Write, Speak, Image, Music, Video Selection & appropriate Controlled
-            Actions.
-          </p>
+              <p className="text-[#3c3c36] text-lg sm:text-xl leading-relaxed text-justify font-sans">
+                It works by Our Operating System <strong>PanOS</strong> & its{" "}
+                <strong>33 Customize Apps</strong>. The TeleARGlass' User Interface(UI) Allows to take
+                Think Inputs from Targeted Head Skin Nerve pulse Vibrations through inbuilt Telepathy
+                Sensor in its frame to generate the Meaningful Output. Thus, TeleARGlass converts our
+                Thought into Write, Speak, Image, Music, Video Selection & appropriate Controlled
+                Actions.
+              </p>
+            </div>
+          </BorderGlow>
         </motion.div>
 
         {/* WhatsApp Banner */}
@@ -150,20 +166,24 @@ export function Mission() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.15 }}
-              className="group relative overflow-hidden rounded-2xl border border-border-light bg-background p-8 transition hover:-translate-y-1 hover:shadow-card-hover"
+              className="group h-full"
             >
-              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
-                <GraduationCap className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-xl font-semibold font-heading text-foreground">
-                Interactive learning experiences
-              </h3>
-              <p className="mt-3 text-sm text-text-secondary leading-relaxed">
-                Immerse yourself in knowledge with our interactive learning tools. Our smart glasses
-                enhance educational experiences by overlaying digital information onto the real
-                world.
-              </p>
+              <GlowCard glowColor="265 85 62" className="h-full">
+                <div className="relative flex h-full flex-col overflow-hidden p-8">
+                  <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                    <GraduationCap className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold font-heading text-foreground">
+                    Interactive learning experiences
+                  </h3>
+                  <p className="mt-3 text-sm text-text-secondary leading-relaxed">
+                    Immerse yourself in knowledge with our interactive learning tools. Our smart glasses
+                    enhance educational experiences by overlaying digital information onto the real
+                    world.
+                  </p>
+                </div>
+              </GlowCard>
             </motion.div>
 
             {/* Card 2: Navigation */}
@@ -172,19 +192,23 @@ export function Mission() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.25 }}
-              className="group relative overflow-hidden rounded-2xl border border-border-light bg-background p-8 transition hover:-translate-y-1 hover:shadow-card-hover"
+              className="group h-full"
             >
-              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-secondary/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary/10 text-secondary transition-transform duration-300 group-hover:scale-110">
-                <Compass className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-xl font-semibold font-heading text-foreground">
-                Smart navigation assistance
-              </h3>
-              <p className="mt-3 text-sm text-text-secondary leading-relaxed">
-                TeleARGlass base model works with Telepathy app, Music & Video Streaming, Home
-                Automation, and Car driving controls.
-              </p>
+              <GlowCard glowColor="221 83 53" className="h-full">
+                <div className="relative flex h-full flex-col overflow-hidden p-8">
+                  <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-secondary/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-secondary/10 text-secondary transition-transform duration-300 group-hover:scale-110">
+                    <Compass className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold font-heading text-foreground">
+                    Smart navigation assistance
+                  </h3>
+                  <p className="mt-3 text-sm text-text-secondary leading-relaxed">
+                    TeleARGlass base model works with Telepathy app, Music & Video Streaming, Home
+                    Automation, and Car driving controls.
+                  </p>
+                </div>
+              </GlowCard>
             </motion.div>
 
             {/* Card 3: Gaming */}
@@ -193,19 +217,23 @@ export function Mission() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.35 }}
-              className="group relative overflow-hidden rounded-2xl border border-border-light bg-background p-8 transition hover:-translate-y-1 hover:shadow-card-hover"
+              className="group h-full"
             >
-              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10 text-accent transition-transform duration-300 group-hover:scale-110">
-                <Gamepad2 className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-xl font-semibold font-heading text-foreground">
-                Enhanced gaming adventures
-              </h3>
-              <p className="mt-3 text-sm text-text-secondary leading-relaxed">
-                Step into a new realm of gaming with augmented reality. Experience immersive
-                gameplay blending virtual and real worlds.
-              </p>
+              <GlowCard glowColor="160 84 42" className="h-full">
+                <div className="relative flex h-full flex-col overflow-hidden p-8">
+                  <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10 text-accent transition-transform duration-300 group-hover:scale-110">
+                    <Gamepad2 className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold font-heading text-foreground">
+                    Enhanced gaming adventures
+                  </h3>
+                  <p className="mt-3 text-sm text-text-secondary leading-relaxed">
+                    Step into a new realm of gaming with augmented reality. Experience immersive
+                    gameplay blending virtual and real worlds.
+                  </p>
+                </div>
+              </GlowCard>
             </motion.div>
           </div>
         </div>
