@@ -43,6 +43,13 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
   const [sku, setSku] = useState(product?.sku ?? "");
   const [stock, setStock] = useState(product ? String(product.stock) : "100");
   const [isActive, setIsActive] = useState(product?.is_active ?? true);
+  const [isFeatured, setIsFeatured] = useState(product?.is_featured ?? false);
+  const [featuredOrder, setFeaturedOrder] = useState(
+    product?.featured_order != null ? String(product.featured_order) : "",
+  );
+  const [partPaymentEnabled, setPartPaymentEnabled] = useState(product?.advance_type != null);
+  const [advanceType, setAdvanceType] = useState<"percent" | "fixed">(product?.advance_type ?? "percent");
+  const [advanceValue, setAdvanceValue] = useState(product?.advance_value != null ? String(product.advance_value) : "");
   const [imageUrl, setImageUrl] = useState(product?.image_url ?? "");
   const [gallery, setGallery] = useState<string[]>(product?.gallery ?? []);
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>(
@@ -87,6 +94,14 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
     const specObject: Record<string, string> = {};
     for (const s of specs) if (s.key.trim()) specObject[s.key.trim()] = s.value;
     const cleanFaqs = faqs.filter((f) => f.question.trim());
+    const featuredOrderNum = featuredOrder.trim() ? parseInt(featuredOrder, 10) : null;
+    const advanceValueNum = parseInt(advanceValue, 10);
+    if (partPaymentEnabled && (Number.isNaN(advanceValueNum) || advanceValueNum < 0)) {
+      toast.error("Enter a valid advance amount"); return;
+    }
+    if (partPaymentEnabled && advanceType === "percent" && advanceValueNum > 100) {
+      toast.error("Advance percentage can't exceed 100"); return;
+    }
 
     const payload: ProductInput = {
       slug: slug.trim(),
@@ -102,6 +117,10 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
       sku: sku.trim() || null,
       stock: Number.isNaN(stockNum) ? 0 : stockNum,
       is_active: isActive,
+      is_featured: isFeatured,
+      featured_order: featuredOrderNum != null && !Number.isNaN(featuredOrderNum) ? featuredOrderNum : null,
+      advance_type: partPaymentEnabled ? advanceType : null,
+      advance_value: partPaymentEnabled ? advanceValueNum : null,
       image_url: imageUrl || null,
       gallery,
       specifications: specObject,
@@ -178,6 +197,21 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
               <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
               Active (visible on store)
             </label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                Show on homepage
+              </label>
+              {isFeatured && (
+                <input
+                  type="number"
+                  value={featuredOrder}
+                  onChange={(e) => setFeaturedOrder(e.target.value)}
+                  placeholder="Order (lower shows first)"
+                  className={`${inputCls} w-56`}
+                />
+              )}
+            </div>
           </Section>
 
           {/* Pricing */}
@@ -196,6 +230,23 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
                 <input type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} className={inputCls} placeholder="100" />
               </FieldWrap>
             </div>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input type="checkbox" checked={partPaymentEnabled} onChange={(e) => setPartPaymentEnabled(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+              Allow part payment (pay advance now, rest before delivery)
+            </label>
+            {partPaymentEnabled && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FieldWrap label="Advance type">
+                  <select value={advanceType} onChange={(e) => setAdvanceType(e.target.value as "percent" | "fixed")} className={inputCls}>
+                    <option value="percent">Percentage of price</option>
+                    <option value="fixed">Fixed amount (₹)</option>
+                  </select>
+                </FieldWrap>
+                <FieldWrap label={advanceType === "percent" ? "Advance percentage (%)" : "Advance amount (₹)"}>
+                  <input type="number" min="0" max={advanceType === "percent" ? 100 : undefined} value={advanceValue} onChange={(e) => setAdvanceValue(e.target.value)} className={inputCls} placeholder={advanceType === "percent" ? "20" : "5000"} />
+                </FieldWrap>
+              </div>
+            )}
           </Section>
 
           {/* Images */}

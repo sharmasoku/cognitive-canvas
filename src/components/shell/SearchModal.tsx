@@ -3,11 +3,12 @@ import { Link } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useShop } from "@/context/ShopContext";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { inr } from "@/lib/format";
 
 export function SearchModal() {
   const { searchOpen, setSearchOpen } = useShop();
+  const { products } = useProducts();
   const [q, setQ] = useState("");
   useEffect(() => { if (!searchOpen) setQ(""); }, [searchOpen]);
 
@@ -20,7 +21,7 @@ export function SearchModal() {
       p.technology.toLowerCase().includes(s) ||
       p.tagline.toLowerCase().includes(s)
     );
-  }, [q]);
+  }, [products, q]);
 
   return (
     <AnimatePresence>

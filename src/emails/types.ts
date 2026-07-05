@@ -30,6 +30,21 @@ export interface OrderEmailPayload {
   deliverySpeed: "standard" | "priority";
   /** Human-readable estimated delivery date, e.g. "Mon, 7 Jul". */
   estimatedDate: string;
+  paymentPlan?: "full" | "partial";
+  amountPaidNow?: number;
+  amountDueLater?: number;
+}
+
+export interface SubscriptionEmailPayload {
+  subscriptionId: string;
+  customerName: string;
+  customerEmail: string;
+  planName: string;
+  priceInr: number;
+  billingPeriod: "month" | "year";
+  /** Human-readable dates, e.g. "Mon, 7 Jul 2026". */
+  startedDate: string;
+  renewalDate: string;
 }
 
 export interface RecruitmentEmailPayload {

@@ -8,21 +8,19 @@ import {
   Scripts,
   useRouterState,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import logoUrl from "../assets/logo.png";
 import { reportError } from "../lib/error-reporting";
 import { ShopProvider, useShop } from "../context/ShopContext";
 import { LenisProvider } from "../components/shell/LenisProvider";
-import { Preloader } from "../components/shell/Preloader";
 import { AnnouncementBar } from "../components/shell/AnnouncementBar";
 import { Navbar } from "../components/shell/Navbar";
 import { Footer } from "../components/shell/Footer";
 import { CartDrawer } from "../components/shell/CartDrawer";
 import { WishlistDrawer } from "../components/shell/WishlistDrawer";
 import { SearchModal } from "../components/shell/SearchModal";
-import { CompareBar } from "../components/shell/CompareBar";
 import { ParticleField } from "../components/home/ParticleField";
 
 function NotFoundComponent() {
@@ -147,17 +145,10 @@ function RootComponent() {
 
 function Shell() {
   const { cartOpen, wishlistOpen, searchOpen } = useShop();
-  const [showPreloader, setShowPreloader] = useState(false);
   const { location } = useRouterState();
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const seen = window.sessionStorage.getItem("tele_preloader_completed");
-    if (!seen) setShowPreloader(true);
-  }, []);
-
-  const drawerOpen = cartOpen || wishlistOpen || searchOpen || showPreloader;
+  const drawerOpen = cartOpen || wishlistOpen || searchOpen;
 
   if (isAdminRoute) {
     return (
@@ -171,12 +162,6 @@ function Shell() {
     <>
       <ParticleField />
       <LenisProvider disabled={drawerOpen} />
-      {showPreloader && (
-        <Preloader onDone={() => {
-          if (typeof window !== "undefined") window.sessionStorage.setItem("tele_preloader_completed", "1");
-          setShowPreloader(false);
-        }} />
-      )}
       <AnnouncementBar />
       <Navbar />
       <main className="min-h-[60vh]">
@@ -186,7 +171,6 @@ function Shell() {
       <CartDrawer />
       <WishlistDrawer />
       <SearchModal />
-      <CompareBar />
     </>
   );
 }

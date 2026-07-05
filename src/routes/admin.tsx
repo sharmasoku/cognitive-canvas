@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, Package, ShoppingCart, MessageSquare,
+  LayoutDashboard, Package, ShoppingCart, MessageSquare, KeyRound,
   Loader2, Menu, X
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,7 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/products", label: "Products", icon: Package, exact: false },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart, exact: false },
+  { to: "/admin/license", label: "License", icon: KeyRound, exact: false },
   { to: "/admin/messages", label: "Messages", icon: MessageSquare, exact: false },
 ] as const;
 

@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { z } from "zod";
 import {
   User, Package, MapPin, Heart, Star, Loader2, LogOut, ChevronRight,
-  Pencil, Trash2, Plus, Check, Phone, Mail, Calendar, ShieldCheck,
+  Pencil, Trash2, Plus, Check, Phone, Mail, Calendar, ShieldCheck, KeyRound,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserOrders, type DbOrder } from "@/hooks/useOrders";
@@ -12,18 +13,15 @@ import {
   deleteAddress, upsertAddress,
   type UserAddress,
 } from "@/hooks/useAdminData";
+import { useUserSubscription } from "@/hooks/useLicense";
 import { useShop } from "@/context/ShopContext";
 import { GlowCard } from "@/components/ui/GlowCard";
+import { SubscriptionDetailsCard } from "@/components/shared/SubscriptionDetailsCard";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, shortDate } from "@/lib/format";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "My Account — TeleARGlass" }] }),
-  component: AccountPage,
-});
-
-type Tab = "profile" | "orders" | "addresses" | "wishlist" | "reviews";
+type Tab = "profile" | "orders" | "addresses" | "wishlist" | "reviews" | "subscription";
 
 const TABS: { id: Tab; label: string; icon: typeof User }[] = [
   { id: "profile", label: "Profile", icon: User },
@@ -31,12 +29,24 @@ const TABS: { id: Tab; label: string; icon: typeof User }[] = [
   { id: "addresses", label: "Addresses", icon: MapPin },
   { id: "wishlist", label: "Wishlist", icon: Heart },
   { id: "reviews", label: "Reviews", icon: Star },
+  { id: "subscription", label: "Subscription", icon: KeyRound },
 ];
+
+const accountSearchSchema = z.object({
+  tab: z.enum(["profile", "orders", "addresses", "wishlist", "reviews", "subscription"]).optional(),
+});
+
+export const Route = createFileRoute("/account")({
+  head: () => ({ meta: [{ title: "My Account — TeleARGlass" }] }),
+  validateSearch: accountSearchSchema,
+  component: AccountPage,
+});
 
 function AccountPage() {
   const navigate = useNavigate();
+  const { tab } = Route.useSearch();
   const { user, profile, loading: authLoading, signOut, refreshProfile } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [activeTab, setActiveTab] = useState<Tab>(tab ?? "profile");
 
   // Overview stats (best-effort; hooks guard on a missing user id).
   const { orders: dbOrders } = useUserOrders(user?.id);
@@ -44,6 +54,7 @@ function AccountPage() {
   const { wishlist, orders: localOrders } = useShop();
   const dbOrderIds = new Set(dbOrders.map((o) => o.id));
   const orderCount = dbOrders.length + localOrders.filter((o) => !dbOrderIds.has(o.id)).length;
+  const { subscription } = useUserSubscription(user?.id);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -78,10 +89,11 @@ function AccountPage() {
           </p>
 
           {/* Overview stats */}
-          <div className="mt-6 grid grid-cols-2 items-stretch gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 items-stretch gap-3 sm:grid-cols-5">
             <StatCard icon={Package} label="Orders" value={orderCount} onClick={() => setActiveTab("orders")} />
             <StatCard icon={Heart} label="Wishlist" value={wishlist.length} onClick={() => setActiveTab("wishlist")} />
             <StatCard icon={Star} label="Reviews" value={myReviews.length} onClick={() => setActiveTab("reviews")} />
+            <StatCard icon={KeyRound} label="License" value={subscription?.status === "active" ? "Active" : "None"} onClick={() => setActiveTab("subscription")} />
             <StatCard icon={Calendar} label="Member since" value={profile?.created_at ? shortDate(profile.created_at) : "—"} />
           </div>
         </motion.div>
@@ -177,6 +189,15 @@ function AccountPage() {
               {activeTab === "reviews" && (
                 <TabPanel key="reviews">
                   <ReviewsTab userId={user.id} />
+                </TabPanel>
+              )}
+              {activeTab === "subscription" && (
+                <TabPanel key="subscription">
+                  <SubscriptionTab
+                    userId={user.id}
+                    customerName={profile?.full_name || user.user_metadata?.full_name}
+                    customerEmail={profile?.email || user.email}
+                  />
                 </TabPanel>
               )}
             </AnimatePresence>
@@ -583,6 +604,43 @@ function ReviewsTab({ userId }: { userId: string }) {
   );
 }
 
+/* ═══════════════════════════════════════════════ Subscription Tab ═══ */
+function SubscriptionTab({ userId, customerName, customerEmail }: { userId: string; customerName?: string | null; customerEmail?: string | null }) {
+  const { subscription, loading } = useUserSubscription(userId);
+
+  if (loading) return <LoadingSpinner />;
+
+  if (!subscription) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader title="Subscription" subtitle="Your TeleLicence enterprise plan" />
+        <EmptyState icon={KeyRound} title="No active subscription" subtitle="Subscribe to the TeleARGlass enterprise patent license to see it here." />
+        <Link to="/licence" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition">
+          View TeleLicence <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  const active = subscription.status === "active";
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Subscription" subtitle="Your TeleLicence enterprise plan" />
+      <SubscriptionDetailsCard
+        subscription={subscription}
+        customerName={customerName}
+        customerEmail={customerEmail}
+        footer={!active && (
+          <Link to="/licence" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition">
+            Renew license <ChevronRight className="h-4 w-4" />
+          </Link>
+        )}
+      />
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════ Shared Components ═══ */
 function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
@@ -637,6 +695,8 @@ function StatusBadge({ status }: { status: string }) {
     Confirmed: "bg-blue-100 text-blue-800",
     Shipped: "bg-purple-100 text-purple-800",
     Delivered: "bg-green-100 text-green-800",
+    active: "bg-green-100 text-green-800",
+    expired: "bg-red-100 text-red-800",
   };
   return (
     <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${colors[status] ?? "bg-gray-100 text-gray-700"}`}>

@@ -13,7 +13,6 @@ export function Footer() {
             <Logo className="h-11" />
             <div>
               <div className="text-base font-bold">TeleARGlass 2.0</div>
-              <div className="text-xs text-text-muted">Cognitive interfaces, shipped from Bengaluru.</div>
             </div>
           </div>
           <p className="mt-6 max-w-sm text-sm text-text-secondary">
@@ -29,7 +28,6 @@ export function Footer() {
         </div>
         <FooterColumn title="Product" links={[
           { to: "/products", label: "Catalogue" },
-          { to: "/compare", label: "Compare" },
           { to: "/licence", label: "Licensing" },
         ]} />
         <FooterColumn title="Company" links={[
@@ -43,9 +41,8 @@ export function Footer() {
         ]} />
       </div>
       <div className="border-t border-border-light">
-        <div className="section-container flex flex-col items-center justify-between gap-3 py-6 text-xs text-text-muted md:flex-row">
+        <div className="section-container flex flex-col items-center justify-center gap-3 py-6 text-xs text-text-muted md:flex-row">
           <span>© 2026 TeleARGlass Pvt. Ltd. — All rights reserved.</span>
-          <span className="font-mono">Made in Bengaluru, India</span>
         </div>
       </div>
     </footer>

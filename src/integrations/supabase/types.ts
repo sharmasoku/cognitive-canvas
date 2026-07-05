@@ -124,6 +124,10 @@ export type Database = {
           specifications: Json
           faqs: Json
           is_active: boolean
+          is_featured: boolean
+          featured_order: number | null
+          advance_type: string | null
+          advance_value: number | null
           created_at: string
           updated_at: string
         }
@@ -146,6 +150,10 @@ export type Database = {
           specifications?: Json
           faqs?: Json
           is_active?: boolean
+          is_featured?: boolean
+          featured_order?: number | null
+          advance_type?: string | null
+          advance_value?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -168,6 +176,10 @@ export type Database = {
           specifications?: Json
           faqs?: Json
           is_active?: boolean
+          is_featured?: boolean
+          featured_order?: number | null
+          advance_type?: string | null
+          advance_value?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -187,6 +199,9 @@ export type Database = {
           delivery_speed: string
           payment_status: Database["public"]["Enums"]["payment_status"]
           payment_method: string
+          payment_plan: string
+          amount_paid_inr: number
+          amount_due_inr: number
           carrier: string | null
           tracking_number: string | null
           notes: string | null
@@ -206,6 +221,9 @@ export type Database = {
           delivery_speed?: string
           payment_status?: Database["public"]["Enums"]["payment_status"]
           payment_method?: string
+          payment_plan?: string
+          amount_paid_inr?: number
+          amount_due_inr?: number
           carrier?: string | null
           tracking_number?: string | null
           notes?: string | null
@@ -225,6 +243,9 @@ export type Database = {
           delivery_speed?: string
           payment_status?: Database["public"]["Enums"]["payment_status"]
           payment_method?: string
+          payment_plan?: string
+          amount_paid_inr?: number
+          amount_due_inr?: number
           carrier?: string | null
           tracking_number?: string | null
           notes?: string | null
@@ -274,6 +295,139 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      order_payments: {
+        Row: {
+          id: string
+          order_id: string
+          type: string
+          amount_inr: number
+          method: string | null
+          status: string
+          gateway: string | null
+          gateway_ref: string | null
+          collected_by: string | null
+          paid_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          type: string
+          amount_inr: number
+          method?: string | null
+          status?: string
+          gateway?: string | null
+          gateway_ref?: string | null
+          collected_by?: string | null
+          paid_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          type?: string
+          amount_inr?: number
+          method?: string | null
+          status?: string
+          gateway?: string | null
+          gateway_ref?: string | null
+          collected_by?: string | null
+          paid_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      license_plans: {
+        Row: {
+          id: string
+          name: string
+          price_inr: number
+          billing_period: string
+          features: Json
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          price_inr: number
+          billing_period?: string
+          features?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          price_inr?: number
+          billing_period?: string
+          features?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      license_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          plan_id: string | null
+          plan_name: string
+          price_inr: number
+          billing_period: string
+          status: string
+          started_at: string
+          renews_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_id?: string | null
+          plan_name: string
+          price_inr: number
+          billing_period: string
+          status?: string
+          started_at?: string
+          renews_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_id?: string | null
+          plan_name?: string
+          price_inr?: number
+          billing_period?: string
+          status?: string
+          started_at?: string
+          renews_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "license_plans"
             referencedColumns: ["id"]
           }
         ]
@@ -412,6 +566,19 @@ export type Database = {
           p_qty: number
         }
         Returns: undefined
+      }
+      record_order_payment: {
+        Args: {
+          p_payment_id: string
+          p_method?: string
+        }
+        Returns: undefined
+      }
+      subscribe_to_license_tx: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

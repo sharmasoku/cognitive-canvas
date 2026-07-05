@@ -46,6 +46,12 @@ export function OrderConfirmation(order: OrderEmailPayload) {
         <TotalRow label="Tax (18% GST)" value={inr(order.tax)} />
         <div style={{ borderTop: `1px solid ${brand.border}`, margin: "8px 0" }} />
         <TotalRow label="Total" value={inr(order.total)} bold />
+        {order.paymentPlan === "partial" && order.amountDueLater ? (
+          <>
+            <TotalRow label="Paid now" value={inr(order.amountPaidNow ?? 0)} accent />
+            <TotalRow label="Due on delivery" value={inr(order.amountDueLater)} bold />
+          </>
+        ) : null}
       </Section>
 
       {/* Delivery + address */}

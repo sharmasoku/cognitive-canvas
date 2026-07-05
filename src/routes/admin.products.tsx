@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, RefreshCw, Search, ToggleLeft, ToggleRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Search, Star, ToggleLeft, ToggleRight, Plus, Pencil, Trash2 } from "lucide-react";
 import {
-  useAllProducts, toggleProductActive, replenishStock, deleteProduct, type AdminProduct,
+  useAllProducts, toggleProductActive, toggleProductFeatured, replenishStock, deleteProduct, type AdminProduct,
 } from "@/hooks/useAdminData";
 import { AdminHeading } from "@/components/admin/AdminHeading";
 import { ProductForm } from "@/components/admin/ProductForm";
@@ -100,6 +100,7 @@ function AdminProductsPage() {
                   <th className="px-6 py-3">Price</th>
                   <th className="px-6 py-3">Stock</th>
                   <th className="px-6 py-3">Active</th>
+                  <th className="px-6 py-3">Homepage</th>
                   <th className="px-6 py-3">Replenish</th>
                   <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
@@ -153,6 +154,19 @@ function AdminProductsPage() {
                         {product.is_active
                           ? <ToggleRight className="h-6 w-6 text-emerald-500" />
                           : <ToggleLeft className="h-6 w-6 text-gray-300" />}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={async () => {
+                          const { ok, error } = await toggleProductFeatured(product.id, !product.is_featured);
+                          if (ok) { toast.success(product.is_featured ? "Removed from homepage" : "Now showing on homepage"); refetch(); }
+                          else toast.error(error || "Failed");
+                        }}
+                        title="Show on homepage"
+                        className="transition hover:opacity-80"
+                      >
+                        <Star className={`h-5 w-5 ${product.is_featured ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
                       </button>
                     </td>
                     <td className="px-6 py-4">

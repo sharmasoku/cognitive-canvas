@@ -1,11 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, CreditCard, Loader2, Truck, Zap } from "lucide-react";
+import { Check, CreditCard, Truck, Zap } from "lucide-react";
+import { PaymentModal } from "@/components/shared/PaymentModal";
 import { useShop, type ShippingAddress } from "@/context/ShopContext";
+import { computeAdvanceAmount } from "@/data/products";
 import { inr } from "@/lib/format";
 
 export const Route = createFileRoute("/checkout")({
@@ -26,22 +28,29 @@ const STEPS = ["Shipping", "Delivery", "Review", "Success"] as const;
 
 function Checkout() {
   const navigate = useNavigate();
-  const { cart, cartSubtotal, discountPct, placeOrder } = useShop();
+  const { cart, cartSubtotal, discountPct, placeOrder, refreshCartProducts } = useShop();
   const [step, setStep] = useState(0);
   const [speed, setSpeed] = useState<"standard" | "priority">("standard");
   const [addr, setAddr] = useState<ShippingAddress | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const [cardNum, setCardNum] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
 
   const form = useForm<ShippingAddress>({ resolver: zodResolver(shippingSchema), mode: "onBlur" });
+
+  // Cart items snapshot product data at add-to-cart time, so a part-payment
+  // rule (or price) changed afterwards wouldn't otherwise show up here.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { refreshCartProducts(); }, []);
 
   const shipping = speed === "priority" ? 499 : 0;
   const discount = Math.round(cartSubtotal * discountPct);
   const tax = Math.round((cartSubtotal - discount) * 0.18);
   const total = cartSubtotal - discount + shipping + tax;
+
+  const advanceFromItems = cart.reduce((s, c) => s + computeAdvanceAmount(c.product, c.quantity), 0);
+  const amountDueLater = cartSubtotal - advanceFromItems;
+  const amountDueNow = advanceFromItems + shipping + tax - discount;
+  const isPartialPayment = amountDueLater > 0;
 
   const getEstimatedDate = () => {
     const date = new Date();
@@ -149,11 +158,28 @@ function Checkout() {
                     ))}
                   </ul>
                 </div>
+                {isPartialPayment && (
+                  <div className="rounded-3xl border border-accent/20 bg-accent/[0.04] p-5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Pay now</span>
+                      <span className="text-lg font-bold text-accent">{inr(amountDueNow)}</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-sm">
+                      <span className="text-text-secondary">Due on delivery (cash/UPI)</span>
+                      <span className="font-semibold">{inr(amountDueLater)}</span>
+                    </div>
+                  </div>
+                )}
                 <button onClick={() => {
                   setPaying(true);
                 }} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary px-6 py-3 text-sm font-semibold text-white magnetic">
-                  <CreditCard className="h-4 w-4" /> Pay {inr(total)} with Razorpay
+                  <CreditCard className="h-4 w-4" /> Pay {inr(amountDueNow)} with Razorpay
                 </button>
+                {isPartialPayment && (
+                  <p className="text-center text-xs text-text-muted">
+                    * The remaining {inr(amountDueLater)} is collected by our delivery agent (cash/UPI) before handover.
+                  </p>
+                )}
               </motion.div>
             )}
             {step === 3 && orderId && (
@@ -162,7 +188,14 @@ function Checkout() {
                 <h2 className="mt-4 text-3xl font-bold">Order confirmed</h2>
                 <p className="mt-2 text-text-secondary">Your TeleAR shipment is on its way.</p>
                 <div className="mt-6 inline-block rounded-2xl bg-background px-5 py-3 font-mono text-sm">{orderId}</div>
-                
+
+                {isPartialPayment && (
+                  <div className="mt-6 mx-auto max-w-sm rounded-2xl border border-accent/20 bg-background/50 p-4 text-left">
+                    <div className="flex items-center justify-between text-sm"><span className="text-text-secondary">Paid now</span><span className="font-semibold text-accent">{inr(amountDueNow)}</span></div>
+                    <div className="mt-1 flex items-center justify-between text-sm"><span className="text-text-secondary">Due on delivery (cash/UPI)</span><span className="font-semibold">{inr(amountDueLater)}</span></div>
+                  </div>
+                )}
+
                 {/* Estimated Delivery Date Panel */}
                 <div className="mt-6 rounded-2xl border border-accent/20 bg-background/50 p-4 max-w-sm mx-auto">
                   <div className="text-xs font-mono uppercase tracking-widest text-text-muted">Estimated Delivery</div>
@@ -187,120 +220,29 @@ function Checkout() {
             <Row label="Tax (18% GST)" value={inr(tax)} />
             <div className="my-2 h-px bg-border-light" />
             <Row label="Total" value={inr(total)} bold />
+            {isPartialPayment && (
+              <>
+                <div className="my-2 h-px bg-border-light" />
+                <Row label="Pay now" value={inr(amountDueNow)} positive />
+                <Row label="Due on delivery" value={inr(amountDueLater)} />
+              </>
+            )}
           </div>
         </aside>
       </div>
 
-      {/* Realistic Razorpay Simulation Modal */}
-      <AnimatePresence>
-        {paying && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm p-4">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="w-full max-w-md overflow-hidden rounded-3xl bg-background shadow-card-hover border border-border">
-              {/* Header */}
-              <div className="bg-[#0b1426] px-6 py-4 text-white flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-[#3399cc] flex items-center justify-center font-bold text-lg">R</div>
-                  <div>
-                    <h3 className="font-semibold text-sm">Razorpay Checkout</h3>
-                    <p className="text-[10px] text-white/60">TeleARGlass Pvt. Ltd.</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-white/60">Amount</div>
-                  <div className="font-mono text-sm font-bold text-accent">{inr(total)}</div>
-                </div>
-              </div>
-
-              {/* Payment Methods Simulation */}
-              <div className="p-6 space-y-4">
-                <div className="text-xs font-mono uppercase tracking-widest text-text-muted">Cards, UPI & Netbanking</div>
-                
-                <div className="space-y-3">
-                  {/* Card Fields */}
-                  <div className="rounded-xl border border-border p-4 bg-surface/50 space-y-3">
-                    <div className="text-xs font-semibold text-text-secondary flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-primary" /> Card Details
-                    </div>
-                    
-                    <input 
-                      type="text" 
-                      placeholder="Card Number (XXXX XXXX XXXX XXXX)" 
-                      value={cardNum}
-                      onChange={(e) => setCardNum(e.target.value.replace(/\D/g, "").slice(0, 16))}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-primary"
-                    />
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <input 
-                        type="text" 
-                        placeholder="Expiry (MM/YY)" 
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value.slice(0, 5))}
-                        className="rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-primary"
-                      />
-                      <input 
-                        type="password" 
-                        placeholder="CVV" 
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                        className="rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-primary"
-                      />
-                    </div>
-                  </div>
-
-                  {/* UPI Selector */}
-                  <div className="flex gap-2">
-                    <button type="button" className="flex-1 py-2.5 px-3 border border-border rounded-xl text-xs font-medium hover:border-primary flex items-center justify-center gap-1.5 bg-surface/20">
-                      <span className="h-2 w-2 rounded-full bg-accent animate-pulse" /> Google Pay
-                    </button>
-                    <button type="button" className="flex-1 py-2.5 px-3 border border-border rounded-xl text-xs font-medium hover:border-primary flex items-center justify-center gap-1.5 bg-surface/20">
-                      <span className="h-2 w-2 rounded-full bg-accent animate-pulse" /> PhonePe / UPI
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between text-[10px] text-text-muted">
-                  <span>🔒 Secured by 256-bit AES Encryption</span>
-                  <span className="cursor-pointer hover:underline" onClick={() => setPaying(false)}>Cancel</span>
-                </div>
-
-                {/* Submit Action */}
-                <button 
-                  onClick={() => {
-                    setPaying(false);
-                    // Open a transition spin overlay momentarily
-                    const container = document.createElement("div");
-                    container.id = "tele-paying-overlay";
-                    container.className = "fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm";
-                    container.innerHTML = `
-                      <div class="w-full max-w-sm rounded-3xl bg-background p-8 text-center shadow-card-hover border border-border">
-                        <svg class="mx-auto h-10 w-10 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <h3 class="mt-4 text-lg font-semibold">Authorising Neural Payment Vector…</h3>
-                        <p class="mt-1 text-sm text-text-muted">Verifying secure signature with Razorpay gateway</p>
-                      </div>
-                    `;
-                    document.body.appendChild(container);
-                    setTimeout(async () => {
-                      document.getElementById("tele-paying-overlay")?.remove();
-                      if (addr) {
-                        const o = await placeOrder(addr, speed);
-                        setOrderId(o.id);
-                        setStep(3);
-                      }
-                    }, 1800);
-                  }}
-                  className="w-full py-3 bg-[#3399cc] hover:bg-[#287aa3] text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-soft"
-                >
-                  <CreditCard className="h-4 w-4" /> Pay {inr(total)} Securely
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <PaymentModal
+        open={paying}
+        amount={amountDueNow}
+        onClose={() => setPaying(false)}
+        onSuccess={async () => {
+          if (addr) {
+            const o = await placeOrder(addr, speed);
+            setOrderId(o.id);
+            setStep(3);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -15,7 +15,6 @@ import { Route as ProductsRouteImport } from './routes/products'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as LicenceRouteImport } from './routes/licence'
 import { Route as FeedbackRouteImport } from './routes/feedback'
-import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -30,6 +29,7 @@ import { Route as AdminThemeRouteImport } from './routes/admin.theme'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
+import { Route as AdminLicenseRouteImport } from './routes/admin.license'
 import { Route as AdminOrdersIdRouteImport } from './routes/admin.orders_.$id'
 
 const ServicesRoute = ServicesRouteImport.update({
@@ -60,11 +60,6 @@ const LicenceRoute = LicenceRouteImport.update({
 const FeedbackRoute = FeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareRoute = CompareRouteImport.update({
-  id: '/compare',
-  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -137,6 +132,11 @@ const AdminMessagesRoute = AdminMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLicenseRoute = AdminLicenseRouteImport.update({
+  id: '/license',
+  path: '/license',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersIdRoute = AdminOrdersIdRouteImport.update({
   id: '/orders_/$id',
   path: '/orders/$id',
@@ -149,13 +149,13 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
-  '/compare': typeof CompareRoute
   '/feedback': typeof FeedbackRoute
   '/licence': typeof LicenceRoute
   '/marketing': typeof MarketingRoute
   '/products': typeof ProductsRouteWithChildren
   '/recruitment': typeof RecruitmentRoute
   '/services': typeof ServicesRoute
+  '/admin/license': typeof AdminLicenseRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -172,12 +172,12 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
-  '/compare': typeof CompareRoute
   '/feedback': typeof FeedbackRoute
   '/licence': typeof LicenceRoute
   '/marketing': typeof MarketingRoute
   '/recruitment': typeof RecruitmentRoute
   '/services': typeof ServicesRoute
+  '/admin/license': typeof AdminLicenseRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -196,13 +196,13 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
-  '/compare': typeof CompareRoute
   '/feedback': typeof FeedbackRoute
   '/licence': typeof LicenceRoute
   '/marketing': typeof MarketingRoute
   '/products': typeof ProductsRouteWithChildren
   '/recruitment': typeof RecruitmentRoute
   '/services': typeof ServicesRoute
+  '/admin/license': typeof AdminLicenseRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -222,13 +222,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/checkout'
-    | '/compare'
     | '/feedback'
     | '/licence'
     | '/marketing'
     | '/products'
     | '/recruitment'
     | '/services'
+    | '/admin/license'
     | '/admin/messages'
     | '/admin/orders'
     | '/admin/products'
@@ -245,12 +245,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/checkout'
-    | '/compare'
     | '/feedback'
     | '/licence'
     | '/marketing'
     | '/recruitment'
     | '/services'
+    | '/admin/license'
     | '/admin/messages'
     | '/admin/orders'
     | '/admin/products'
@@ -268,13 +268,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/checkout'
-    | '/compare'
     | '/feedback'
     | '/licence'
     | '/marketing'
     | '/products'
     | '/recruitment'
     | '/services'
+    | '/admin/license'
     | '/admin/messages'
     | '/admin/orders'
     | '/admin/products'
@@ -293,7 +293,6 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
-  CompareRoute: typeof CompareRoute
   FeedbackRoute: typeof FeedbackRoute
   LicenceRoute: typeof LicenceRoute
   MarketingRoute: typeof MarketingRoute
@@ -345,13 +344,6 @@ declare module '@tanstack/react-router' {
       path: '/feedback'
       fullPath: '/feedback'
       preLoaderRoute: typeof FeedbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -452,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMessagesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/license': {
+      id: '/admin/license'
+      path: '/license'
+      fullPath: '/admin/license'
+      preLoaderRoute: typeof AdminLicenseRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders_/$id': {
       id: '/admin/orders_/$id'
       path: '/orders/$id'
@@ -463,6 +462,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminLicenseRoute: typeof AdminLicenseRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -473,6 +473,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminLicenseRoute: AdminLicenseRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
@@ -504,7 +505,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
-  CompareRoute: CompareRoute,
   FeedbackRoute: FeedbackRoute,
   LicenceRoute: LicenceRoute,
   MarketingRoute: MarketingRoute,

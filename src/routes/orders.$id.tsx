@@ -82,6 +82,12 @@ function OrderTracking() {
               {order.items.map((c) => <li key={c.product.id} className="flex justify-between"><span>{c.product.name} × {c.quantity}</span><span className="font-medium">{inr(c.product.price * c.quantity)}</span></li>)}
             </ul>
             <div className="mt-3 border-t border-border-light pt-3 flex justify-between font-bold"><span>Total</span><span>{inr(order.total)}</span></div>
+            {order.paymentPlan === "partial" && (
+              <>
+                <div className="mt-2 flex justify-between text-accent"><span>Paid</span><span className="font-semibold">{inr(order.amountPaidNow)}</span></div>
+                <div className="flex justify-between"><span>Due on delivery</span><span className="font-semibold">{inr(order.amountDueLater)}</span></div>
+              </>
+            )}
           </div>
         </aside>
       </div>

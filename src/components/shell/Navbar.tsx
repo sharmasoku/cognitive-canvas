@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LayoutGroup, motion, AnimatePresence } from "framer-motion";
-import { Heart, Menu, Search, ShoppingBag, Sparkles, X, User, LogOut } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, X, User, LogOut } from "lucide-react";
 import { useShop } from "@/context/ShopContext";
 import { Logo } from "@/components/shell/Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +23,7 @@ export function Navbar() {
   const { user, isAdmin, signOut } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { setCartOpen, setWishlistOpen, setSearchOpen, cartCount, wishlist, compare } = useShop();
+  const { setCartOpen, setWishlistOpen, setSearchOpen, cartCount, wishlist } = useShop();
 
   const handleLogout = async () => {
     await signOut();
@@ -48,20 +48,22 @@ export function Navbar() {
     return () => window.removeEventListener("keydown", handler);
   }, [setSearchOpen]);
 
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <motion.header
-      initial={{ y: -64, opacity: 0 }}
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className={`sticky top-0 z-40 w-full transition-all duration-300 ${
         scrolled ? "glass border-b border-primary/10" : "bg-transparent"
       }`}
     >
-      <div className="section-container flex items-center justify-between gap-4 py-3">
+      <div className="section-container flex items-center justify-between gap-4 py-2">
         <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-          <Logo className="h-20" />
+          <Logo className="h-16" />
         </Link>
 
         <LayoutGroup>
@@ -96,16 +98,6 @@ export function Navbar() {
           >
             <Search className="h-4.5 w-4.5" />
           </button>
-          {compare.length > 0 && (
-            <Link
-              to="/compare"
-              aria-label="Compare"
-              className="relative grid h-9 w-9 place-items-center rounded-lg text-text-secondary transition hover:bg-surface-violet hover:text-foreground"
-            >
-              <Sparkles className="h-4.5 w-4.5" />
-              <CountBadge>{compare.length}</CountBadge>
-            </Link>
-          )}
           <button
             onClick={() => setWishlistOpen(true)}
             aria-label="Wishlist"
@@ -157,8 +149,12 @@ export function Navbar() {
                   >
                     <div className="border-b border-border-light pb-2 mb-1">
                       <div className="text-xs font-mono text-text-muted">Logged in as</div>
-                      <div className="font-semibold text-sm truncate text-foreground">{user.user_metadata?.full_name || (user as any).name || "TeleAR Explorer"}</div>
-                      <div className="text-[10px] text-text-muted truncate font-mono">{user.email}</div>
+                      <div className="font-semibold text-sm truncate text-foreground">
+                        {user.user_metadata?.full_name || (user as any).name || "TeleAR Explorer"}
+                      </div>
+                      <div className="text-[10px] text-text-muted truncate font-mono">
+                        {user.email}
+                      </div>
                     </div>
                     <div className="py-1 space-y-0.5">
                       <Link
@@ -174,8 +170,18 @@ export function Navbar() {
                           onClick={() => setShowProfileMenu(false)}
                           className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition"
                         >
-                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          <svg
+                            className="h-3.5 w-3.5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                            />
                           </svg>
                           Admin Panel
                         </Link>
@@ -217,7 +223,9 @@ export function Navbar() {
                   key={l.to}
                   to={l.to}
                   className={`rounded-lg px-3 py-3 text-sm font-medium transition hover:bg-surface-violet ${
-                    active ? "text-primary font-semibold" : "text-text-secondary hover:text-foreground"
+                    active
+                      ? "text-primary font-semibold"
+                      : "text-text-secondary hover:text-foreground"
                   }`}
                 >
                   {l.label}

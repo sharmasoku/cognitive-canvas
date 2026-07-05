@@ -1,16 +1,21 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronDown, Heart, Minus, Plus, RotateCw, ShieldCheck, Sparkles, Star, ThumbsUp } from "lucide-react";
-import { getProductBySlug, type Product } from "@/data/products";
+import {
+  ArrowLeft, ChevronDown, Heart, Minus, Plus, RefreshCw, RotateCw,
+  ShieldCheck, ShoppingCart, Star, ThumbsUp, Truck, Zap,
+} from "lucide-react";
+import { computeAdvanceAmount, type Product } from "@/data/products";
+import { fetchProductBySlug } from "@/hooks/useProducts";
 import { useShop } from "@/context/ShopContext";
 import { inr, shortDate } from "@/lib/format";
-import { pageTransition } from "@/lib/motion";
 import { fetchReviews, submitReview, type DbReview } from "@/lib/commerce";
 
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
 export const Route = createFileRoute("/products/$slug")({
-  loader: ({ params }) => {
-    const product = getProductBySlug(params.slug);
+  loader: async ({ params }) => {
+    const product = await fetchProductBySlug(params.slug);
     if (!product) throw notFound();
     return { product };
   },
@@ -35,14 +40,13 @@ export const Route = createFileRoute("/products/$slug")({
 
 function ProductDetail() {
   const { product } = Route.useLoaderData();
-  const { addToCart, toggleWishlist, inWishlist, addToCompare, inCompare, setCartOpen } = useShop();
+  const { addToCart, toggleWishlist, inWishlist, setCartOpen } = useShop();
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"spec" | "tech" | "warranty" | "faq" | "reviews">("spec");
   const [mode, setMode] = useState<"gallery" | "360">("gallery");
   const [imgIdx, setImgIdx] = useState(0);
   const [rotation, setRotation] = useState(0);
   const wished = inWishlist(product.id);
-  const compared = inCompare(product.id);
 
   const [reviews, setReviews] = useState<DbReview[]>([]);
   const loadReviews = useCallback(() => {
@@ -55,153 +59,281 @@ function ProductDetail() {
     ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
     : null;
 
+  const lineTotal = product.price * qty;
+  const advanceNow = computeAdvanceAmount(product, qty);
+  const dueLater = lineTotal - advanceNow;
+  const isPartPayment = product.advanceType != null && dueLater > 0;
+  const advancePct = lineTotal > 0 ? Math.round((advanceNow / lineTotal) * 100) : 0;
+
   return (
-    <div className="section-container py-10">
-      <Link to="/products" className="mb-6 inline-flex items-center gap-1 text-sm text-text-secondary hover:text-primary"><ArrowLeft className="h-4 w-4" />Catalogue</Link>
-      <div className="grid gap-12 lg:grid-cols-2">
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <div className="inline-flex rounded-full border border-border bg-background p-1 text-xs">
-              <button onClick={() => setMode("gallery")} className={`rounded-full px-3 py-1 ${mode === "gallery" ? "bg-primary text-white" : ""}`}>Gallery</button>
-              <button onClick={() => setMode("360")} className={`rounded-full px-3 py-1 ${mode === "360" ? "bg-primary text-white" : ""}`}>360°</button>
-            </div>
-            {mode === "360" && (
-              <div className="inline-flex items-center gap-2 text-xs text-text-muted">
-                <RotateCw className="h-3.5 w-3.5 animate-spin-slow" /> Drag horizontal or use buttons
+    <div className="pb-28 lg:pb-0">
+      <div className="section-container py-8 sm:py-12 lg:py-16">
+        <Link to="/products" className="group mb-8 inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary transition hover:text-primary">
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+          Catalogue
+        </Link>
+
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-16">
+          {/* ─── Gallery ─── */}
+          <div className="lg:sticky lg:top-28">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="relative inline-flex rounded-full border border-border-light bg-surface p-1 text-xs">
+                {(["gallery", "360"] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={`relative rounded-full px-4 py-1.5 font-medium transition-colors ${mode === m ? "text-white" : "text-text-secondary hover:text-foreground"}`}
+                  >
+                    {mode === m && (
+                      <motion.span
+                        layoutId="gallery-mode-pill"
+                        className="absolute inset-0 -z-10 rounded-full bg-gradient-primary"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    {m === "gallery" ? "Gallery" : "360°"}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
-          
-          <div className="relative overflow-hidden rounded-3xl border border-border-light bg-gradient-dark aspect-square flex items-center justify-center p-8 [perspective:1000px]">
+              {mode === "360" && (
+                <div className="hidden items-center gap-1.5 text-xs text-text-muted sm:flex">
+                  <RotateCw className="h-3.5 w-3.5 animate-spin-slow" /> Drag to rotate
+                </div>
+              )}
+            </div>
+
+            <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-gradient-to-b from-surface to-background p-8 sm:p-12 lg:aspect-[4/5] lg:p-14">
+              {mode === "gallery" ? (
+                <>
+                  <div className="pointer-events-none absolute inset-x-0 bottom-8 mx-auto h-6 w-2/3 rounded-full bg-black/10 blur-2xl" />
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={imgIdx}
+                      initial={{ opacity: 0, scale: 0.97 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.35, ease: EASE }}
+                      src={product.gallery[imgIdx]}
+                      alt={product.name}
+                      width={800}
+                      height={800}
+                      className="relative z-10 h-full w-full object-contain drop-shadow-[0_30px_40px_rgba(20,20,30,0.15)]"
+                    />
+                  </AnimatePresence>
+                </>
+              ) : (
+                <div className="relative flex h-full w-full items-center justify-center">
+                  <div
+                    className="absolute bottom-6 left-1/2 h-4 w-[75%] -translate-x-1/2 rounded-full bg-black/15 blur-md transition-transform duration-100"
+                    style={{ transform: `translateX(-50%) scale(${1 - Math.abs(rotation % 180) / 720})` }}
+                  />
+                  <motion.img
+                    src={product.image}
+                    alt={`${product.name} 360°`}
+                    width={800}
+                    height={800}
+                    style={{ transform: `rotateY(${rotation}deg)`, transformStyle: "preserve-3d" }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    onDrag={(_, info) => setRotation((r) => r + info.delta.x * 0.8)}
+                    className="max-h-[85%] max-w-[85%] cursor-grab select-none object-contain active:cursor-grabbing"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[linear-gradient(105deg,transparent_30%,rgba(255,255,255,0.35)_40%,rgba(255,255,255,0.55)_50%,rgba(255,255,255,0.35)_60%,transparent_70%)] mix-blend-overlay transition-transform duration-100"
+                    style={{ transform: `translateX(${((rotation % 360) / 360) * 100}%)` }}
+                  />
+                </div>
+              )}
+            </div>
+
             {mode === "gallery" ? (
-              <motion.img key={imgIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={product.gallery[imgIdx]} alt={product.name} width={800} height={800} className="h-full w-full object-cover" />
+              <div className="scrollbar-hide mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
+                {product.gallery.map((g: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setImgIdx(i)}
+                    className={`h-20 w-20 shrink-0 snap-start overflow-hidden rounded-2xl transition-all duration-200 ${
+                      i === imgIdx ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={g} alt="" width={80} height={80} className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
             ) : (
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* 360 shadow depth simulation */}
-                <div 
-                  className="absolute bottom-6 left-1/2 -translate-x-1/2 h-4 w-[75%] rounded-full bg-black/40 blur-md transition-transform duration-100"
-                  style={{ transform: `translateX(-50%) scale(${1 - Math.abs(rotation % 180) / 720})` }}
-                />
-                <motion.img
-                  src={product.image}
-                  alt={`${product.name} 360°`}
-                  width={800} height={800}
-                  style={{ 
-                    transform: `rotateY(${rotation}deg)`,
-                    transformStyle: "preserve-3d"
-                  }}
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  onDrag={(_, info) => setRotation((r) => r + info.delta.x * 0.8)}
-                  className="max-h-[85%] max-w-[85%] object-contain cursor-grab active:cursor-grabbing select-none"
-                />
-                {/* Moving glare sheen overlay */}
-                <div 
-                  className="pointer-events-none absolute inset-0 rounded-3xl bg-[linear-gradient(105deg,transparent_30%,rgba(255,255,255,0.06)_40%,rgba(255,255,255,0.12)_50%,rgba(255,255,255,0.06)_60%,transparent_70%)] mix-blend-overlay transition-transform duration-100"
-                  style={{ transform: `translateX(${((rotation % 360) / 360) * 100}%)` }}
-                />
+              <div className="mt-4 flex justify-center gap-2">
+                <button onClick={() => setRotation((r) => r - 45)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">⟲ Left</button>
+                <button onClick={() => setRotation(0)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">Reset</button>
+                <button onClick={() => setRotation((r) => r + 45)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">Right ⟳</button>
               </div>
             )}
           </div>
-          
-          {mode === "gallery" ? (
-            <div className="mt-3 flex gap-2">
-              {product.gallery.map((g: string, i: number) => (
-                <button key={i} onClick={() => setImgIdx(i)} className={`h-16 w-16 overflow-hidden rounded-xl border ${i === imgIdx ? "border-primary" : "border-border"}`}>
-                  <img src={g} alt="" width={64} height={64} className="h-full w-full object-cover" />
+
+          {/* ─── Purchase panel ─── */}
+          <div>
+            <div className="text-sm font-medium uppercase tracking-wide text-text-muted">{product.category}</div>
+            <h1 className="mt-2 text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">{product.name}</h1>
+            <p className="mt-3 max-w-lg text-lg leading-relaxed text-text-secondary">{product.tagline}</p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-surface-violet px-3 py-1 text-xs font-mono uppercase tracking-widest text-primary">
+                {product.technology}
+              </span>
+              {avgRating !== null ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} className={`h-4 w-4 ${i <= Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "text-border"}`} />
+                    ))}
+                  </span>
+                  <span className="font-semibold text-foreground">{avgRating}</span>
+                  <span className="text-text-muted">({reviewCount})</span>
+                </span>
+              ) : (
+                <span className="text-text-muted">No reviews yet</span>
+              )}
+              <span className="inline-flex items-center gap-1 text-accent">
+                <ShieldCheck className="h-3.5 w-3.5" />In stock
+              </span>
+            </div>
+
+            <div className="mt-7 flex items-end gap-3">
+              <div className="text-4xl font-bold gradient-text sm:text-5xl">{inr(product.price)}</div>
+              {product.originalPrice && <div className="mb-1 text-text-muted line-through">{inr(product.originalPrice)}</div>}
+            </div>
+
+            {isPartPayment && (
+              <div className="mt-5 max-w-sm rounded-2xl border border-border-light bg-surface p-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-secondary">Pay today</span>
+                  <span className="font-bold text-foreground">{inr(advanceNow)}</span>
+                </div>
+                <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-border-light">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${advancePct}%` }}
+                    transition={{ duration: 0.8, ease: EASE }}
+                    className="h-full rounded-full bg-gradient-to-r from-accent to-secondary"
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs text-text-muted">
+                  <span>{advancePct}% now</span>
+                  <span>{inr(dueLater)} on delivery</span>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-8 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center rounded-full border border-border">
+                  <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" className="grid h-12 w-12 place-items-center text-text-secondary transition hover:text-foreground">
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-8 text-center font-semibold">{qty}</span>
+                  <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity" className="grid h-12 w-12 place-items-center text-text-secondary transition hover:text-foreground">
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => toggleWishlist(product)}
+                  aria-label="Wishlist"
+                  className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border transition ${
+                    wished ? "border-destructive/30 text-destructive" : "border-border text-text-secondary hover:border-primary/40 hover:text-primary"
+                  }`}
+                >
+                  <Heart className="h-4 w-4" fill={wished ? "currentColor" : "none"} />
                 </button>
-              ))}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={() => { addToCart(product, qty); setCartOpen(true); }}
+                  className="cta-button-premium inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-8 py-4 text-sm font-semibold text-white"
+                >
+                  <ShoppingCart className="h-4 w-4" /> Add to cart
+                </button>
+                <Link
+                  to="/checkout"
+                  onClick={() => addToCart(product, qty)}
+                  className="inline-flex flex-1 items-center justify-center rounded-full border border-border bg-background px-8 py-4 text-sm font-semibold transition hover:border-primary hover:text-primary"
+                >
+                  Buy now
+                </Link>
+              </div>
             </div>
-          ) : (
-            <div className="mt-3 flex justify-center gap-2">
-              <button onClick={() => setRotation((r) => r - 45)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">⟲ Left</button>
-              <button onClick={() => setRotation(0)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">Reset</button>
-              <button onClick={() => setRotation((r) => r + 45)} className="rounded-full border border-border bg-background px-4 py-2 text-sm transition hover:border-primary">Right ⟳</button>
+
+            <div className="mt-9 grid grid-cols-2 gap-x-4 gap-y-5 border-t border-border-light pt-8 sm:grid-cols-4 sm:gap-x-3">
+              <Feature icon={Truck} label="Free shipping" />
+              <Feature icon={ShieldCheck} label="2-yr warranty" />
+              <Feature icon={RefreshCw} label="14-day calibration" />
+              <Feature icon={Zap} label="Lifetime OS updates" />
             </div>
-          )}
+          </div>
         </div>
 
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-surface-violet px-3 py-1 text-xs font-mono uppercase tracking-widest text-primary">
-            {product.technology}
+        {/* ─── Content tabs ─── */}
+        <div className="mt-16 sm:mt-24">
+          <div className="scrollbar-hide flex gap-1 overflow-x-auto border-b border-border-light">
+            {[
+              { id: "spec", label: "Specifications" },
+              { id: "tech", label: "Technology" },
+              { id: "warranty", label: "Warranty" },
+              { id: "faq", label: "FAQs" },
+              { id: "reviews", label: `Reviews (${reviewCount})` },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id as typeof tab)}
+                className={`relative -mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-3.5 text-sm font-medium transition-colors ${
+                  tab === t.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
-          <h1 className="mt-4 text-4xl font-bold leading-tight lg:text-5xl">{product.name}</h1>
-          <p className="mt-2 italic text-text-secondary">{product.tagline}</p>
-          <div className="mt-4 flex items-center gap-3 text-sm">
-            {avgRating !== null ? (
-              <>
-                <div className="flex items-center gap-0.5">
-                  {[1,2,3,4,5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
-                </div>
-                <span className="font-semibold">{avgRating}</span>
-                <span className="text-text-muted">· {reviewCount} review{reviewCount !== 1 ? "s" : ""}</span>
-              </>
-            ) : (
-              <span className="text-text-muted">No reviews yet</span>
-            )}
-            <span className="inline-flex items-center gap-1 text-accent"><ShieldCheck className="h-3.5 w-3.5" />In stock</span>
-          </div>
-          <div className="mt-6 flex items-end gap-3">
-            <div className="text-4xl font-bold gradient-text">{inr(product.price)}</div>
-            {product.originalPrice && <div className="text-text-muted line-through">{inr(product.originalPrice)}</div>}
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center rounded-full border border-border">
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-2"><Minus className="h-4 w-4" /></button>
-              <span className="min-w-8 text-center font-semibold">{qty}</span>
-              <button onClick={() => setQty((q) => q + 1)} className="px-3 py-2"><Plus className="h-4 w-4" /></button>
-            </div>
-            <button onClick={() => { addToCart(product, qty); setCartOpen(true); }} className="rounded-full bg-gradient-primary px-6 py-3 text-sm font-semibold text-white magnetic">Add to cart</button>
-            <Link to="/checkout" onClick={() => addToCart(product, qty)} className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold hover:border-primary">Buy now</Link>
-            <button onClick={() => toggleWishlist(product)} aria-label="Wishlist" className={`grid h-11 w-11 place-items-center rounded-full border border-border ${wished ? "text-destructive" : "text-text-secondary"}`}>
-              <Heart className="h-4 w-4" fill={wished ? "currentColor" : "none"} />
-            </button>
-            <button onClick={() => addToCompare(product)} className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium ${compared ? "border-primary text-primary" : "border-border text-text-secondary hover:border-primary/40"}`}>
-              <Sparkles className="h-4 w-4" /> {compared ? "In comparison" : "Compare"}
-            </button>
-          </div>
-
-          <div className="mt-8 grid gap-3 rounded-2xl border border-border-light bg-surface p-4 text-sm text-text-secondary sm:grid-cols-2">
-            <Feature label="Free shipping across India" />
-            <Feature label="2-year limited warranty" />
-            <Feature label="14-day calibration window" />
-            <Feature label="Lifetime TeleOS updates" />
+          <div className="py-8 sm:py-10">
+            <AnimatePresence mode="wait">
+              <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+                {tab === "spec" && <SpecTable product={product} />}
+                {tab === "tech" && <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">{product.technologyStory}</p>}
+                {tab === "warranty" && <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">{product.warranty}</p>}
+                {tab === "faq" && <FaqList product={product} />}
+                {tab === "reviews" && <ReviewsList product={product} reviews={reviews} onSubmitted={loadReviews} />}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      <div className="mt-16">
-        <div className="flex flex-wrap gap-2 border-b border-border-light">
-          {[
-            { id: "spec", label: "Specifications" },
-            { id: "tech", label: "Technology" },
-            { id: "warranty", label: "Warranty" },
-            { id: "faq", label: "FAQs" },
-            { id: "reviews", label: `Reviews (${reviewCount})` },
-          ].map((t) => (
-            <button key={t.id} onClick={() => setTab(t.id as typeof tab)} className={`relative -mb-px border-b-2 px-4 py-3 text-sm font-medium ${tab === t.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-foreground"}`}>{t.label}</button>
-          ))}
-        </div>
-        <div className="py-8">
-          <AnimatePresence mode="wait">
-            <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-              {tab === "spec" && <SpecTable product={product} />}
-              {tab === "tech" && <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">{product.technologyStory}</p>}
-              {tab === "warranty" && <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">{product.warranty}</p>}
-              {tab === "faq" && <FaqList product={product} />}
-              {tab === "reviews" && <ReviewsList product={product} reviews={reviews} onSubmitted={loadReviews} />}
-            </motion.div>
-          </AnimatePresence>
+      {/* ─── Sticky mobile CTA ─── */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border-light bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur-lg lg:hidden">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs text-text-muted">{product.name}</div>
+            <div className="text-lg font-bold gradient-text">{isPartPayment ? inr(advanceNow) : inr(lineTotal)}</div>
+          </div>
+          <button
+            onClick={() => { addToCart(product, qty); setCartOpen(true); }}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-primary px-6 py-3 text-sm font-semibold text-white shadow-glow-primary"
+          >
+            <ShoppingCart className="h-4 w-4" /> Add to cart
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function Feature({ label }: { label: string }) {
-  return <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{label}</div>;
+function Feature({ icon: Icon, label }: { icon: typeof ShieldCheck; label: string }) {
+  return (
+    <div className="flex items-center gap-2.5 text-sm text-text-secondary">
+      <Icon className="h-4 w-4 shrink-0 text-primary" />
+      {label}
+    </div>
+  );
 }
+
 function SpecTable({ product }: { product: Product }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border-light">
@@ -209,8 +341,8 @@ function SpecTable({ product }: { product: Product }) {
         <tbody>
           {Object.entries(product.specifications).map(([k, v], i) => (
             <tr key={k} className={i % 2 === 0 ? "bg-surface" : "bg-background"}>
-              <th className="w-1/3 px-4 py-3 text-left font-medium text-text-secondary">{k}</th>
-              <td className="px-4 py-3 text-foreground">{v}</td>
+              <th className="w-1/3 px-4 py-3.5 text-left font-medium text-text-secondary sm:px-6">{k}</th>
+              <td className="px-4 py-3.5 text-foreground sm:px-6">{v}</td>
             </tr>
           ))}
         </tbody>
@@ -218,18 +350,23 @@ function SpecTable({ product }: { product: Product }) {
     </div>
   );
 }
+
 function FaqList({ product }: { product: Product }) {
   return (
     <div className="max-w-3xl space-y-2">
       {product.faqs.map((f, i) => (
-        <details key={i} className="group rounded-2xl border border-border-light bg-background p-4">
-          <summary className="flex cursor-pointer items-center justify-between font-medium">{f.question}<ChevronDown className="h-4 w-4 transition group-open:rotate-180" /></summary>
-          <p className="mt-3 text-sm text-text-secondary">{f.answer}</p>
+        <details key={i} className="group rounded-2xl border border-border-light bg-background p-5">
+          <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
+            {f.question}
+            <ChevronDown className="h-4 w-4 shrink-0 text-text-muted transition group-open:rotate-180" />
+          </summary>
+          <p className="mt-3 text-sm leading-relaxed text-text-secondary">{f.answer}</p>
         </details>
       ))}
     </div>
   );
 }
+
 function ReviewsList({ product, reviews, onSubmitted }: { product: Product; reviews: DbReview[]; onSubmitted: () => void }) {
   const [sort, setSort] = useState<"new" | "helpful">("new");
   const [votes, setVotes] = useState<Record<string, number>>({});
@@ -265,12 +402,12 @@ function ReviewsList({ product, reviews, onSubmitted }: { product: Product; revi
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="mb-6 rounded-2xl border border-border-light bg-surface p-5">
+      <form onSubmit={handleSubmit} className="mb-6 rounded-2xl border border-border-light bg-surface p-5 sm:p-6">
         <div className="text-sm font-semibold">Write a review</div>
         <div className="mt-3 flex items-center gap-2">
           <span className="text-sm text-text-muted">Rating:</span>
           {[1, 2, 3, 4, 5].map((i) => (
-            <button type="button" key={i} onClick={() => setRating(i)} className="transition hover:scale-110" aria-label={`${i} star`}>
+            <button type="button" key={i} onClick={() => setRating(i)} className="p-0.5 transition hover:scale-110" aria-label={`${i} star`}>
               <Star className={`h-5 w-5 ${i <= rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />
             </button>
           ))}
@@ -279,16 +416,16 @@ function ReviewsList({ product, reviews, onSubmitted }: { product: Product; revi
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name (optional)"
-          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-3 text-sm outline-none focus:border-primary"
         />
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
           placeholder="Share your experience with this product"
-          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-3 text-sm outline-none focus:border-primary"
         />
-        <div className="mt-3 flex items-center gap-3">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <button type="submit" disabled={submitting} className="rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-semibold text-white magnetic disabled:opacity-60">
             {submitting ? "Submitting…" : "Submit review"}
           </button>
@@ -309,14 +446,22 @@ function ReviewsList({ product, reviews, onSubmitted }: { product: Product; revi
           </div>
           <div className="space-y-3">
             {sorted.map((r) => (
-              <div key={r.id} className="rounded-2xl border border-border-light bg-background p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 font-semibold">{r.userName}{r.verified && <span className="rounded-full bg-surface-green px-2 py-0.5 text-[10px] font-medium text-accent-dark">Verified</span>}</div>
-                    <div className="text-xs text-text-muted">{shortDate(r.date)}</div>
+              <div key={r.id} className="rounded-2xl border border-border-light bg-background p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-xs font-bold text-white">
+                      {r.userName?.[0]?.toUpperCase() ?? "T"}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 font-semibold">
+                        {r.userName}
+                        {r.verified && <span className="rounded-full bg-surface-green px-2 py-0.5 text-[10px] font-medium text-accent-dark">Verified</span>}
+                      </div>
+                      <div className="text-xs text-text-muted">{shortDate(r.date)}</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    {[1,2,3,4,5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= r.rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => <Star key={i} className={`h-4 w-4 ${i <= r.rating ? "fill-amber-400 text-amber-400" : "text-border"}`} />)}
                   </div>
                 </div>
                 <p className="mt-3 text-text-secondary">{r.comment}</p>

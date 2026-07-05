@@ -1,14 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Heart, Plus, Sparkles, Star } from "lucide-react";
+import { Heart, Plus, Star } from "lucide-react";
 import { useShop } from "@/context/ShopContext";
-import type { Product } from "@/data/products";
+import { computeAdvanceAmount, type Product } from "@/data/products";
 import { inr } from "@/lib/format";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
-  const { addToCart, toggleWishlist, inWishlist, addToCompare, inCompare } = useShop();
+  const { addToCart, toggleWishlist, inWishlist } = useShop();
   const wished = inWishlist(product.id);
-  const compared = inCompare(product.id);
+  const advanceNow = computeAdvanceAmount(product, 1);
+  const isPartPayment = product.advanceType != null && advanceNow < product.price;
 
   return (
     <motion.article
@@ -18,8 +19,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       transition={{ delay: index * 0.05, duration: 0.5 }}
       className="group relative flex flex-col overflow-hidden rounded-3xl border border-border-light bg-background transition-all duration-300 hover:-translate-y-2 hover:border-primary/40 hover:shadow-card-hover"
     >
-      {/* Floating Action Buttons */}
-      <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
+      {/* Floating Action Button */}
+      <div className="absolute right-3 top-3 z-10">
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -31,18 +32,6 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           }`}
         >
           <Heart className="h-4 w-4" fill={wished ? "currentColor" : "none"} />
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            addToCompare(product);
-          }}
-          aria-label="Compare"
-          className={`grid h-9 w-9 place-items-center rounded-full bg-background/80 backdrop-blur transition-all duration-200 hover:scale-110 ${
-            compared ? "text-primary" : "text-text-secondary hover:text-primary"
-          }`}
-        >
-          <Sparkles className="h-4 w-4" />
         </button>
       </div>
 
@@ -79,6 +68,12 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           <span className="font-bold text-foreground">{product.rating}</span>
           <span className="text-text-muted">· {product.reviewCount} reviews</span>
         </div>
+
+        {isPartPayment && (
+          <div className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-green px-2.5 py-1 text-[11px] font-medium text-accent-dark">
+            Pay {inr(advanceNow)} now, rest on delivery
+          </div>
+        )}
 
         <div className="mt-auto flex items-end justify-between pt-4">
           <div>

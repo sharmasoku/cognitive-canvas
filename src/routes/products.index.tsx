@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Filter, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
-import { products, type Category, type Technology } from "@/data/products";
+import type { Category, Technology } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { inr } from "@/lib/format";
 
 export const Route = createFileRoute("/products/")({
@@ -29,6 +30,7 @@ const SORTS = [
 ] as const;
 
 function ProductList() {
+  const { products, loading } = useProducts();
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]>("All");
   const [tech, setTech] = useState<(typeof TECHS)[number]>("All");
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
@@ -52,7 +54,7 @@ function ProductList() {
     else if (sort === "price-desc") arr = [...arr].sort((a, b) => b.price - a.price);
     else if (sort === "rated") arr = [...arr].sort((a, b) => b.rating - a.rating);
     return arr;
-  }, [cat, tech, maxPrice, minRating, inStock, q, sort]);
+  }, [products, cat, tech, maxPrice, minRating, inStock, q, sort]);
 
   const Sidebar = (
     <aside className="space-y-6 rounded-3xl border border-border-light bg-background p-6 shadow-soft">
@@ -103,7 +105,6 @@ function ProductList() {
       <div className="section-container relative">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Tele<span className="gradient-text">Products</span></h1>
-          <p className="mt-3 max-w-xl text-text-secondary">The full TeleAR catalogue — engineered, calibrated, and shipped from our Bengaluru atelier.</p>
         </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
@@ -128,7 +129,9 @@ function ProductList() {
               <span>Showing {filtered.length} {filtered.length === 1 ? "product" : "products"}</span>
             </div>
 
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div className="rounded-3xl border border-dashed border-border bg-surface p-16 text-center text-text-secondary">Loading products…</div>
+            ) : filtered.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-border bg-surface p-16 text-center text-text-secondary">No products match those filters.</div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">

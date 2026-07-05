@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, MapPin, Package, Printer, StickyNote, Truck } from "lucide-react";
+import { ArrowLeft, Banknote, Loader2, MapPin, Package, Printer, StickyNote, Truck } from "lucide-react";
 import { toast } from "sonner";
 import {
   useOrder,
   updateOrderStatus,
   updatePaymentStatus,
   updateOrderTracking,
+  recordOrderPayment,
 } from "@/hooks/useOrders";
 import { replenishStock } from "@/hooks/useAdminData";
 import { AdminStatusBadge } from "./admin.index";
@@ -92,6 +93,12 @@ function AdminOrderDetail() {
     else toast.error(error || "Failed to save tracking");
   }
 
+  async function handleRecordPayment(paymentId: string, method: "cash" | "upi") {
+    const { ok, error } = await recordOrderPayment(paymentId, method);
+    if (ok) { toast.success("Payment recorded"); refetch(); }
+    else toast.error(error || "Failed to record payment");
+  }
+
   return (
     <>
       {/* ================= Admin view (hidden while printing) ================= */}
@@ -172,6 +179,12 @@ function AdminOrderDetail() {
                   <span>Total</span>
                   <span className="text-primary">{inr(order.total)}</span>
                 </div>
+                {order.payment_plan === "partial" && (
+                  <>
+                    <SummaryRow label="Paid so far" value={inr(order.amount_paid_inr)} accent="text-emerald-600" />
+                    <SummaryRow label="Balance due" value={inr(order.amount_due_inr)} accent="text-amber-600" />
+                  </>
+                )}
               </div>
             </div>
 
@@ -209,6 +222,44 @@ function AdminOrderDetail() {
 
           {/* Right sidebar */}
           <div className="space-y-4">
+            {order.payments && order.payments.length > 0 && (
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+                  <Banknote className="h-4 w-4" /> Payments
+                </h2>
+                <div className="space-y-3">
+                  {order.payments.map((p) => (
+                    <div key={p.id} className="rounded-xl border border-gray-100 p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium capitalize text-gray-900">{p.type}</span>
+                        <span className="font-semibold text-gray-900">{inr(p.amount_inr)}</span>
+                      </div>
+                      {p.status === "paid" ? (
+                        <div className="mt-1 text-xs text-emerald-600">
+                          Paid{p.method ? ` via ${p.method}` : ""}{p.paid_at ? ` · ${shortDate(p.paid_at)}` : ""}
+                        </div>
+                      ) : (
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            onClick={() => handleRecordPayment(p.id, "cash")}
+                            className="flex-1 rounded-lg bg-emerald-100 px-2 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-200"
+                          >
+                            Mark cash received
+                          </button>
+                          <button
+                            onClick={() => handleRecordPayment(p.id, "upi")}
+                            className="flex-1 rounded-lg bg-emerald-100 px-2 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-200"
+                          >
+                            Mark UPI received
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <h2 className="mb-4 text-base font-semibold text-gray-900">Update Status</h2>
 
@@ -304,7 +355,6 @@ function AdminOrderDetail() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">TELEARGLASS PRIVATE LIMITED</h1>
             <p className="mt-1 text-xs leading-relaxed text-gray-500">
-              Cognitive interfaces, shipped from Bengaluru, India<br />
               Email: support@teleARglass.com | Phone: +91-80-4000-2020
             </p>
           </div>
@@ -393,6 +443,14 @@ function AdminOrderDetail() {
           <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-bold text-primary">
             <span>Total</span><span>{inr(order.total)}</span>
           </div>
+          {order.payment_plan === "partial" && (
+            <>
+              <div className="flex justify-between text-gray-600"><span>Paid</span><span>{inr(order.amount_paid_inr)}</span></div>
+              <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-bold text-amber-700">
+                <span>Collect at delivery</span><span>{inr(order.amount_due_inr)}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {order.notes && (
@@ -403,7 +461,6 @@ function AdminOrderDetail() {
         )}
 
         <div className="mt-16 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">
-          Thank you for choosing TeleARGlass — Cognitive AR, engineered in Bengaluru.<br />
           This is a computer-generated invoice and requires no signature.
         </div>
       </div>

@@ -66,6 +66,10 @@ export interface AdminProduct {
   sku: string | null;
   stock: number;
   is_active: boolean;
+  is_featured: boolean;
+  featured_order: number | null;
+  advance_type: "percent" | "fixed" | null;
+  advance_value: number | null;
   image_url: string | null;
   gallery: string[];
   specifications: Record<string, string>;
@@ -119,6 +123,10 @@ export interface ProductInput {
   sku?: string | null;
   stock: number;
   is_active: boolean;
+  is_featured?: boolean;
+  featured_order?: number | null;
+  advance_type?: "percent" | "fixed" | null;
+  advance_value?: number | null;
   image_url?: string | null;
   gallery?: string[];
   specifications?: Record<string, string>;
@@ -164,6 +172,14 @@ export async function toggleProductActive(productId: string, isActive: boolean) 
   const { error } = await supabase
     .from("products")
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq("id", productId);
+  return { ok: !error, error: error?.message };
+}
+
+export async function toggleProductFeatured(productId: string, isFeatured: boolean) {
+  const { error } = await supabase
+    .from("products")
+    .update({ is_featured: isFeatured, updated_at: new Date().toISOString() })
     .eq("id", productId);
   return { ok: !error, error: error?.message };
 }

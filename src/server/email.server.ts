@@ -5,8 +5,9 @@ import { render } from "@react-email/render";
 import { Resend } from "resend";
 import { OrderConfirmation } from "@/emails/OrderConfirmation";
 import { RecruitmentConfirmation } from "@/emails/RecruitmentConfirmation";
+import { SubscriptionConfirmation } from "@/emails/SubscriptionConfirmation";
 import { brand } from "@/emails/brand";
-import type { OrderEmailPayload, RecruitmentEmailPayload } from "@/emails/types";
+import type { OrderEmailPayload, RecruitmentEmailPayload, SubscriptionEmailPayload } from "@/emails/types";
 
 export interface SendResult {
   ok: boolean;
@@ -46,6 +47,28 @@ export async function sendOrderConfirmation(order: OrderEmailPayload): Promise<S
   } catch (e) {
     const msg = (e as Error).message;
     console.warn("[email] order confirmation threw:", msg);
+    return { ok: false, error: msg };
+  }
+}
+
+/** License subscription confirmation to the subscriber's account email. Best-effort. */
+export async function sendSubscriptionConfirmation(sub: SubscriptionEmailPayload): Promise<SendResult> {
+  try {
+    const html = await render(SubscriptionConfirmation(sub));
+    const { data, error } = await resend().emails.send({
+      from: fromAddress(),
+      to: sub.customerEmail,
+      subject: `Your ${brand.name} license is active`,
+      html,
+    });
+    if (error) {
+      console.warn("[email] subscription confirmation failed:", error.message);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true, id: data?.id };
+  } catch (e) {
+    const msg = (e as Error).message;
+    console.warn("[email] subscription confirmation threw:", msg);
     return { ok: false, error: msg };
   }
 }

@@ -7,7 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Product } from "@/data/products";
+import { computeAdvanceAmount, type Product } from "@/data/products";
+import { fetchProductBySlug } from "@/hooks/useProducts";
 import { persistOrder } from "@/lib/commerce";
 import { sendOrderEmailFn } from "@/lib/email.functions";
 
@@ -44,6 +45,9 @@ export interface Order {
   deliverySpeed: "standard" | "priority";
   status: OrderStatus;
   createdAt: string;
+  paymentPlan: "full" | "partial";
+  amountPaidNow: number;
+  amountDueLater: number;
 }
 
 interface UIState {
@@ -58,19 +62,15 @@ interface UIState {
 interface ShopAPI extends UIState {
   cart: CartItem[];
   wishlist: WishlistItem[];
-  compare: Product[];
   orders: Order[];
   coupon: string | null;
   discountPct: number;
   addToCart: (p: Product, qty?: number) => void;
   removeFromCart: (id: string) => void;
   updateCartQty: (id: string, qty: number) => void;
+  refreshCartProducts: () => Promise<void>;
   toggleWishlist: (p: Product) => void;
   inWishlist: (id: string) => boolean;
-  addToCompare: (p: Product) => boolean;
-  removeFromCompare: (id: string) => void;
-  inCompare: (id: string) => boolean;
-  clearCompare: () => void;
   applyCoupon: (code: string) => boolean;
   clearCoupon: () => void;
   placeOrder: (addr: ShippingAddress, speed: "standard" | "priority") => Promise<Order>;
@@ -112,7 +112,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistItem[]>(() =>
     loadLS<WishlistItem[]>(LS.wishlist, []),
   );
-  const [compare, setCompare] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>(() => loadLS<Order[]>(LS.orders, []));
   const [coupon, setCoupon] = useState<string | null>(() => loadLS<string | null>(LS.coupon, null));
 
@@ -151,6 +150,21 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  // Cart items snapshot the product at add-to-cart time (persisted to
+  // localStorage), so price/advance-payment settings changed afterwards
+  // wouldn't otherwise show up until the item is removed and re-added.
+  // Re-fetch each item's live product data before checkout relies on it.
+  const refreshCartProducts = useCallback(async () => {
+    if (cart.length === 0) return;
+    const fresh = await Promise.all(
+      cart.map(async (c) => {
+        const latest = await fetchProductBySlug(c.product.slug);
+        return latest ? { ...c, product: latest } : c;
+      }),
+    );
+    setCart(fresh);
+  }, [cart]);
+
   const toggleWishlist = useCallback((p: Product) => {
     setWishlist((prev) =>
       prev.some((w) => w.product.id === p.id)
@@ -163,29 +177,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     (id: string) => wishlist.some((w) => w.product.id === id),
     [wishlist],
   );
-
-  const addToCompare = useCallback((p: Product) => {
-    let ok = false;
-    setCompare((prev) => {
-      if (prev.some((c) => c.id === p.id)) {
-        ok = true;
-        return prev;
-      }
-      if (prev.length >= 3) {
-        ok = false;
-        return prev;
-      }
-      ok = true;
-      return [...prev, p];
-    });
-    return ok;
-  }, []);
-  const removeFromCompare = useCallback(
-    (id: string) => setCompare((p) => p.filter((c) => c.id !== id)),
-    [],
-  );
-  const inCompare = useCallback((id: string) => compare.some((c) => c.id === id), [compare]);
-  const clearCompare = useCallback(() => setCompare([]), []);
 
   const applyCoupon = useCallback((code: string) => {
     if (code.trim().toUpperCase() === "FUTURE10") {
@@ -211,6 +202,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       const tax = Math.round((subtotal - discount) * 0.18);
       const total = subtotal - discount + shipping + tax;
 
+      const advanceFromItems = cart.reduce(
+        (s, c) => s + computeAdvanceAmount(c.product, c.quantity),
+        0,
+      );
+      const amountDueLater = subtotal - advanceFromItems;
+      const amountPaidNow = advanceFromItems + shipping + tax - discount;
+      const paymentPlan: "full" | "partial" = amountDueLater > 0 ? "partial" : "full";
+
       // Best-effort server persistence for signed-in users (atomic stock + order).
       // Guests, or an unconfigured/unseeded DB, fall back to a local order id.
       const remoteId = await persistOrder({
@@ -235,6 +234,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         deliverySpeed: speed,
         status: "Placed",
         createdAt: new Date().toISOString(),
+        paymentPlan,
+        amountPaidNow,
+        amountDueLater,
       };
       setOrders((prev) => [order, ...prev]);
       setCart([]);
@@ -257,6 +259,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           shipping,
           tax,
           total,
+          paymentPlan,
+          amountPaidNow,
+          amountDueLater,
           shippingAddress: addr,
           deliverySpeed: speed,
           estimatedDate: eta.toLocaleDateString("en-IN", {
@@ -280,7 +285,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     () => ({
       cart,
       wishlist,
-      compare,
       orders,
       coupon,
       discountPct,
@@ -293,12 +297,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       addToCart,
       removeFromCart,
       updateCartQty,
+      refreshCartProducts,
       toggleWishlist,
       inWishlist,
-      addToCompare,
-      removeFromCompare,
-      inCompare,
-      clearCompare,
       applyCoupon,
       clearCoupon,
       placeOrder,
@@ -309,7 +310,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     [
       cart,
       wishlist,
-      compare,
       orders,
       coupon,
       discountPct,
@@ -319,12 +319,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       addToCart,
       removeFromCart,
       updateCartQty,
+      refreshCartProducts,
       toggleWishlist,
       inWishlist,
-      addToCompare,
-      removeFromCompare,
-      inCompare,
-      clearCompare,
       applyCoupon,
       clearCoupon,
       placeOrder,

@@ -14,12 +14,16 @@ export interface DbOrder {
   delivery_speed: string;
   payment_status: string;
   payment_method: string;
+  payment_plan: string;
+  amount_paid_inr: number;
+  amount_due_inr: number;
   carrier: string | null;
   tracking_number: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
   items?: DbOrderItem[];
+  payments?: DbOrderPayment[];
   profile?: { full_name: string | null; email: string | null } | null;
 }
 
@@ -31,6 +35,20 @@ export interface DbOrderItem {
   unit_price: number;
   qty: number;
   line_total: number;
+}
+
+export interface DbOrderPayment {
+  id: string;
+  order_id: string;
+  type: "advance" | "balance";
+  amount_inr: number;
+  method: string | null;
+  status: "pending" | "paid" | "failed";
+  gateway: string | null;
+  gateway_ref: string | null;
+  collected_by: string | null;
+  paid_at: string | null;
+  created_at: string;
 }
 
 export function useUserOrders(userId: string | null | undefined) {
@@ -110,7 +128,7 @@ export function useOrder(id: string | undefined) {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*), profiles!orders_user_id_fkey(full_name, email)")
+        .select("*, order_items(*), order_payments(*), profiles!orders_user_id_fkey(full_name, email)")
         .eq("id", id)
         .maybeSingle();
 
@@ -119,16 +137,21 @@ export function useOrder(id: string | undefined) {
         setOrder({
           ...o,
           items: o.order_items ?? [],
+          payments: o.order_payments ?? [],
           profile: Array.isArray(o.profiles) ? o.profiles[0] ?? null : o.profiles ?? null,
         });
       } else if (error) {
         // Fallback: fetch without the profiles join if the FK alias fails.
         const { data: d2 } = await supabase
           .from("orders")
-          .select("*, order_items(*)")
+          .select("*, order_items(*), order_payments(*)")
           .eq("id", id)
           .maybeSingle();
-        setOrder(d2 ? { ...(d2 as any), items: (d2 as any).order_items ?? [], profile: null } : null);
+        setOrder(
+          d2
+            ? { ...(d2 as any), items: (d2 as any).order_items ?? [], payments: (d2 as any).order_payments ?? [], profile: null }
+            : null,
+        );
       } else {
         setOrder(null);
       }
@@ -158,6 +181,18 @@ export async function updatePaymentStatus(orderId: string, paymentStatus: string
     .update({ payment_status: paymentStatus as PaymentStatusValue, updated_at: new Date().toISOString() })
     .eq("id", orderId);
   return { ok: !error, error: error?.message };
+}
+
+export async function recordOrderPayment(paymentId: string, method: "cash" | "upi") {
+  try {
+    const { error } = await supabase.rpc("record_order_payment", {
+      p_payment_id: paymentId,
+      p_method: method,
+    });
+    return { ok: !error, error: error?.message };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
 }
 
 export async function updateOrderTracking(orderId: string, carrier: string, trackingNumber: string) {

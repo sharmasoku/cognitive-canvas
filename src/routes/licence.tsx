@@ -1,10 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Glasses, Accessibility, Cpu, BrainCircuit, LayoutGrid, PackageCheck,
-  Brush, Radar, Sparkles, Check, ArrowRight,
+  Brush, Radar, Sparkles, Check, ArrowRight, Loader2,
 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import BorderGlow from "@/components/ui/BorderGlow";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { useAuth } from "@/hooks/useAuth";
+import { daysRemaining, subscribeToLicense, useLicensePlan, useUserSubscription } from "@/hooks/useLicense";
+import { sendSubscriptionEmailFn } from "@/lib/email.functions";
+import { inr, shortDate } from "@/lib/format";
 
 export const Route = createFileRoute("/licence")({
   head: () => ({ meta: [{ title: "TeleLicence — Patent Licensing" }] }),
@@ -40,13 +47,53 @@ const DESIGN_FEATURES = [
 
 const HIGHLIGHTS = ["PanOS Operating System", "Immersive AR Display", "Speaking Accessibility", "30+ Software Apps"];
 
-const LICENSE_INCLUDES = [
-  "Full patent & platform license",
-  "PanOS + the entire 30+ app suite",
-  "Priority onboarding, training & support",
-];
-
 function Licence() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { plan, loading: planLoading } = useLicensePlan();
+  const { subscription, loading: subLoading, refetch: refetchSubscription } = useUserSubscription(user?.id);
+  const [paying, setPaying] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleSubscribeClick = () => {
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    setPaying(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    setSubscribing(true);
+    const result = await subscribeToLicense();
+    setSubscribing(false);
+    if (!result) {
+      toast.error("Could not activate your subscription. Please try again or contact support.");
+      return;
+    }
+    toast.success("Your license is active!");
+    refetchSubscription();
+
+    if (user?.email && plan) {
+      const now = new Date();
+      const renewal = new Date(now);
+      if (plan.billingPeriod === "month") renewal.setMonth(renewal.getMonth() + 1);
+      else renewal.setFullYear(renewal.getFullYear() + 1);
+      void sendSubscriptionEmailFn({
+        data: {
+          subscriptionId: result.id,
+          customerName: user.user_metadata?.full_name || user.email,
+          customerEmail: user.email,
+          planName: plan.name,
+          priceInr: plan.priceInr,
+          billingPeriod: plan.billingPeriod,
+          startedDate: shortDate(now),
+          renewalDate: shortDate(renewal),
+        },
+      }).catch(() => { /* best-effort */ });
+    }
+  };
+
   return (
     <div className="relative overflow-hidden bg-background text-foreground">
       {/* Ambient background */}
@@ -174,7 +221,7 @@ function Licence() {
           ))}
         </div>
 
-        {/* Pricing centerpiece */}
+        {/* Pricing centerpiece / subscriber details */}
         <div className="mt-16 flex justify-center">
           <BorderGlow
             animated
@@ -192,37 +239,78 @@ function Licence() {
                 Limited-Time Patent Licensing
               </div>
               <h2 className="mt-6 text-2xl font-bold leading-snug text-foreground md:text-[2rem]">
-                TeleARGlass Patent Licensing
+                {plan?.name ?? "TeleARGlass Patent Licensing"}
               </h2>
               <p className="mt-2 text-text-secondary">For innovative &amp; sustainable organisations only.</p>
 
-              <div className="mt-9 flex items-end justify-center gap-2.5">
-                <span className="text-6xl font-extrabold gradient-text md:text-7xl">₹9 Cr</span>
-                <span className="mb-2 text-text-muted">/ year</span>
-              </div>
+              {planLoading ? (
+                <div className="mx-auto mt-9 h-16 w-48 animate-pulse rounded-2xl bg-surface" />
+              ) : plan ? (
+                <div className="mt-9 flex items-end justify-center gap-2.5">
+                  <span className="text-6xl font-extrabold gradient-text md:text-7xl">{inr(plan.priceInr)}</span>
+                  <span className="mb-2 text-text-muted">/ {plan.billingPeriod}</span>
+                </div>
+              ) : (
+                <p className="mt-9 text-text-muted">Pricing is being finalised — check back shortly.</p>
+              )}
 
-              <ul className="mx-auto mt-8 max-w-sm space-y-3 text-left">
-                {LICENSE_INCLUDES.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
-                      <Check className="h-3 w-3" />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              {plan && plan.features.length > 0 && (
+                <ul className="mx-auto mt-8 max-w-sm space-y-3 text-left">
+                  {plan.features.map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-sm text-text-secondary">
+                      <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
+                        <Check className="h-3 w-3" />
+                      </span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
-              <Link
-                to="/feedback"
-                className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-primary px-10 py-4 text-sm font-semibold text-white shadow-glow-primary transition hover:translate-y-[-2px]"
-              >
-                Subscribe <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <p className="mt-4 text-xs text-text-muted">Enquire for onboarding &amp; contract terms.</p>
+              {!authLoading && !subLoading && subscription?.status === "active" ? (
+                <>
+                  <div className="mt-9 inline-flex items-center gap-2 rounded-full bg-surface-green px-4 py-2 text-sm font-medium text-accent-dark">
+                    <Check className="h-4 w-4" /> You're subscribed — {daysRemaining(subscription.renewsAt)} days remaining
+                  </div>
+                  <div className="mt-3">
+                    <Link to="/account" search={{ tab: "subscription" }} className="text-sm font-medium text-primary hover:underline">
+                      View subscription details
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSubscribeClick}
+                    disabled={!plan || subscribing}
+                    className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-primary px-10 py-4 text-sm font-semibold text-white shadow-glow-primary transition hover:translate-y-[-2px] disabled:opacity-60"
+                  >
+                    {subscribing ? (
+                      <>Activating… <Loader2 className="h-4 w-4 animate-spin" /></>
+                    ) : (
+                      <>Subscribe <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>
+                    )}
+                  </button>
+                  <p className="mt-4 text-xs text-text-muted">
+                    {user ? "Secure payment · onboarding begins right after activation." : "Sign in to subscribe."}
+                  </p>
+                </>
+              )}
             </div>
           </BorderGlow>
         </div>
       </div>
+
+      {plan && (
+        <PaymentModal
+          open={paying}
+          amount={plan.priceInr}
+          onClose={() => setPaying(false)}
+          onSuccess={async () => {
+            await handlePaymentSuccess();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@
 // client bundle).
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { OrderEmailPayload, RecruitmentEmailPayload } from "@/emails/types";
+import type { OrderEmailPayload, RecruitmentEmailPayload, SubscriptionEmailPayload } from "@/emails/types";
 
 const orderItemSchema = z.object({
   name: z.string(),
@@ -33,6 +33,20 @@ const orderEmailSchema = z.object({
   }),
   deliverySpeed: z.enum(["standard", "priority"]),
   estimatedDate: z.string(),
+  paymentPlan: z.enum(["full", "partial"]).optional(),
+  amountPaidNow: z.number().optional(),
+  amountDueLater: z.number().optional(),
+});
+
+const subscriptionEmailSchema = z.object({
+  subscriptionId: z.string(),
+  customerName: z.string(),
+  customerEmail: z.string().email(),
+  planName: z.string(),
+  priceInr: z.number(),
+  billingPeriod: z.enum(["month", "year"]),
+  startedDate: z.string(),
+  renewalDate: z.string(),
 });
 
 const recruitmentSchema = z.object({
@@ -52,6 +66,14 @@ export const sendOrderEmailFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { sendOrderConfirmation } = await import("@/server/email.server");
     return sendOrderConfirmation(data);
+  });
+
+/** Send a license subscription confirmation email. Never throws to the client. */
+export const sendSubscriptionEmailFn = createServerFn({ method: "POST" })
+  .validator((data: SubscriptionEmailPayload) => subscriptionEmailSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { sendSubscriptionConfirmation } = await import("@/server/email.server");
+    return sendSubscriptionConfirmation(data);
   });
 
 /** Persist a recruitment application, then email the applicant. Never throws to the client. */
