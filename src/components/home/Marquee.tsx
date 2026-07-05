@@ -3,11 +3,18 @@ const TAGS = ["Secure Shopping", "Made in India", "AI Powered", "Enterprise Read
 export function Marquee() {
   const items = [...TAGS, ...TAGS];
   return (
-    <section aria-label="Trust strip" className="border-y border-border-light bg-surface py-6 overflow-hidden">
-      <div className="flex w-max animate-marquee gap-12 px-6 opacity-60">
+    <section
+      aria-label="Trust strip"
+      className="relative border-y border-border-light bg-surface py-10 overflow-hidden sm:py-12"
+      style={{
+        WebkitMaskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
+        maskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
+      }}
+    >
+      <div className="flex w-max animate-marquee gap-16 px-6">
         {items.map((t, i) => (
-          <div key={i} className="flex items-center gap-3 text-sm font-mono uppercase tracking-widest text-text-secondary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <div key={i} className="flex items-center gap-3.5 text-base font-mono uppercase tracking-[0.15em] text-text-secondary sm:text-lg">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-primary shadow-glow-primary" />
             {t}
           </div>
         ))}

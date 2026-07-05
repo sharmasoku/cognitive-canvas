@@ -8,7 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import BorderGlow from "@/components/ui/BorderGlow";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { daysRemaining, subscribeToLicense, useLicensePlan, useUserSubscription } from "@/hooks/useLicense";
 import { sendSubscriptionEmailFn } from "@/lib/email.functions";
 import { inr, shortDate } from "@/lib/format";

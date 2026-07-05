@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, MessageSquare, KeyRound,
   Loader2, Menu, X
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/shell/Logo";
 
 export const Route = createFileRoute("/admin")({

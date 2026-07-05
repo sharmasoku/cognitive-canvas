@@ -201,7 +201,7 @@
 
 @utility section-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1440px;
   margin-inline: auto;
   padding-inline: 1.25rem;
 }
@@ -209,6 +209,12 @@
 @media (min-width: 768px) {
   .section-container {
     padding-inline: 3rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .section-container {
+    padding-inline: 4rem;
   }
 }
 

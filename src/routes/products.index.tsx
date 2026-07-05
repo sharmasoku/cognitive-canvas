@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Filter, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
-import type { Category, Technology } from "@/data/products";
+import type { Category } from "@/data/products";
 import { useProducts } from "@/hooks/useProducts";
 import { inr } from "@/lib/format";
 
@@ -20,7 +20,6 @@ export const Route = createFileRoute("/products/")({
 });
 
 const CATEGORIES: ("All" | Category)[] = ["All", "Smart Glasses", "Home Automation", "Gaming", "Enterprise"];
-const TECHS: ("All" | Technology)[] = ["All", "BCI + AR", "AR", "BCI", "Standard"];
 const MAX_PRICE = 1600000;
 const SORTS = [
   { id: "featured", label: "Featured" },
@@ -32,7 +31,6 @@ const SORTS = [
 function ProductList() {
   const { products, loading } = useProducts();
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]>("All");
-  const [tech, setTech] = useState<(typeof TECHS)[number]>("All");
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
   const [minRating, setMinRating] = useState(0);
   const [inStock, setInStock] = useState(false);
@@ -43,7 +41,6 @@ function ProductList() {
   const filtered = useMemo(() => {
     let arr = products.filter((p) => {
       if (cat !== "All" && p.category !== cat) return false;
-      if (tech !== "All" && p.technology !== tech) return false;
       if (p.price > maxPrice) return false;
       if (p.rating < minRating) return false;
       if (inStock && !p.inStock) return false;
@@ -54,25 +51,18 @@ function ProductList() {
     else if (sort === "price-desc") arr = [...arr].sort((a, b) => b.price - a.price);
     else if (sort === "rated") arr = [...arr].sort((a, b) => b.rating - a.rating);
     return arr;
-  }, [products, cat, tech, maxPrice, minRating, inStock, q, sort]);
+  }, [products, cat, maxPrice, minRating, inStock, q, sort]);
 
   const Sidebar = (
     <aside className="space-y-6 rounded-3xl border border-border-light bg-background p-6 shadow-soft">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold"><Filter className="h-4 w-4 text-primary" /> Filters</h2>
-        <button onClick={() => { setCat("All"); setTech("All"); setMaxPrice(MAX_PRICE); setMinRating(0); setInStock(false); setQ(""); }} className="text-xs text-text-muted hover:text-primary">Clear all</button>
+        <button onClick={() => { setCat("All"); setMaxPrice(MAX_PRICE); setMinRating(0); setInStock(false); setQ(""); }} className="text-xs text-text-muted hover:text-primary">Clear all</button>
       </div>
       <FilterGroup label="Category">
         <div className="space-y-1">
           {CATEGORIES.map((c) => (
             <button key={c} onClick={() => setCat(c)} className={`w-full rounded-lg px-3 py-2 text-left text-sm ${cat === c ? "bg-surface-violet text-primary font-semibold" : "text-text-secondary hover:bg-surface"}`}>{c}</button>
-          ))}
-        </div>
-      </FilterGroup>
-      <FilterGroup label="Technology">
-        <div className="flex flex-wrap gap-2">
-          {TECHS.map((t) => (
-            <button key={t} onClick={() => setTech(t)} className={`rounded-full border px-3 py-1 text-xs ${tech === t ? "border-primary bg-primary text-white" : "border-border text-text-secondary"}`}>{t}</button>
           ))}
         </div>
       </FilterGroup>

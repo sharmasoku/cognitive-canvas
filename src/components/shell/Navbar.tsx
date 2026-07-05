@@ -5,7 +5,7 @@ import { Heart, Menu, Search, ShoppingBag, X, User, LogOut } from "lucide-react"
 import { useShop } from "@/context/ShopContext";
 import { Logo } from "@/components/shell/Logo";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 
 const LINKS = [
   { to: "/", label: "Home" },

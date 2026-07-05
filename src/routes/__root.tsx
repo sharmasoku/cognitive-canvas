@@ -14,8 +14,8 @@ import appCss from "../styles.css?url";
 import logoUrl from "../assets/logo.png";
 import { reportError } from "../lib/error-reporting";
 import { ShopProvider, useShop } from "../context/ShopContext";
+import { AuthProvider } from "../context/AuthContext";
 import { LenisProvider } from "../components/shell/LenisProvider";
-import { AnnouncementBar } from "../components/shell/AnnouncementBar";
 import { Navbar } from "../components/shell/Navbar";
 import { Footer } from "../components/shell/Footer";
 import { CartDrawer } from "../components/shell/CartDrawer";
@@ -135,10 +135,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ShopProvider>
-        <Shell />
-        <Toaster richColors position="top-center" />
-      </ShopProvider>
+      <AuthProvider>
+        <ShopProvider>
+          <Shell />
+          <Toaster richColors position="top-center" />
+        </ShopProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
@@ -162,7 +164,6 @@ function Shell() {
     <>
       <ParticleField />
       <LenisProvider disabled={drawerOpen} />
-      <AnnouncementBar />
       <Navbar />
       <main className="min-h-[60vh]">
         <Outlet />

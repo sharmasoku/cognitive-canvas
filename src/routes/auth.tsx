@@ -1,11 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { oauth } from "@/integrations/supabase/oauth";
-import { pageTransition } from "@/lib/motion";
+import { Logo } from "@/components/shell/Logo";
 import { toast } from "sonner";
+
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Authentication — TeleARGlass" }] }),
@@ -130,37 +132,44 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative flex min-h-[90vh] items-center justify-center bg-[#f7f7f3] py-16 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-[460px] rounded-[32px] border border-[#e5e5df] bg-[#fdfdfb] p-8 sm:p-10 shadow-soft relative z-10">
+    <div className="relative isolate flex min-h-[90vh] items-center justify-center overflow-hidden bg-gradient-dark px-4 py-16 text-white sm:px-6 lg:px-8">
+      {/* Background layers, matching the Hero's dark editorial stage */}
+      <div className="orb -z-10" style={{ width: 620, height: 620, background: "#7c3aed", top: -240, left: -220, opacity: 0.32 }} />
+      <div className="orb -z-10" style={{ width: 560, height: 560, background: "#2563eb", bottom: -240, right: -200, opacity: 0.28 }} />
+      <div className="absolute inset-0 -z-10 bg-grid opacity-[0.08]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_38%,rgba(124,58,237,0.18),transparent_62%)]" />
 
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: EASE }}
+        className="glass-dark relative z-10 w-full max-w-[440px] rounded-[2rem] p-8 shadow-card-hover sm:p-10"
+      >
         {/* Top Header Logo */}
-        <div className="flex items-center gap-2">
-          <svg className="h-6 w-6 text-[#1b7a43]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-          </svg>
-          <span className="font-serif text-xl tracking-tight text-[#1c1d1a] font-medium">TeleARGlass</span>
-        </div>
+        <Link to="/" className="inline-flex items-center">
+          <Logo className="h-11" />
+        </Link>
 
         {/* Header Text */}
         <div className="mt-8">
-          <h2 className="font-serif text-3xl font-medium tracking-tight text-[#1c1d1a]">
+          <h2 className="text-3xl font-bold tracking-tight text-white">
             {isSignUp ? "Create account" : "Welcome back"}
           </h2>
-          <p className="mt-2 text-sm text-[#5c5c56]">
+          <p className="mt-2 text-sm text-white/60">
             {isSignUp ? "Register to start managing your orders." : "Sign in to manage your orders."}
           </p>
         </div>
 
         {/* Continue with Google button */}
-        <div className="mt-6">
+        <div className="mt-7">
           <button
             type="button"
             onClick={() => handleOAuthLogin("google")}
             disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-full border border-[#e5e5df] bg-white py-3 px-6 text-sm font-medium text-[#1c1d1a] transition hover:bg-neutral-50 hover:border-neutral-300 disabled:opacity-50 shadow-sm"
+            className="flex w-full items-center justify-center gap-3 rounded-full border border-white/15 bg-white/5 py-3.5 px-6 text-sm font-medium text-white transition hover:border-white/25 hover:bg-white/10 disabled:opacity-50"
           >
             {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-[#1c1d1a]" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -174,12 +183,12 @@ function AuthPage() {
         </div>
 
         {/* Divider */}
-        <div className="relative my-6">
+        <div className="relative my-7">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t border-[#e5e5df]" />
+            <div className="w-full border-t border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-[#fdfdfb] px-3 text-[#8c8c86]">or</span>
+            <span className="bg-[#0a0d14] px-3 text-white/40">or</span>
           </div>
         </div>
 
@@ -193,7 +202,7 @@ function AuthPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Full name"
-                className="w-full rounded-2xl border border-[#e5e5df] bg-white py-3.5 px-4 text-sm text-[#1c1d1a] placeholder-[#a3a39e] outline-none focus:border-[#1b7a43] focus:ring-1 focus:ring-[#1b7a43] transition"
+                className="w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm text-white placeholder-white/35 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
               />
             </div>
           )}
@@ -205,7 +214,7 @@ function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
-              className="w-full rounded-2xl border border-[#e5e5df] bg-white py-3.5 px-4 text-sm text-[#1c1d1a] placeholder-[#a3a39e] outline-none focus:border-[#1b7a43] focus:ring-1 focus:ring-[#1b7a43] transition"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm text-white placeholder-white/35 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -216,7 +225,7 @@ function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full rounded-2xl border border-[#e5e5df] bg-white py-3.5 px-4 text-sm text-[#1c1d1a] placeholder-[#a3a39e] outline-none focus:border-[#1b7a43] focus:ring-1 focus:ring-[#1b7a43] transition"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 px-4 text-sm text-white placeholder-white/35 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -224,7 +233,7 @@ function AuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-[#1b7a43] hover:bg-[#166534] py-3.5 px-6 text-sm font-semibold text-white transition disabled:opacity-50 shadow-sm mt-2 flex items-center justify-center gap-2"
+            className="magnetic mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-3.5 px-6 text-sm font-semibold text-white shadow-glow-primary transition disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isSignUp ? "Sign Up" : "Sign In"}
@@ -234,23 +243,23 @@ function AuthPage() {
         {/* Footer Links */}
         <div className="mt-6 flex flex-col items-center gap-3 text-center text-sm">
           {!isSignUp && (
-            <a href="#" className="font-medium text-[#1b7a43] hover:underline">
+            <a href="#" className="font-medium text-primary-light hover:underline">
               Forgot password?
             </a>
           )}
 
-          <div className="text-[#8c8c86]">
+          <div className="text-white/50">
             {isSignUp ? (
               <>
                 Already have an account?{" "}
-                <button onClick={() => setIsSignUp(false)} className="font-medium text-[#1b7a43] hover:underline">
+                <button onClick={() => setIsSignUp(false)} className="font-medium text-primary-light hover:underline">
                   Sign in
                 </button>
               </>
             ) : (
               <>
                 No account?{" "}
-                <button onClick={() => setIsSignUp(true)} className="font-medium text-[#1b7a43] hover:underline">
+                <button onClick={() => setIsSignUp(true)} className="font-medium text-primary-light hover:underline">
                   Sign up
                 </button>
               </>
@@ -259,14 +268,13 @@ function AuthPage() {
         </div>
 
         {/* Compliance Footer message */}
-        <div className="mt-8 border-t border-[#e5e5df]/50 pt-4 flex items-center justify-center gap-2 text-xs text-[#8c8c86]">
-          <svg className="h-4 w-4 text-[#1b7a43] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="mt-8 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-xs text-white/40">
+          <svg className="h-4 w-4 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
           <span>Your neural privacy, secured.</span>
         </div>
-
-      </div>
+      </motion.div>
     </div>
   );
 }

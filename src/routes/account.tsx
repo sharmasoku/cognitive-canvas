@@ -6,7 +6,7 @@ import {
   User, Package, MapPin, Heart, Star, Loader2, LogOut, ChevronRight,
   Pencil, Trash2, Plus, Check, Phone, Mail, Calendar, ShieldCheck, KeyRound,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useUserOrders, type DbOrder } from "@/hooks/useOrders";
 import {
   useUserReviews, useUserAddresses,
@@ -365,11 +365,9 @@ function OrdersTab({ userId }: { userId: string }) {
       ) : (
         <div className="space-y-3">
           {mergedOrders.map((order) => (
-            <Link
+            <div
               key={order.id}
-              to="/orders/$id"
-              params={{ id: order.id }}
-              className="flex items-center justify-between rounded-2xl border border-[#e5e5df] bg-white p-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
+              className="flex items-center justify-between rounded-2xl border border-[#e5e5df] bg-white p-5 shadow-sm"
             >
               <div className="min-w-0">
                 <div className="font-semibold text-[#1c1d1a] text-sm truncate font-mono">{order.id}</div>
@@ -380,9 +378,8 @@ function OrdersTab({ userId }: { userId: string }) {
               <div className="flex items-center gap-3 shrink-0">
                 <StatusBadge status={order.status} />
                 <div className="font-semibold text-[#1c1d1a] text-sm">{inr(order.total)}</div>
-                <ChevronRight className="h-4 w-4 text-[#a3a39e] group-hover:text-primary transition" />
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -20,7 +27,9 @@ interface AuthState {
   refreshProfile: () => Promise<void>;
 }
 
-export function useAuth(): AuthState {
+const AuthContext = createContext<AuthState | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -46,13 +55,13 @@ export function useAuth(): AuthState {
         _role: "admin",
       });
       if (error) {
-        console.error("[useAuth] checkAdmin error:", error);
+        console.error("[AuthContext] checkAdmin error:", error);
         setIsAdmin(false);
       } else {
         setIsAdmin(!!data);
       }
     } catch (err) {
-      console.error("[useAuth] checkAdmin exception:", err);
+      console.error("[AuthContext] checkAdmin exception:", err);
       setIsAdmin(false);
     }
   }, []);
@@ -212,5 +221,13 @@ export function useAuth(): AuthState {
     setIsAdmin(false);
   }, []);
 
-  return { user, profile, isAdmin, loading, signOut, refreshProfile };
+  const value: AuthState = { user, profile, isAdmin, loading, signOut, refreshProfile };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): AuthState {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 }

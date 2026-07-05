@@ -1,19 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useShop } from "@/context/ShopContext";
 import { inr } from "@/lib/format";
 
 export function CartDrawer() {
-  const { cartOpen, setCartOpen, cart, removeFromCart, updateCartQty, cartSubtotal, discountPct, applyCoupon, coupon } = useShop();
-  const [code, setCode] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  function submitCoupon() {
-    const ok = applyCoupon(code);
-    setFeedback(ok ? "Coupon applied — 10% off." : "Invalid code. Try FUTURE10.");
-  }
+  const { cartOpen, setCartOpen, cart, removeFromCart, updateCartQty, cartSubtotal } = useShop();
 
   return (
     <AnimatePresence>
@@ -72,20 +64,11 @@ export function CartDrawer() {
             </div>
             {cart.length > 0 && (
               <footer className="space-y-4 border-t border-border-light px-6 py-4">
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Tag className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
-                    <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code" className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                  </div>
-                  <button onClick={submitCoupon} className="rounded-lg border border-border bg-surface px-4 text-sm font-medium hover:border-primary hover:text-primary">Apply</button>
-                </div>
-                {feedback && <p className="text-xs text-text-secondary">{feedback}</p>}
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-text-secondary">Subtotal</span><span>{inr(cartSubtotal)}</span></div>
-                  {discountPct > 0 && <div className="flex justify-between text-accent"><span>Discount ({coupon})</span><span>− {inr(Math.round(cartSubtotal * discountPct))}</span></div>}
                   <div className="flex justify-between text-text-secondary"><span>Shipping</span><span>Calculated at checkout</span></div>
                 </div>
-                <Link to="/checkout" onClick={() => setCartOpen(false)} className="block w-full rounded-xl bg-gradient-primary py-3 text-center font-semibold text-white magnetic">Checkout · {inr(cartSubtotal - Math.round(cartSubtotal * discountPct))}</Link>
+                <Link to="/checkout" onClick={() => setCartOpen(false)} className="block w-full rounded-xl bg-gradient-primary py-3 text-center font-semibold text-white magnetic">Checkout · {inr(cartSubtotal)}</Link>
               </footer>
             )}
           </motion.aside>

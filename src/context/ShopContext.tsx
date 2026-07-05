@@ -63,16 +63,12 @@ interface ShopAPI extends UIState {
   cart: CartItem[];
   wishlist: WishlistItem[];
   orders: Order[];
-  coupon: string | null;
-  discountPct: number;
   addToCart: (p: Product, qty?: number) => void;
   removeFromCart: (id: string) => void;
   updateCartQty: (id: string, qty: number) => void;
   refreshCartProducts: () => Promise<void>;
   toggleWishlist: (p: Product) => void;
   inWishlist: (id: string) => boolean;
-  applyCoupon: (code: string) => boolean;
-  clearCoupon: () => void;
   placeOrder: (addr: ShippingAddress, speed: "standard" | "priority") => Promise<Order>;
   getOrder: (id: string) => Order | undefined;
   cartCount: number;
@@ -85,7 +81,6 @@ const LS = {
   cart: "tele_cart",
   wishlist: "tele_wishlist",
   orders: "tele_orders",
-  coupon: "tele_coupon",
 };
 
 function loadLS<T>(key: string, fallback: T): T {
@@ -113,7 +108,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     loadLS<WishlistItem[]>(LS.wishlist, []),
   );
   const [orders, setOrders] = useState<Order[]>(() => loadLS<Order[]>(LS.orders, []));
-  const [coupon, setCoupon] = useState<string | null>(() => loadLS<string | null>(LS.coupon, null));
 
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
@@ -122,9 +116,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   useEffect(() => saveLS(LS.cart, cart), [cart]);
   useEffect(() => saveLS(LS.wishlist, wishlist), [wishlist]);
   useEffect(() => saveLS(LS.orders, orders), [orders]);
-  useEffect(() => saveLS(LS.coupon, coupon), [coupon]);
-
-  const discountPct = coupon === "FUTURE10" ? 0.1 : 0;
 
   const addToCart = useCallback((p: Product, qty = 1) => {
     setCart((prev) => {
@@ -178,16 +169,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     [wishlist],
   );
 
-  const applyCoupon = useCallback((code: string) => {
-    if (code.trim().toUpperCase() === "FUTURE10") {
-      setCoupon("FUTURE10");
-      return true;
-    }
-    setCoupon(null);
-    return false;
-  }, []);
-  const clearCoupon = useCallback(() => setCoupon(null), []);
-
   const cartSubtotal = useMemo(
     () => cart.reduce((s, c) => s + c.product.price * c.quantity, 0),
     [cart],
@@ -198,8 +179,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     async (addr: ShippingAddress, speed: "standard" | "priority") => {
       const subtotal = cartSubtotal;
       const shipping = speed === "priority" ? 499 : 0;
-      const discount = Math.round(subtotal * discountPct);
-      const tax = Math.round((subtotal - discount) * 0.18);
+      const discount = 0;
+      const tax = 0;
       const total = subtotal - discount + shipping + tax;
 
       const advanceFromItems = cart.reduce(
@@ -240,7 +221,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       };
       setOrders((prev) => [order, ...prev]);
       setCart([]);
-      setCoupon(null);
 
       // Fire-and-forget order confirmation email for all orders (guests + signed-in).
       // Never block checkout or surface a failure to the shopper.
@@ -276,7 +256,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
       return order;
     },
-    [cart, cartSubtotal, discountPct],
+    [cart, cartSubtotal],
   );
 
   const getOrder = useCallback((id: string) => orders.find((o) => o.id === id), [orders]);
@@ -286,8 +266,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       cart,
       wishlist,
       orders,
-      coupon,
-      discountPct,
       cartOpen,
       wishlistOpen,
       searchOpen,
@@ -300,8 +278,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       refreshCartProducts,
       toggleWishlist,
       inWishlist,
-      applyCoupon,
-      clearCoupon,
       placeOrder,
       getOrder,
       cartCount,
@@ -311,8 +287,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       cart,
       wishlist,
       orders,
-      coupon,
-      discountPct,
       cartOpen,
       wishlistOpen,
       searchOpen,
@@ -322,8 +296,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       refreshCartProducts,
       toggleWishlist,
       inWishlist,
-      applyCoupon,
-      clearCoupon,
       placeOrder,
       getOrder,
       cartCount,

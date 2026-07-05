@@ -39,11 +39,7 @@ export function OrderConfirmation(order: OrderEmailPayload) {
       {/* Totals */}
       <Section style={{ marginTop: "8px" }}>
         <TotalRow label="Subtotal" value={inr(order.subtotal)} />
-        {order.discount > 0 && (
-          <TotalRow label="Discount" value={`- ${inr(order.discount)}`} accent />
-        )}
         <TotalRow label="Shipping" value={order.shipping === 0 ? "Free" : inr(order.shipping)} />
-        <TotalRow label="Tax (18% GST)" value={inr(order.tax)} />
         <div style={{ borderTop: `1px solid ${brand.border}`, margin: "8px 0" }} />
         <TotalRow label="Total" value={inr(order.total)} bold />
         {order.paymentPlan === "partial" && order.amountDueLater ? (

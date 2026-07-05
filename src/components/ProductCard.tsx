@@ -1,12 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Heart, Plus, Star } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Heart, Plus, Star } from "lucide-react";
+import { useState } from "react";
 import { useShop } from "@/context/ShopContext";
 import { computeAdvanceAmount, type Product } from "@/data/products";
 import { inr } from "@/lib/format";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
-  const { addToCart, toggleWishlist, inWishlist } = useShop();
+  const { addToCart, setCartOpen, toggleWishlist, inWishlist } = useShop();
+  const [justAdded, setJustAdded] = useState(false);
   const wished = inWishlist(product.id);
   const advanceNow = computeAdvanceAmount(product, 1);
   const isPartPayment = product.advanceType != null && advanceNow < product.price;
@@ -46,10 +48,6 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
-          <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            {product.technology}
-          </div>
         </div>
       </Link>
 
@@ -84,11 +82,24 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             onClick={(e) => {
               e.preventDefault();
               addToCart(product);
+              setJustAdded(true);
+              setCartOpen(true);
+              setTimeout(() => setJustAdded(false), 900);
             }}
             aria-label="Add to cart"
             className="inline-flex items-center gap-1 rounded-full bg-gradient-primary px-4 py-2.5 text-xs font-semibold text-white shadow-soft transition-all duration-300 hover:shadow-glow-primary hover:translate-y-[-2px]"
           >
-            <Plus className="h-3.5 w-3.5" /> Add
+            <AnimatePresence mode="wait" initial={false}>
+              {justAdded ? (
+                <motion.span key="added" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} className="inline-flex items-center gap-1">
+                  <Check className="h-3.5 w-3.5" /> Added
+                </motion.span>
+              ) : (
+                <motion.span key="add" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} className="inline-flex items-center gap-1">
+                  <Plus className="h-3.5 w-3.5" /> Add
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         </div>
       </div>
