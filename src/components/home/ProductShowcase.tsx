@@ -67,8 +67,8 @@ function ShowcaseCard({ product }: { product: Product }) {
         <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-surface-violet px-3 py-1 text-xs font-mono uppercase tracking-widest text-primary">
           Featured product
         </span>
-        <h2 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          {nameLead} <span className="gradient-text">{nameLast}</span>
+        <h2 className="mt-4 text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+          {nameLead} {nameLast}
         </h2>
         <p className="mt-3 text-base text-text-secondary">{product.tagline}</p>
       </motion.div>
@@ -133,11 +133,20 @@ function ShowcaseCard({ product }: { product: Product }) {
                 <span className="text-lg font-bold text-foreground">{inr(product.price)}</span>
               </div>
 
+              {isPartPayment && (
+                <div className="mt-3.5">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.18)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Pre-Book Available
+                  </span>
+                </div>
+              )}
+
               {isPartPayment ? (
                 <>
-                  <div className="relative mt-4">
-                    <div className="text-xs font-mono uppercase tracking-widest text-accent-dark">Pay today</div>
-                    <div className="mt-1 text-5xl font-extrabold leading-none font-heading gradient-text">{inr(advanceNow)}</div>
+                  <div className="relative mt-5 flex flex-wrap items-baseline gap-2">
+                    <span className="text-sm font-semibold uppercase tracking-wider text-accent-dark">Pre-book for</span>
+                    <span className="text-5xl font-extrabold leading-none font-heading gradient-text">{inr(advanceNow)}</span>
                   </div>
 
                   <div className="relative mt-5">

@@ -14,12 +14,6 @@ const SOCIALS = [
     hover: "hover:border-[#0a66c2] hover:bg-[#0a66c2]/10 hover:text-[#0a66c2] hover:shadow-[0_0_15px_rgba(10,102,194,0.35)]",
   },
   {
-    label: "WhatsApp",
-    href: "https://wa.me/917862939627",
-    icon: null,
-    hover: "hover:border-[#25d366] hover:bg-[#25d366]/10 hover:text-[#25d366] hover:shadow-[0_0_15px_rgba(37,211,102,0.35)]",
-  },
-  {
     label: "Instagram",
     href: "https://www.instagram.com/telearglass",
     icon: Instagram,
@@ -97,7 +91,7 @@ export function Footer() {
           <div className="md:col-span-12 lg:col-span-4">
             <Link to="/" className="flex items-center gap-3">
               <Logo className="h-11" />
-              <span className="font-heading text-base font-bold">TeleARGlass</span>
+              <span className="font-heading text-base font-bold text-primary">TeleARGlass</span>
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/65">
               <b>Serving Humanity Through Technology.</b>
@@ -125,20 +119,7 @@ export function Footer() {
           </div>
 
           {/* Link columns */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-12 md:gap-6 lg:col-span-8">
-            {/* Quick Links */}
-            <div>
-              <div className="text-xs font-mono font-semibold uppercase tracking-widest text-[#a78bfa]">
-                Quick Links
-              </div>
-              <ul className="mt-5 space-y-3">
-                <li><FooterLink to="/">Home</FooterLink></li>
-                <li><FooterLink to="/products">TeleProducts</FooterLink></li>
-                <li><FooterLink to="/services">TeleServices</FooterLink></li>
-                <li><FooterLink to="/recruitment">TeleRecruitment</FooterLink></li>
-                <li><FooterButton onClick={() => setCartOpen(true)}>TeleCart</FooterButton></li>
-              </ul>
-            </div>
+          <div className="grid grid-cols-2 gap-8 md:col-span-12 md:gap-6 lg:col-span-8">
 
             {/* Customer Service */}
             <div>

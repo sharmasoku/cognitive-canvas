@@ -4,7 +4,6 @@ import { Marquee } from "@/components/home/Marquee";
 import { Mission } from "@/components/home/Mission";
 import { Policies } from "@/components/home/Policies";
 import { ProductShowcase } from "@/components/home/ProductShowcase";
-import { Testimonials } from "@/components/home/Testimonials";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,7 +24,6 @@ function Index() {
       <Marquee />
       <Mission />
       <ProductShowcase />
-      <Testimonials />
       <Policies />
     </>
   );

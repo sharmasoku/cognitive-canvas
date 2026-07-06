@@ -39,6 +39,7 @@ export interface Product {
   /** Part-payment rule, if the admin has enabled it for this product. */
   advanceType: "percent" | "fixed" | null;
   advanceValue: number | null;
+  whenItWillDeliver?: string;
 }
 
 /**

@@ -81,8 +81,8 @@ function AccountPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold tracking-tight text-[#1c1d1a] lg:text-4xl">
-            My<span className="gradient-text">Account</span>
+          <h1 className="text-3xl font-bold tracking-tight text-primary lg:text-4xl">
+            My Account
           </h1>
           <p className="mt-1 text-sm text-[#5c5c56]">
             Welcome back, {(profile?.full_name || user.user_metadata?.full_name || "Explorer").split(" ")[0]}. Manage your profile, orders, and preferences.

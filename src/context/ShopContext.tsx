@@ -222,9 +222,21 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       setOrders((prev) => [order, ...prev]);
       setCart([]);
 
-      // Fire-and-forget order confirmation email for all orders (guests + signed-in).
-      // Never block checkout or surface a failure to the shopper.
-      const eta = new Date(Date.now() + (speed === "priority" ? 2 : 5) * 86_400_000);
+      const deliveryEstimates = order.items
+        .map((c) => {
+          const custom = c.product.whenItWillDeliver;
+          return custom ? `${c.product.name}: ${custom}` : null;
+        })
+        .filter(Boolean);
+
+      const estimatedDate = deliveryEstimates.length > 0
+        ? deliveryEstimates.join(", ")
+        : new Date(Date.now() + (speed === "priority" ? 2 : 5) * 86_400_000).toLocaleDateString("en-IN", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          });
+
       void sendOrderEmailFn({
         data: {
           orderId: order.id,
@@ -244,11 +256,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           amountDueLater,
           shippingAddress: addr,
           deliverySpeed: speed,
-          estimatedDate: eta.toLocaleDateString("en-IN", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-          }),
+          estimatedDate,
         },
       }).catch(() => {
         /* best-effort */

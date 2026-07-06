@@ -55,7 +55,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       <div className="flex flex-1 flex-col p-5">
         <div className="text-xs font-semibold text-text-muted">{product.category}</div>
         <Link to="/products/$slug" params={{ slug: product.slug }}>
-          <h3 className="mt-1 text-lg font-bold leading-tight hover:text-primary transition-colors">
+          <h3 className="mt-1 text-lg font-bold leading-tight text-primary hover:text-primary transition-colors">
             {product.name}
           </h3>
         </Link>

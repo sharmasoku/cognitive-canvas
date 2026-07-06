@@ -1,4 +1,9 @@
-const TAGS = ["Secure Shopping", "Made in India", "AI Powered", "Enterprise Ready", "Accessibility Focused", "BCI Privacy", "Open SDK", "ISO 27001"];
+const TAGS = [
+  "make in India",
+  "Think UI based TeleARGlass Products",
+  "Ultra Smart Communication and Control",
+  "Our Patented TELEPATHY Technology"
+];
 
 export function Marquee() {
   const items = [...TAGS, ...TAGS];
@@ -13,7 +18,7 @@ export function Marquee() {
     >
       <div className="flex w-max animate-marquee gap-16 px-6">
         {items.map((t, i) => (
-          <div key={i} className="flex items-center gap-3.5 text-base font-mono uppercase tracking-[0.15em] text-text-secondary sm:text-lg">
+          <div key={i} className="flex items-center gap-3.5 text-base font-mono uppercase tracking-[0.15em] text-primary sm:text-lg">
             <span className="h-2 w-2 shrink-0 rounded-full bg-primary shadow-glow-primary" />
             {t}
           </div>

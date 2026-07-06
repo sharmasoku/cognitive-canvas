@@ -25,6 +25,7 @@ const POLICIES = [
       "All TeleARGlass communications & controls are end-to-end encrypted.",
       "TeleARGlass reads your Think Data only from the targeted head skin, purely to operate the device.",
       "We strongly recommend a 15-minute break for every 1 hour of continuous use.",
+      "The age between 5 to 18 Years of TeleARGlass Users require Own & their Parents ThinkID & FaceID.",
     ],
   },
   {
@@ -43,7 +44,7 @@ export function Policies() {
       <div className="section-container">
         <div className="max-w-2xl">
           <span className="text-xs font-mono uppercase tracking-widest text-primary">Policies</span>
-          <h2 className="mt-4 text-4xl font-bold leading-tight md:text-5xl">Clear commitments, before and after purchase.</h2>
+          <h2 className="mt-4 text-4xl font-bold leading-tight text-primary md:text-5xl">TeleARGlass Policies</h2>
           <p className="mt-4 text-text-secondary">Everything you should know about buying, using and protecting your TeleARGlass.</p>
         </div>
 
@@ -64,7 +65,7 @@ export function Policies() {
                     <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-violet text-primary">
                       <p.icon className="h-6 w-6" />
                     </div>
-                    <h3 className="mt-5 text-xl font-bold">{p.title}</h3>
+                    <h3 className="mt-5 text-xl font-bold text-primary">{p.title}</h3>
                     <ul className="mt-4 space-y-3">
                       {p.points.map((pt, j) => (
                         <li key={j} className="flex gap-2.5 text-sm leading-relaxed text-text-secondary">

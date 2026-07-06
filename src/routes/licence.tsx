@@ -21,28 +21,17 @@ export const Route = createFileRoute("/licence")({
 const GLOW_COLORS = ["#7c3aed", "#2563eb", "#10b981"];
 
 const FEATURES = [
-  { icon: Glasses, title: "Thinking Immersive AR Display", desc: "Cutting-edge augmented reality with depth perception and real-time environment mapping." },
-  { icon: Accessibility, title: "Speaking Accessibility", desc: "Voice-first navigation and screen-reader integration for inclusive technology." },
-  { icon: Cpu, title: "PanOS Operating System", desc: "Proprietary OS built from the ground up for security, speed, and seamless AR integration." },
-  { icon: BrainCircuit, title: "AI Data Interpretation", desc: "On-device AI that understands context and delivers actionable insights." },
-  { icon: LayoutGrid, title: "30+ Product Apps", desc: "A rich ecosystem of productivity, entertainment, and specialized applications." },
-  { icon: PackageCheck, title: "Complete Solution Package", desc: "Everything you need — hardware, software, and support — in one license." },
-];
-
-const CUSTOMIZABLE = [
-  "ISRO Space Communication",
-  "DRDO Applications",
-  "Legacy Mobile Features",
-  "Accessibility Tools",
-  "Social Media Integration",
-  "Gaming & Entertainment",
-  "Home Automation",
-  "Robotics Control",
+  { icon: Glasses, title: "Thinking Immersive AR Display", desc: "Think immersive AR display UI communication and control ." },
+  { icon: Accessibility, title: "Speaking Accessibility", desc: "Our TeleARProducts Think to Speak feature for speaking disable ,vision impaired and paralyzed patients ." },
+  { icon: Cpu, title: "PanOS Operating System", desc: "Our TeleARGlass product are powered by ThinkUI based communication and control - PanOS Operating System" },
+  { icon: BrainCircuit, title: "Thnik Data AI Intepretation", desc: "We apply measured Think Data including alphabets ,digits, controlled actions in our Parijat Software as a AI Database." },
+  { icon: LayoutGrid, title: "30+ Product Apps", desc: "TeleARGlass products has customized Parijat apps applicable in the areas of Indian Defence and Security accessibilty ,ISRO Space ,Education, Social Media , Entertainment , Automation and more ." },
+  { icon: PackageCheck, title: "Telepathy Sensor Programable Control Board .", desc: "It is the board schematic design layout to transmit the Think Data wirelessly to the AR Display , Mobile , Computer or the automation control action ." },
 ];
 
 const DESIGN_FEATURES = [
-  { icon: Brush, title: "Aesthetic Design & Ergonomics", desc: "A sleek, lightweight frame engineered for all-day comfort and a premium feel on every wear." },
-  { icon: Radar, title: "Data-Capturing Sensor Design", desc: "High-precision sensors capture accurate environment and user data to power every experience." },
+  { icon: Brush, title: "TeleARGlass Aesthetic and Erognomics Desgin with Analysis .", desc: "A sleek, lightweight frame engineered for all-day comfort and a premium feel on every wear." },
+  { icon: Radar, title: "Think Data Capturing Telepathy  Sensor Design.", desc: "High-precision sensors capture accurate environment and user data to power every experience." },
 ];
 
 const HIGHLIGHTS = ["PanOS Operating System", "Immersive AR Display", "Speaking Accessibility", "30+ Software Apps"];
@@ -112,9 +101,8 @@ function Licence() {
           <div className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface px-4 py-1.5 text-xs font-mono uppercase tracking-widest text-text-secondary">
             <Sparkles className="h-3.5 w-3.5 text-primary" /> Make-in-India · Patented Product
           </div>
-          <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl">
-            Our Innovative, Sustainable{" "}
-            <span className="gradient-text">Make-in-India</span> Patented Product
+          <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-primary md:text-6xl">
+            Our Innovative, Sustainable Make-in-India Patented Product
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-text-secondary">
             TeleARGlass runs on our proprietary <span className="font-semibold text-foreground">PanOS Operating System</span> with a customizable
@@ -156,35 +144,13 @@ function Licence() {
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-violet text-primary">
                     <f.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-5 text-lg font-bold text-foreground">{f.title}</h3>
+                  <h3 className="mt-5 text-lg font-bold text-primary">{f.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-text-secondary">{f.desc}</p>
                 </div>
               </BorderGlow>
             </motion.div>
           ))}
         </div>
-
-        {/* Customizable software */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-8 rounded-[28px] border border-border-light bg-surface p-8"
-        >
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Customizable Software
-          </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            {CUSTOMIZABLE.map((c) => (
-              <span
-                key={c}
-                className="rounded-full border border-border-light bg-background px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-primary/50 hover:text-primary"
-              >
-                {c}
-              </span>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Design highlights */}
         <div className="mt-8 grid items-stretch gap-6 md:grid-cols-2">
@@ -212,7 +178,7 @@ function Licence() {
                     <f.icon className="h-7 w-7" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">{f.title}</h3>
+                    <h3 className="text-xl font-bold text-primary">{f.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-text-secondary">{f.desc}</p>
                   </div>
                 </div>
@@ -238,8 +204,8 @@ function Licence() {
               <div className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface px-3.5 py-1.5 text-[11px] font-mono uppercase tracking-widest text-text-secondary">
                 Limited-Time Patent Licensing
               </div>
-              <h2 className="mt-6 text-2xl font-bold leading-snug text-foreground md:text-[2rem]">
-                {plan?.name ?? "TeleARGlass Patent Licensing"}
+              <h2 className="mt-6 text-2xl font-bold leading-snug text-primary md:text-[2rem]">
+                {((plan?.name ?? "TeleARGlass Patent License") || "").replace(/Enterprise/i, "").replace(/\s+/g, " ").trim()}
               </h2>
               <p className="mt-2 text-text-secondary">For innovative &amp; sustainable organisations only.</p>
 

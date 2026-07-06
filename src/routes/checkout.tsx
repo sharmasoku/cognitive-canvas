@@ -53,6 +53,17 @@ function Checkout() {
   const order = orderId ? getOrder(orderId) : undefined;
 
   const getEstimatedDate = (deliverySpeed: "standard" | "priority") => {
+    if (order && order.items && order.items.length > 0) {
+      const estimates = order.items
+        .map((c) => {
+          const custom = c.product.whenItWillDeliver;
+          return custom ? `${c.product.name}: ${custom}` : null;
+        })
+        .filter(Boolean);
+      if (estimates.length > 0) {
+        return estimates.join(", ");
+      }
+    }
     const date = new Date();
     date.setDate(date.getDate() + (deliverySpeed === "priority" ? 1 : 4));
     return date.toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });

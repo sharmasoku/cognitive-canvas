@@ -136,8 +136,8 @@ function ServicesPage() {
 
       {/* Hero */}
       <section className="section-container relative py-16 lg:py-20">
-        <h1 className="text-5xl font-bold tracking-tight md:text-6xl">
-          All <span className="gradient-text">Services</span>
+        <h1 className="text-5xl font-bold tracking-tight text-primary md:text-6xl">
+          All Services
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-text-secondary">
           Comprehensive TeleARGlass services for all your needs.

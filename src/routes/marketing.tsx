@@ -28,7 +28,8 @@ function Marketing() {
         images={MARKETING_IMAGES}
         grayscale={false}
         overlayBlurColor="#ffffff"
-        fit={0.6}
+        fit={2}
+        minRadius={2300}
         imageBorderRadius="24px"
         openedImageBorderRadius="24px"
         openedImageWidth="min(80vw, 640px)"

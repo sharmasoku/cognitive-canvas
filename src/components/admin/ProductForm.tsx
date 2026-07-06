@@ -52,8 +52,15 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
   const [advanceValue, setAdvanceValue] = useState(product?.advance_value != null ? String(product.advance_value) : "");
   const [imageUrl, setImageUrl] = useState(product?.image_url ?? "");
   const [gallery, setGallery] = useState<string[]>(product?.gallery ?? []);
+  const [whenItWillDeliver, setWhenItWillDeliver] = useState<string>(
+    product?.specifications?.when_it_will_deliver ?? "",
+  );
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>(
-    product ? Object.entries(product.specifications).map(([key, value]) => ({ key, value })) : [],
+    product
+      ? Object.entries(product.specifications)
+          .filter(([key]) => key !== "when_it_will_deliver")
+          .map(([key, value]) => ({ key, value }))
+      : [],
   );
   const [faqs, setFaqs] = useState<FaqEntry[]>(product?.faqs ?? []);
 
@@ -94,6 +101,9 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
 
     const specObject: Record<string, string> = {};
     for (const s of specs) if (s.key.trim()) specObject[s.key.trim()] = s.value;
+    if (whenItWillDeliver.trim()) {
+      specObject["when_it_will_deliver"] = whenItWillDeliver.trim();
+    }
     const cleanFaqs = faqs.filter((f) => f.question.trim());
     const featuredOrderNum = featuredOrder.trim() ? parseInt(featuredOrder, 10) : null;
     const advanceValueNum = parseInt(advanceValue, 10);
@@ -238,6 +248,11 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
               </FieldWrap>
               <FieldWrap label="Stock">
                 <input type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} className={inputCls} placeholder="100" />
+              </FieldWrap>
+            </div>
+            <div className="mt-4">
+              <FieldWrap label="When it will deliver">
+                <input value={whenItWillDeliver} onChange={(e) => setWhenItWillDeliver(e.target.value)} className={inputCls} placeholder="e.g. 3-5 business days or 15 Aug 2026" />
               </FieldWrap>
             </div>
             <label className="flex items-center gap-2 text-sm text-gray-700">

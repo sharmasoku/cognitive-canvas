@@ -118,7 +118,7 @@ function ProductDetail() {
           {/* ─── Purchase panel ─── */}
           <div>
             <div className="text-sm font-medium uppercase tracking-wide text-text-muted">{product.category}</div>
-            <h1 className="mt-3 text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">{product.name}</h1>
+            <h1 className="mt-3 text-4xl font-bold leading-[1.05] tracking-tight text-primary sm:text-5xl lg:text-6xl">{product.name}</h1>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-text-secondary">{product.tagline}</p>
 
             <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">

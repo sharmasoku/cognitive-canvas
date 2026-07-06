@@ -94,7 +94,7 @@ function ProductList() {
 
       <div className="section-container relative">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Tele<span className="gradient-text">Products</span></h1>
+          <h1 className="text-4xl font-bold tracking-tight text-primary md:text-5xl">TeleProducts</h1>
         </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">

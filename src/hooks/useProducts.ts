@@ -45,6 +45,7 @@ function mapDbProduct(row: ProductRow, ratings: Map<string, { rating: number; re
     reviewsList: [],
     advanceType: (row.advance_type as "percent" | "fixed" | null) ?? null,
     advanceValue: row.advance_value ?? null,
+    whenItWillDeliver: row.specifications && typeof row.specifications === "object" && "when_it_will_deliver" in (row.specifications as any) ? ((row.specifications as any).when_it_will_deliver as string) : "",
   };
 }
 

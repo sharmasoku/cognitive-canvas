@@ -177,12 +177,9 @@ function Recruitment() {
   return (
     <div className="section-container py-16 max-w-4xl">
       <div className="text-center max-w-3xl mx-auto mb-12">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          Join the TeleARGlass <span className="gradient-text">Team</span>
+        <h1 className="text-4xl font-bold tracking-tight text-primary md:text-5xl">
+          Join the TeleARGlass Expert Team
         </h1>
-        <p className="mt-4 text-lg text-text-secondary">
-          We are always looking for passionate builders, researchers, and innovators. Submit your details below to apply and contribute as a team.
-        </p>
       </div>
 
       <div className="max-w-2xl mx-auto rounded-3xl border border-border bg-card p-6 md:p-8 shadow-card">

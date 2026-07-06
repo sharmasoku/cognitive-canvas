@@ -40,7 +40,7 @@ function Feedback() {
       <div className="orb" style={{ width: 500, height: 500, background: "#10b981", bottom: -200, right: -150, opacity: 0.08 }} />
 
       <div className="section-container py-16 relative">
-        <h1 className="text-5xl font-bold tracking-tight md:text-6xl">Tele<span className="gradient-text">Feedback</span></h1>
+        <h1 className="text-5xl font-bold tracking-tight text-primary md:text-6xl">TeleFeedback</h1>
         <p className="mt-4 max-w-2xl text-lg text-text-secondary">Genuine reviews from verified TeleARGlass customers.</p>
 
         {/* Wall of love */}
