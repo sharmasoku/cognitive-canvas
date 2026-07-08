@@ -58,6 +58,8 @@ const recruitmentSchema = z.object({
   aadhaar: z.string().default(""),
   address: z.string().default(""),
   message: z.string().default(""),
+  resumeBase64: z.string().optional(),
+  resumeName: z.string().optional(),
 });
 
 /** Send an order-confirmation email. Never throws to the client. */

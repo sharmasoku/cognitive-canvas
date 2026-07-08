@@ -7,7 +7,7 @@ export function Storyboard() {
       {/* Decorative grid and orbs */}
       <div className="absolute inset-0 bg-grid opacity-20" />
       <div className="orb" style={{ width: 500, height: 500, background: "#2563eb", bottom: -200, right: -100, opacity: 0.15 }} />
-      <div className="orb" style={{ width: 400, height: 400, background: "#7c3aed", top: -100, left: -150, opacity: 0.12 }} />
+      <div className="orb" style={{ width: 400, height: 400, background: "#1016FF", top: -100, left: -150, opacity: 0.12 }} />
 
       <div className="section-container relative">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-end">

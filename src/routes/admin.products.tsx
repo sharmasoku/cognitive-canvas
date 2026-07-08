@@ -235,7 +235,7 @@ function AdminProductsPage() {
       {confirmDelete && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setConfirmDelete(null)}>
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-900">Delete product?</h3>
+            <h3 className="text-lg font-bold text-primary">Delete product?</h3>
             <p className="mt-2 text-sm text-gray-500">
               Delete <span className="font-semibold text-gray-700">{confirmDelete.name}</span>? This cannot be undone.
             </p>
@@ -251,7 +251,7 @@ function AdminProductsPage() {
       {confirmToggle && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setConfirmToggle(null)}>
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-primary">
               {confirmToggle.type === "active"
                 ? confirmToggle.product.is_active ? "Deactivate product?" : "Activate product?"
                 : confirmToggle.product.is_featured ? "Remove from homepage?" : "Show on homepage?"}

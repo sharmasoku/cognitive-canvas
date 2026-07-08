@@ -56,4 +56,6 @@ export interface RecruitmentEmailPayload {
   aadhaar: string;
   address: string;
   message: string;
+  resumeBase64?: string;
+  resumeName?: string;
 }

@@ -65,7 +65,7 @@ export function PanOS() {
                     {/* Base line */}
                     <line
                       x1="0" y1="0" x2={p.x} y2={p.y}
-                      stroke="rgba(124,58,237,0.12)"
+                      stroke="rgba(27,45,107,0.12)"
                       strokeWidth={1}
                     />
                     {/* Active gradient overlay with transition */}
@@ -81,10 +81,10 @@ export function PanOS() {
                 );
               })}
               <defs>
-                <linearGradient id="panos-linkg" x1="0" x2="1"><stop offset="0" stopColor="#7c3aed" /><stop offset="1" stopColor="#10b981" /></linearGradient>
+                <linearGradient id="panos-linkg" x1="0" x2="1"><stop offset="0" stopColor="#1016FF" /><stop offset="1" stopColor="#10b981" /></linearGradient>
               </defs>
-              <circle cx="0" cy="0" r="220" fill="none" stroke="rgba(124,58,237,0.08)" strokeDasharray="4 6" />
-              <circle cx="0" cy="0" r="160" fill="none" stroke="rgba(124,58,237,0.06)" strokeDasharray="4 6" />
+              <circle cx="0" cy="0" r="220" fill="none" stroke="rgba(27,45,107,0.08)" strokeDasharray="4 6" />
+              <circle cx="0" cy="0" r="160" fill="none" stroke="rgba(27,45,107,0.06)" strokeDasharray="4 6" />
             </svg>
 
             {/* Center brain node with pulse */}

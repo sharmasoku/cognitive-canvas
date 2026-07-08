@@ -79,7 +79,7 @@ export function Timeline() {
 
   return (
     <section className="relative overflow-hidden bg-surface py-24 lg:py-32">
-      <div className="orb" style={{ width: 500, height: 500, background: "#7c3aed", top: 100, left: -200, opacity: 0.2 }} />
+      <div className="orb" style={{ width: 500, height: 500, background: "#1016FF", top: 100, left: -200, opacity: 0.2 }} />
       <div className="section-container">
         <div className="mb-16 max-w-2xl">
           <span className="text-xs font-mono uppercase tracking-widest text-primary">Workflow</span>

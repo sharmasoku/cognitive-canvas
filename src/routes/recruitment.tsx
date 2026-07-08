@@ -27,6 +27,7 @@ function Recruitment() {
     address: "",
     message: "",
   });
+  const [resumeBase64, setResumeBase64] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFile = (f: File) => {
@@ -39,6 +40,13 @@ function Recruitment() {
         return p + 7;
       });
     }, 80);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setResumeBase64(reader.result as string);
+    };
+    reader.readAsDataURL(f);
+
     if (errors.resume) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -157,10 +165,16 @@ function Recruitment() {
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const res = await submitRecruitmentFn({ data: formData });
+      const res = await submitRecruitmentFn({
+        data: {
+          ...formData,
+          resumeBase64: resumeBase64 || undefined,
+          resumeName: fileName || undefined,
+        },
+      });
       if (!res.ok) {
         setSubmitError(
-          "We couldn't submit your application right now. Please try again.",
+          res.error || "We couldn't submit your application right now. Please try again.",
         );
         return;
       }
@@ -377,7 +391,7 @@ function Recruitment() {
 
               {/* Message to Join */}
               <div className="flex flex-col gap-1.5 col-span-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-text-secondary">Message to Join & Contribute as Teams <span className="text-destructive">*</span></label>
+                <label className="text-xs font-bold uppercase tracking-wider text-text-secondary">Please write your punch line to join TeleARGlass Expert Team <span className="text-destructive">*</span></label>
                 <textarea
                   required
                   name="message"

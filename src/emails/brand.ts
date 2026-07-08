@@ -5,8 +5,8 @@
 export const brand = {
   name: "TeleARGlass",
   // Matches the storefront theme (src/styles.css).
-  gradient: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-  gradientStart: "#7c3aed",
+  gradient: "linear-gradient(135deg, #1016FF 0%, #2563eb 100%)",
+  gradientStart: "#1016FF",
   accent: "#10b981",
   accentDark: "#047857",
   surfaceGreen: "#ecfdf5",
@@ -26,6 +26,9 @@ export function logoUrl(): string {
   const base =
     (typeof process !== "undefined" && process.env.PUBLIC_ASSET_BASE_URL) ||
     "https://telearglass.com";
+  if (base.endsWith("/logo.png")) {
+    return base;
+  }
   return `${base.replace(/\/$/, "")}/logo.png`;
 }
 

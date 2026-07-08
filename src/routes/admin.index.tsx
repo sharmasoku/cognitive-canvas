@@ -13,7 +13,7 @@ export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
 });
 
-const PIE_COLORS = ["#10b981", "#f59e0b", "#7c3aed", "#3b82f6", "#ef4444"];
+const PIE_COLORS = ["#10b981", "#f59e0b", "#1016FF", "#3b82f6", "#ef4444"];
 
 function AdminDashboard() {
   const { stats, loading } = useDashboardStats();
@@ -83,7 +83,7 @@ function AdminDashboard() {
           className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col h-full"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900">Sales Analytics (7 Days)</h2>
+            <h2 className="font-bold text-primary">Sales Analytics (7 Days)</h2>
           </div>
           <div className="flex-1 min-h-[200px]">
             {hasSales ? (
@@ -91,8 +91,8 @@ function AdminDashboard() {
                 <AreaChart data={stats.salesByDay} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#1016FF" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#1016FF" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#9ca3af" }} dy={10} />
@@ -100,7 +100,7 @@ function AdminDashboard() {
                     formatter={(v: number) => [inr(v), "Sales"]}
                     contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                   />
-                  <Area type="monotone" dataKey="total" stroke="#7c3aed" strokeWidth={2} fillOpacity={1} fill="url(#colorTotal)" />
+                  <Area type="monotone" dataKey="total" stroke="#1016FF" strokeWidth={2} fillOpacity={1} fill="url(#colorTotal)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -117,7 +117,7 @@ function AdminDashboard() {
           className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col h-full"
         >
           <div className="mb-4">
-            <h2 className="font-bold text-gray-900">Order Status Breakdown</h2>
+            <h2 className="font-bold text-primary">Order Status Breakdown</h2>
           </div>
           <div className="flex-1 min-h-[200px] flex items-center justify-center">
             {stats.statusBreakdown.length > 0 ? (
@@ -167,7 +167,7 @@ function AdminDashboard() {
         className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm mt-6"
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="font-bold text-gray-900">Recent Orders</h2>
+          <h2 className="font-bold text-primary">Recent Orders</h2>
           <Link to="/admin/orders" className="text-sm text-primary font-medium hover:underline">View all &rarr;</Link>
         </div>
 

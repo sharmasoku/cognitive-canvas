@@ -106,11 +106,10 @@ function AdminUsersPage() {
                     <td className="px-6 py-4 text-gray-500 font-mono text-xs">{userObj.phone || "—"}</td>
                     <td className="px-6 py-4 text-gray-500">{shortDate(userObj.created_at)}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                        userObj.role === "admin"
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${userObj.role === "admin"
                           ? "bg-violet-100 text-violet-600 border border-violet-200"
                           : "bg-blue-100 text-blue-600 border border-blue-200"
-                      }`}>
+                        }`}>
                         {userObj.role === "admin" && <Shield className="h-2.5 w-2.5" />}
                         {userObj.role}
                       </span>

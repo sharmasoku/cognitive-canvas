@@ -46,7 +46,7 @@ function AdminMessagesPage() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-sm">{msg.name}</h3>
+                  <h3 className="font-semibold text-primary text-sm">{msg.name}</h3>
                   <div className="mt-1.5 space-y-1 text-xs text-gray-500">
                     <div className="flex items-center gap-1.5">
                       <Mail className="h-3 w-3" />

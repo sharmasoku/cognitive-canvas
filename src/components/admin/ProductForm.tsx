@@ -159,21 +159,20 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
 
   return (
     <>
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm">
       <motion.div
-        initial={{ x: 60, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="h-full w-full max-w-2xl overflow-y-auto bg-[#f8f9fc] shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="h-full w-full overflow-y-auto bg-[#f8f9fc] shadow-2xl"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur">
-          <h2 className="text-lg font-bold text-gray-900">{isEdit ? "Edit Product" : "Add Product"}</h2>
+          <h2 className="text-lg font-bold text-primary">{isEdit ? "Edit Product" : "Add Product"}</h2>
           <button onClick={onClose} className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 p-6">
+        <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
           {/* Basic info */}
           <Section title="Basic Information">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -251,7 +250,7 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
               </FieldWrap>
             </div>
             <div className="mt-4">
-              <FieldWrap label="When it will deliver">
+              <FieldWrap label="Delivery Date">
                 <input value={whenItWillDeliver} onChange={(e) => setWhenItWillDeliver(e.target.value)} className={inputCls} placeholder="e.g. 3-5 business days or 15 Aug 2026" />
               </FieldWrap>
             </div>
@@ -388,7 +387,7 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
     {pendingPayload && (
       <div className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" onClick={() => setPendingPayload(null)}>
         <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900">Save changes?</h3>
+          <h3 className="text-lg font-bold text-primary">Save changes?</h3>
           <p className="mt-2 text-sm text-gray-500">
             Save changes to <span className="font-semibold text-gray-700">{name}</span>? This will update the live product listing.
           </p>
@@ -422,7 +421,7 @@ const addBtnCls =
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 text-sm font-bold text-gray-900">{title}</h3>
+      <h3 className="mb-4 text-sm font-bold text-primary">{title}</h3>
       <div className="space-y-4">{children}</div>
     </section>
   );

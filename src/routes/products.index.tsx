@@ -89,7 +89,7 @@ function ProductList() {
   return (
     <div className="relative overflow-hidden py-12">
       {/* Background Orbs */}
-      <div className="orb" style={{ width: 600, height: 600, background: "#7c3aed", top: -200, right: -150, opacity: 0.12 }} />
+      <div className="orb" style={{ width: 600, height: 600, background: "#1016FF", top: -200, right: -150, opacity: 0.12 }} />
       <div className="orb" style={{ width: 500, height: 500, background: "#2563eb", bottom: -200, left: -150, opacity: 0.08 }} />
 
       <div className="section-container relative">
@@ -124,7 +124,7 @@ function ProductList() {
             ) : filtered.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-border bg-surface p-16 text-center text-text-secondary">No products match those filters.</div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3">
                 {filtered.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
               </div>
             )}

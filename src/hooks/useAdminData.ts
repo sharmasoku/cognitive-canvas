@@ -432,3 +432,44 @@ export async function upsertAddress(address: Partial<UserAddress> & { user_id: s
   const { error } = await supabase.from("addresses").insert(address as unknown as TablesInsert<"addresses">);
   return { ok: !error, error: error?.message };
 }
+
+/* ─── Job Applications (Recruitment) ─── */
+export interface JobApplication {
+  id: string;
+  full_name: string;
+  email: string;
+  dob: string | null;
+  gender: string | null;
+  contact: string | null;
+  aadhaar: string | null;
+  address: string | null;
+  message: string | null;
+  created_at: string;
+}
+
+export function useAllJobApplications() {
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await (supabase as any)
+        .from("job_applications")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        setApplications(data as JobApplication[]);
+      }
+    } catch { /* */ }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { applications, loading, refetch: fetch };
+}
+
+export async function deleteJobApplication(id: string) {
+  const { error } = await (supabase as any).from("job_applications").delete().eq("id", id);
+  return { ok: !error, error: error?.message };
+}

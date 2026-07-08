@@ -40,15 +40,17 @@ const POLICIES = [
 
 export function Policies() {
   return (
-    <section id="policies" className="scroll-mt-28 py-24 lg:py-32">
+    // Reduced padding from py-24 to py-12 on mobile to minimize scroll length
+    <section id="policies" className="scroll-mt-28 py-12 md:py-24 lg:py-32">
       <div className="section-container">
         <div className="max-w-2xl">
           <span className="text-xs font-mono uppercase tracking-widest text-primary">Policies</span>
-          <h2 className="mt-4 text-4xl font-bold leading-tight text-primary md:text-5xl">TeleARGlass Policies</h2>
-          <p className="mt-4 text-text-secondary">Everything you should know about buying, using and protecting your TeleARGlass.</p>
+          <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-primary">TeleARGlass Policies</h2>
+          <p className="mt-4 text-sm sm:text-base text-text-secondary">Everything you should know about buying, using and protecting your TeleARGlass.</p>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        {/* Reduced top margin on mobile from mt-12 to mt-6 */}
+        <div className="mt-6 md:mt-12 grid gap-6 md:grid-cols-3">
           {POLICIES.map((p, i) => (
             <motion.div
               key={p.title}
@@ -59,17 +61,20 @@ export function Policies() {
               className="h-full"
             >
               <GlowCard glowColor={GLOW_COLORS_BY_TITLE[p.title]} className="h-full">
-                <div className="relative overflow-hidden p-8">
+                {/* Reduced card padding from p-8 to p-5 on mobile to keep layouts compact */}
+                <div className="relative overflow-hidden p-5 sm:p-8">
                   <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-primary opacity-10 blur-3xl" />
                   <div className="relative">
-                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-violet text-primary">
-                      <p.icon className="h-6 w-6" />
+                    <div className="flex items-center gap-4">
+                      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-surface-violet text-primary">
+                        <p.icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-primary leading-tight">{p.title}</h3>
                     </div>
-                    <h3 className="mt-5 text-xl font-bold text-primary">{p.title}</h3>
-                    <ul className="mt-4 space-y-3">
+                    <ul className="mt-6 space-y-3">
                       {p.points.map((pt, j) => (
-                        <li key={j} className="flex gap-2.5 text-sm leading-relaxed text-text-secondary">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                        <li key={j} className="flex gap-2.5 text-sm sm:text-base font-bold leading-relaxed text-text-secondary">
+                          <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                           <span>{pt}</span>
                         </li>
                       ))}

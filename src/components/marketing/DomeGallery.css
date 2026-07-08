@@ -105,7 +105,8 @@ main.sphere-main {
   outline: none;
 }
 
-.item__image img {
+.item__image img,
+.item__image video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -174,7 +175,15 @@ main.sphere-main {
   filter: var(--image-filter, none);
 }
 
-.sphere-root .enlarge-closing img {
+.viewer .enlarge video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.sphere-root .enlarge-closing img,
+.sphere-root .enlarge-closing video {
   filter: var(--image-filter, none);
 }
 

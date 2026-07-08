@@ -8,6 +8,7 @@ export interface LicensePlan {
   priceInr: number;
   billingPeriod: "month" | "year";
   features: string[];
+  isActive: boolean;
 }
 
 function mapPlan(row: Tables<"license_plans">): LicensePlan {
@@ -17,6 +18,7 @@ function mapPlan(row: Tables<"license_plans">): LicensePlan {
     priceInr: row.price_inr,
     billingPeriod: row.billing_period as "month" | "year",
     features: Array.isArray(row.features) ? (row.features as string[]) : [],
+    isActive: row.is_active,
   };
 }
 
@@ -133,9 +135,10 @@ export interface LicensePlanInput {
   price_inr: number;
   billing_period: "month" | "year";
   features: string[];
+  is_active?: boolean;
 }
 
-/** Create or update the single active enterprise plan. */
+/** Create or update the enterprise plan. */
 export async function upsertLicensePlan(input: LicensePlanInput) {
   if (input.id) {
     const { error } = await supabase
@@ -145,6 +148,7 @@ export async function upsertLicensePlan(input: LicensePlanInput) {
         price_inr: input.price_inr,
         billing_period: input.billing_period,
         features: input.features,
+        is_active: input.is_active,
         updated_at: new Date().toISOString(),
       } as unknown as TablesUpdate<"license_plans">)
       .eq("id", input.id);
@@ -155,8 +159,52 @@ export async function upsertLicensePlan(input: LicensePlanInput) {
     price_inr: input.price_inr,
     billing_period: input.billing_period,
     features: input.features,
-    is_active: true,
+    is_active: input.is_active ?? true,
   } as unknown as TablesInsert<"license_plans">);
+  return { ok: !error, error: error?.message };
+}
+
+export function useAllLicensePlans() {
+  const [plans, setPlans] = useState<LicensePlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from("license_plans")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data) {
+        setPlans(data.map(mapPlan));
+      }
+    } catch {
+      // best-effort
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { plans, loading, refetch: fetch };
+}
+
+export async function deleteLicensePlan(id: string) {
+  const { error } = await supabase
+    .from("license_plans")
+    .delete()
+    .eq("id", id);
+  return { ok: !error, error: error?.message };
+}
+
+export async function toggleLicensePlanActive(id: string, currentStatus: boolean) {
+  const { error } = await supabase
+    .from("license_plans")
+    .update({
+      is_active: !currentStatus,
+      updated_at: new Date().toISOString(),
+    } as unknown as TablesUpdate<"license_plans">)
+    .eq("id", id);
   return { ok: !error, error: error?.message };
 }
 

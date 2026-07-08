@@ -52,31 +52,30 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       </Link>
 
       {/* Product Information Body */}
-      <div className="flex flex-1 flex-col p-5">
-        <div className="text-xs font-semibold text-text-muted">{product.category}</div>
+      <div className="flex flex-1 flex-col p-3.5 sm:p-5">
         <Link to="/products/$slug" params={{ slug: product.slug }}>
-          <h3 className="mt-1 text-lg font-bold leading-tight text-primary hover:text-primary transition-colors">
+          <h3 className="mt-1 text-sm sm:text-lg font-bold leading-snug text-primary hover:text-primary transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1 line-clamp-2 text-sm text-text-secondary leading-relaxed">{product.tagline}</p>
+        <p className="mt-1 line-clamp-1 sm:line-clamp-2 text-xs sm:text-sm text-text-secondary leading-relaxed">{product.tagline}</p>
         
-        <div className="mt-2 flex items-center gap-1.5 text-xs">
-          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+        <div className="mt-1.5 flex items-center gap-1 text-[10px] sm:text-xs">
+          <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
           <span className="font-bold text-foreground">{product.rating}</span>
           <span className="text-text-muted">· {product.reviewCount} reviews</span>
         </div>
 
         {isPartPayment && (
-          <div className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-green px-2.5 py-1 text-[11px] font-medium text-accent-dark">
-            Pay {inr(advanceNow)} now, rest on delivery
+          <div className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-green px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[11px] font-medium text-accent-dark leading-none">
+            Pay {inr(advanceNow)} now
           </div>
         )}
 
-        <div className="mt-auto flex items-end justify-between pt-4">
+        <div className="mt-auto flex items-center justify-between pt-3 sm:pt-4 border-t border-border-light/40 mt-3 sm:mt-4">
           <div>
-            <div className="text-xl font-bold gradient-text">{inr(product.price)}</div>
-            {product.originalPrice && <div className="text-xs text-text-muted line-through">{inr(product.originalPrice)}</div>}
+            <div className="text-sm sm:text-xl font-bold gradient-text">{inr(product.price)}</div>
+            {product.originalPrice && <div className="text-[10px] sm:text-xs text-text-muted line-through">{inr(product.originalPrice)}</div>}
           </div>
           <button
             onClick={(e) => {
@@ -87,7 +86,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               setTimeout(() => setJustAdded(false), 900);
             }}
             aria-label="Add to cart"
-            className="inline-flex items-center gap-1 rounded-full bg-gradient-primary px-4 py-2.5 text-xs font-semibold text-white shadow-soft transition-all duration-300 hover:shadow-glow-primary hover:translate-y-[-2px]"
+            className="inline-flex items-center gap-1 rounded-full bg-gradient-primary px-2.5 py-1.5 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs font-semibold text-white shadow-soft transition-all duration-300 hover:shadow-glow-primary hover:translate-y-[-2px]"
           >
             <AnimatePresence mode="wait" initial={false}>
               {justAdded ? (

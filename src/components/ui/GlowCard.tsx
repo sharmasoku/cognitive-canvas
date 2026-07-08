@@ -22,7 +22,7 @@ export function GlowCard({
       glowIntensity={1}
       glowRadius={26}
       coneSpread={22}
-      colors={["#7c3aed", "#2563eb", "#10b981"]}
+      colors={["#1016FF", "#2563eb", "#10b981"]}
       className={className}
     >
       {children}

@@ -8,10 +8,31 @@ function chunkIntoRows(reviews: DbReview[], rowCount: number): DbReview[][] {
   return rows.filter((r) => r.length > 0);
 }
 
+const STATIC_REVIEWS: DbReview[] = [
+  {
+    id: "static-1",
+    userName: "Honourable Governor Acharya Devvrat",
+    rating: 5,
+    comment: "Very Good Startups are becoming in India.",
+    date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+    verified: true,
+    helpfulVotes: 12
+  },
+  {
+    id: "static-2",
+    userName: "Nilesh Desai (ISRO Ahmedabad Director)",
+    rating: 5,
+    comment: "Very Good Innovation & He invited Our Startup TeleARGlass at ISRO Facility.",
+    date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+    verified: true,
+    helpfulVotes: 18
+  }
+];
+
 /**
  * Multi-row auto-scrolling wall of reviews, alternating scroll direction per
- * row. Sourced entirely from the reviews table (fetchAllReviews never falls
- * back to static content) — hides itself if there's nothing to show yet.
+ * row. Sourced entirely from the reviews table + injected guest comments.
+ * Hides itself if there's nothing to show yet.
  */
 export function TestimonialMarquee() {
   const [reviews, setReviews] = useState<DbReview[]>([]);
@@ -19,8 +40,12 @@ export function TestimonialMarquee() {
 
   useEffect(() => {
     let active = true;
-    fetchAllReviews(48).then((r) => {
-      if (active) { setReviews(r); setLoading(false); }
+    fetchAllReviews(48).then((dbReviews) => {
+      if (active) {
+        // Merge the two guest comments at the front of reviews list
+        setReviews([...STATIC_REVIEWS, ...dbReviews]);
+        setLoading(false);
+      }
     });
     return () => { active = false; };
   }, []);
@@ -41,7 +66,19 @@ export function TestimonialMarquee() {
 
   if (reviews.length === 0) return null;
 
-  const rowCount = reviews.length >= 9 ? 3 : reviews.length >= 4 ? 2 : 1;
+  // Below or equal to 5: Static row without scrolling movement
+  if (reviews.length <= 5) {
+    return (
+      <div className="flex flex-wrap justify-center gap-6 py-6 px-4">
+        {reviews.map((r) => (
+          <TestimonialCard key={r.id} review={r} totalCount={reviews.length} />
+        ))}
+      </div>
+    );
+  }
+
+  // More than 5: Scrolling marquee
+  const rowCount = reviews.length >= 9 ? 3 : reviews.length >= 6 ? 2 : 1;
   const rows = chunkIntoRows(reviews, rowCount);
 
   return (
@@ -54,7 +91,7 @@ export function TestimonialMarquee() {
               className={`flex w-max gap-4 ${i % 2 === 0 ? "animate-marquee" : "animate-marquee-reverse"} hover:[animation-play-state:paused]`}
             >
               {items.map((r, j) => (
-                <TestimonialCard key={`${r.id}-${j}`} review={r} />
+                <TestimonialCard key={`${r.id}-${j}`} review={r} totalCount={reviews.length} />
               ))}
             </div>
           </div>
@@ -64,16 +101,43 @@ export function TestimonialMarquee() {
   );
 }
 
-function TestimonialCard({ review }: { review: DbReview }) {
+function TestimonialCard({ review, totalCount }: { review: DbReview; totalCount: number }) {
+  // Determine width based on totalCount when static (totalCount <= 5)
+  let cardWidth = "w-80";
+  let textClass = "text-sm";
+  let nameClass = "text-sm";
+  let avatarSize = "h-10 w-10 text-sm";
+  let paddingClass = "p-6";
+
+  if (totalCount <= 5) {
+    if (totalCount === 2) {
+      cardWidth = "w-full max-w-[32rem]";
+      textClass = "text-base md:text-lg font-medium";
+      nameClass = "text-base md:text-lg";
+      avatarSize = "h-12 w-12 text-base";
+      paddingClass = "p-8";
+    } else if (totalCount === 3) {
+      cardWidth = "w-full max-w-[24rem]";
+      textClass = "text-sm md:text-base";
+      nameClass = "text-sm md:text-base";
+      avatarSize = "h-11 w-11 text-sm";
+      paddingClass = "p-7";
+    } else if (totalCount === 4) {
+      cardWidth = "w-full max-w-[21rem]";
+    } else {
+      cardWidth = "w-full max-w-[18rem]";
+    }
+  }
+
   return (
-    <div className="w-80 shrink-0 rounded-3xl border border-border-light bg-background p-6 shadow-card">
+    <div className={`${cardWidth} shrink-0 rounded-3xl border border-border-light bg-background ${paddingClass} shadow-card transition-all duration-300 hover:scale-[1.01] hover:border-primary/20`}>
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-sm font-bold text-white">
+        <div className={`grid ${avatarSize} shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary font-bold text-white`}>
           {review.userName?.[0]?.toUpperCase() ?? "T"}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-semibold text-foreground">{review.userName}</span>
+            <span className={`truncate font-semibold text-foreground ${nameClass}`}>{review.userName}</span>
             {review.verified && <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-accent" />}
           </div>
           <div className="flex gap-0.5">
@@ -83,7 +147,7 @@ function TestimonialCard({ review }: { review: DbReview }) {
           </div>
         </div>
       </div>
-      <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-text-secondary">"{review.comment}"</p>
+      <p className={`mt-3 leading-relaxed text-text-secondary ${textClass}`}>"{review.comment}"</p>
     </div>
   );
 }

@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Package, ShoppingCart, MessageSquare, KeyRound,
-  Loader2, Menu, X
+  Loader2, Menu, X, FileText
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/shell/Logo";
+import { useContactMessages } from "@/hooks/useAdminData";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin Panel — TeleARGlass" }] }),
@@ -18,12 +19,14 @@ const NAV = [
   { to: "/admin/products", label: "Products", icon: Package, exact: false },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart, exact: false },
   { to: "/admin/license", label: "License", icon: KeyRound, exact: false },
+  { to: "/admin/recruitment", label: "Recruitment", icon: FileText, exact: false },
   { to: "/admin/messages", label: "Messages", icon: MessageSquare, exact: false },
-] as const;
+];
 
 function AdminLayout() {
   const navigate = useNavigate();
   const { user, isAdmin, loading, signOut } = useAuth();
+  const { messages, loading: messagesLoading } = useContactMessages();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -68,19 +71,25 @@ function AdminLayout() {
         <motion.aside
           initial={{ x: -280 }}
           animate={{ x: 0 }}
-          className={`fixed inset-y-0 left-0 z-30 w-[260px] bg-[#121620] border-r border-gray-800 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static shrink-0 print:hidden ${
+          className={`fixed inset-y-0 left-0 z-30 w-[260px] bg-[#121620] border-r border-gray-800 p-5 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen shrink-0 print:hidden ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           }`}
         >
           {/* Logo */}
-          <div className="mb-8 px-2 border-b border-gray-800/40 pb-5">
+          <div className="mb-6 px-2 border-b border-gray-800/40 pb-5">
             <Logo className="h-16" />
             <div className="text-[9px] text-gray-500 font-bold tracking-wider uppercase mt-3">Admin Control Panel</div>
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 space-y-1">
-            {NAV.map((item) => {
+          <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
+            {NAV.filter((item) => {
+              if (item.to === "/admin/messages") {
+                if (messagesLoading) return true;
+                return messages.length > 0;
+              }
+              return true;
+            }).map((item) => {
               const active = item.exact
                 ? pathname === item.to || pathname === item.to + "/"
                 : pathname.startsWith(item.to);

@@ -4,11 +4,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, CreditCard, Home, ShoppingBag, Truck, Zap } from "lucide-react";
+import { Check, CreditCard, Home, ShoppingBag, Truck, Zap, Star, X, MapPin } from "lucide-react";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { useShop, type ShippingAddress } from "@/context/ShopContext";
 import { computeAdvanceAmount } from "@/data/products";
 import { inr } from "@/lib/format";
+import { submitReview } from "@/lib/commerce";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — TeleARGlass" }] }),
@@ -28,12 +29,42 @@ const STEPS = ["Shipping", "Review", "Success"] as const;
 
 function Checkout() {
   const navigate = useNavigate();
-  const { cart, cartSubtotal, placeOrder, refreshCartProducts, getOrder } = useShop();
+  const { cart, cartSubtotal, placeOrder, refreshCartProducts, getOrder, orders } = useShop();
   const [step, setStep] = useState(0);
-  const [speed, setSpeed] = useState<"standard" | "priority">("standard");
+  const speed = "standard";
   const [addr, setAddr] = useState<ShippingAddress | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  const [savedAddresses, setSavedAddresses] = useState<ShippingAddress[]>(() => {
+    const extracted: ShippingAddress[] = [];
+    const seen = new Set<string>();
+    orders.forEach((o) => {
+      if (o.shippingAddress) {
+        const key = `${o.shippingAddress.fullName}-${o.shippingAddress.address}-${o.shippingAddress.postalCode}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          extracted.push(o.shippingAddress);
+        }
+      }
+    });
+    if (extracted.length === 0) {
+      return [
+        {
+          fullName: "Sorav Sharma",
+          phone: "6353086637",
+          address: "Gujarat, India, Gandhinagar-382721, Gujarat, India, Ahmedabad, GUJARAT",
+          city: "Ahmedabad",
+          postalCode: "382721",
+          email: "sorav@telearglass.com",
+        },
+      ];
+    }
+    return extracted;
+  });
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+  const [showAddressForm, setShowAddressForm] = useState(false);
 
   const form = useForm<ShippingAddress>({ resolver: zodResolver(shippingSchema), mode: "onBlur" });
 
@@ -113,38 +144,137 @@ function Checkout() {
         <div>
           <AnimatePresence mode="wait">
             {step === 0 && (
-              <motion.form key="ship" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                onSubmit={form.handleSubmit((data) => { setAddr(data); setStep(1); })}
-                className="space-y-6">
-                <div className="grid gap-4 rounded-3xl border border-border-light bg-background p-6 sm:grid-cols-2 shadow-card">
-                  <Field label="Full name" error={form.formState.errors.fullName?.message} {...form.register("fullName")} />
-                  <Field label="Email" type="email" error={form.formState.errors.email?.message} {...form.register("email")} />
-                  <div className="sm:col-span-2"><Field label="Street address" error={form.formState.errors.address?.message} {...form.register("address")} /></div>
-                  <Field label="City" error={form.formState.errors.city?.message} {...form.register("city")} />
-                  <Field label="6-digit PIN" error={form.formState.errors.postalCode?.message} {...form.register("postalCode")} />
-                  <div className="sm:col-span-2"><Field label="Contact Number" placeholder="Contact Number" error={form.formState.errors.phone?.message} {...form.register("phone")} /></div>
-                </div>
+              <motion.div key="ship" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+                {!showAddressForm ? (
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-[#1016FF]" />
+                      <h2 className="text-xl font-bold tracking-tight text-foreground">Shipping Address</h2>
+                    </div>
 
-                <div className="rounded-3xl border border-border-light bg-background p-6 shadow-card">
-                  <h2 className="text-sm font-mono uppercase tracking-widest text-text-muted">Delivery speed</h2>
-                  <div className="mt-4 space-y-3">
-                    {[
-                      { id: "standard" as const, icon: Truck, title: "Standard", price: 0, sub: "3–5 business days · India-wide" },
-                      { id: "priority" as const, icon: Zap, title: "Priority Express", price: 499, sub: "24-hour courier in metros" },
-                    ].map((o) => (
-                      <button type="button" key={o.id} onClick={() => setSpeed(o.id)} className={`flex w-full items-center justify-between rounded-2xl border bg-background p-4 text-left transition ${speed === o.id ? "border-primary shadow-card-hover" : "border-border-light hover:border-primary/30"}`}>
-                        <div className="flex items-center gap-4">
-                          <div className="grid h-11 w-11 place-items-center rounded-xl bg-surface-violet text-primary"><o.icon className="h-5 w-5" /></div>
-                          <div><div className="font-semibold">{o.title}</div><div className="text-sm text-text-muted">{o.sub}</div></div>
+                    {/* Saved Addresses List */}
+                    <div className="grid gap-4">
+                      {savedAddresses.map((address, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => setSelectedAddressIndex(idx)}
+                          className={`relative flex items-start gap-4 rounded-3xl p-5 border-2 cursor-pointer transition-all duration-200 ${
+                            selectedAddressIndex === idx
+                              ? "border-[#1016FF] bg-[#1016FF]/[0.02]"
+                              : "border-border bg-background hover:border-text-secondary/40"
+                          }`}
+                        >
+                          <div className="mt-1 flex h-5 items-center">
+                            <input
+                              type="radio"
+                              name="selectedAddress"
+                              checked={selectedAddressIndex === idx}
+                              onChange={() => setSelectedAddressIndex(idx)}
+                              className="h-4 w-4 accent-[#1016FF] cursor-pointer"
+                            />
+                          </div>
+                          <div className="flex-1 text-sm text-left">
+                            <div className="font-bold text-foreground">
+                              {address.fullName} <span className="mx-2 text-text-muted font-normal">·</span> <span className="font-mono font-medium text-text-secondary">{address.phone}</span>
+                            </div>
+                            <div className="mt-1.5 text-text-secondary leading-relaxed">
+                              {address.address}, {address.city} - {address.postalCode}
+                            </div>
+                            <div className="mt-1 text-xs text-text-muted">{address.email}</div>
+                          </div>
                         </div>
-                        <div className="font-semibold">{o.price === 0 ? "Free" : inr(o.price)}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                      ))}
+                    </div>
 
-                <button type="submit" className="w-full rounded-full bg-gradient-primary px-6 py-3 text-sm font-semibold text-white magnetic">Continue to review</button>
-              </motion.form>
+                    {/* Action buttons */}
+                    <div className="mt-8 flex items-center gap-6">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddressForm(true)}
+                        className="text-sm font-bold text-[#1016FF] hover:underline flex items-center gap-1.5"
+                      >
+                        + Add another address
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const selected = savedAddresses[selectedAddressIndex];
+                          if (selected) {
+                            setAddr(selected);
+                            setStep(1);
+                          }
+                        }}
+                        className="rounded-full bg-[#1016FF] hover:bg-[#142252] px-8 py-3 text-sm font-semibold text-white transition shadow-soft"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={form.handleSubmit((data) => {
+                      setSavedAddresses((prev) => [...prev, data]);
+                      setSelectedAddressIndex(savedAddresses.length);
+                      setAddr(data);
+                      setStep(1);
+                    })}
+                    className="space-y-4 sm:space-y-6 text-left"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-[#1016FF]" />
+                        <h2 className="text-xl font-bold tracking-tight text-foreground">Add New Address</h2>
+                      </div>
+                      {savedAddresses.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAddressForm(false)}
+                          className="text-xs font-semibold text-[#1016FF] hover:underline"
+                        >
+                          Show saved addresses
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 rounded-3xl border border-border-light bg-background p-4.5 sm:p-6 shadow-card">
+                      <div className="col-span-2 sm:col-span-1">
+                        <Field label="Full name" error={form.formState.errors.fullName?.message} {...form.register("fullName")} />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <Field label="Email" type="email" error={form.formState.errors.email?.message} {...form.register("email")} />
+                      </div>
+                      <div className="col-span-2">
+                        <Field label="Street address" error={form.formState.errors.address?.message} {...form.register("address")} />
+                      </div>
+                      <div className="col-span-1">
+                        <Field label="City" error={form.formState.errors.city?.message} {...form.register("city")} />
+                      </div>
+                      <div className="col-span-1">
+                        <Field label="6-digit PIN" error={form.formState.errors.postalCode?.message} {...form.register("postalCode")} />
+                      </div>
+                      <div className="col-span-2">
+                        <Field label="Contact Number" placeholder="Contact Number" error={form.formState.errors.phone?.message} {...form.register("phone")} />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button type="submit" className="flex-1 rounded-full bg-[#1016FF] hover:bg-[#142252] px-6 py-3 text-sm font-semibold text-white transition shadow-soft">
+                        Continue to review
+                      </button>
+                      {savedAddresses.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAddressForm(false)}
+                          className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-text-secondary hover:bg-background transition"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )}
+              </motion.div>
             )}
             {step === 1 && addr && (
               <motion.div key="rev" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
@@ -280,8 +410,15 @@ function Checkout() {
             const o = await placeOrder(addr, speed);
             setOrderId(o.id);
             setStep(2);
+            setShowRatingModal(true);
           }
         }}
+      />
+
+      <OrderRatingModal
+        isOpen={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        order={order}
       />
     </div>
   );
@@ -307,3 +444,161 @@ const Field = (() => {
   );
   return C;
 })();
+
+function OrderRatingModal({ isOpen, onClose, order }: { isOpen: boolean; onClose: () => void; order: any }) {
+  const [ratingStep, setRatingStep] = useState<"stars" | "comment" | "success">("stars");
+  const [rating, setRating] = useState(5);
+  const [name, setName] = useState(order?.shippingAddress?.fullName || "");
+  const [comment, setComment] = useState("");
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (order?.shippingAddress?.fullName) {
+      setName(order.shippingAddress.fullName);
+    }
+  }, [order]);
+
+  if (!isOpen || !order || !order.items || order.items.length === 0) return null;
+
+  const product = order.items[0].product;
+
+  const handleStarClick = (val: number) => {
+    setRating(val);
+    setRatingStep("comment");
+  };
+
+  const handleSkipReview = async () => {
+    setSubmitting(true);
+    await submitReview(product.slug, rating, "Verified Purchase Rating", name || "Verified Buyer");
+    setSubmitting(false);
+    setRatingStep("success");
+    setTimeout(() => {
+      onClose();
+    }, 2000);
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    await submitReview(product.slug, rating, comment.trim() || "Excellent product!", name.trim() || "Verified Buyer");
+    setSubmitting(false);
+    setRatingStep("success");
+    setTimeout(() => {
+      onClose();
+    }, 2000);
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-border-light bg-surface p-8 shadow-2xl"
+        >
+          {/* Close button (top right) */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 rounded-full p-2 text-text-muted hover:bg-background/80 hover:text-foreground transition"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {ratingStep === "stars" && (
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-[#1016FF]">How is your experience?</h3>
+              <p className="mt-2 text-sm text-text-secondary">
+                Thank you for your order! Please rate the <strong>{product.name}</strong>.
+              </p>
+              
+              <div className="mt-6 flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleStarClick(i)}
+                    onMouseEnter={() => setHoverRating(i)}
+                    onMouseLeave={() => setHoverRating(null)}
+                    className="p-1 transition duration-150 hover:scale-125"
+                  >
+                    <Star
+                      className={`h-9 w-9 transition-colors ${
+                        i <= (hoverRating ?? rating)
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-border"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-8 flex justify-center gap-3">
+                <button
+                  onClick={onClose}
+                  className="rounded-full border border-border px-6 py-2.5 text-xs font-semibold text-text-secondary hover:bg-background transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {ratingStep === "comment" && (
+            <form onSubmit={handleSubmitReview}>
+              <h3 className="text-xl font-bold text-[#1016FF] text-center">Share details</h3>
+              <p className="mt-1 text-xs text-text-muted text-center">
+                You rated it {rating} star{rating > 1 ? "s" : ""}. Help others by sharing your experience!
+              </p>
+
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-text-muted">Review</label>
+                  <textarea
+                    rows={3}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="How do you plan to use it? What features do you like?"
+                    className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#1016FF]"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleSkipReview}
+                  disabled={submitting}
+                  className="rounded-full px-5 py-2.5 text-xs font-semibold text-text-secondary hover:text-foreground transition"
+                >
+                  Skip review
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-full bg-[#1016FF] hover:bg-[#142252] px-6 py-2.5 text-xs font-semibold text-white transition disabled:opacity-50"
+                >
+                  {submitting ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {ratingStep === "success" && (
+            <div className="text-center py-6">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                <Check className="h-6 w-6" />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-[#1016FF]">Review submitted!</h3>
+              <p className="mt-1 text-sm text-text-secondary">
+                Thank you for helping us verify genuine reviews!
+              </p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+}

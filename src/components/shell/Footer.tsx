@@ -11,13 +11,13 @@ const SOCIALS = [
     label: "LinkedIn",
     href: "https://www.linkedin.com/in/jayeshpateltelearglass/",
     icon: Linkedin,
-    hover: "hover:border-[#0a66c2] hover:bg-[#0a66c2]/10 hover:text-[#0a66c2] hover:shadow-[0_0_15px_rgba(10,102,194,0.35)]",
+    hover: "hover:border-[#0a66c2] hover:bg-[#0a66c2]/10 hover:text-[#0a66c2] hover:shadow-[0_0_15px_rgba(10,102,194,0.15)]",
   },
   {
     label: "Instagram",
     href: "https://www.instagram.com/telearglass",
     icon: Instagram,
-    hover: "hover:border-[#e1306c] hover:bg-[#e1306c]/10 hover:text-[#e1306c] hover:shadow-[0_0_15px_rgba(225,48,108,0.35)]",
+    hover: "hover:border-[#e1306c] hover:bg-[#e1306c]/10 hover:text-[#e1306c] hover:shadow-[0_0_15px_rgba(225,48,108,0.15)]",
   },
 ] as const;
 
@@ -40,10 +40,10 @@ function FooterLink({
       to={to}
       hash={hash}
       search={search}
-      className="group/link inline-flex items-center gap-1 text-sm text-white/65 transition-colors hover:text-white"
+      className="group/link inline-flex items-center gap-1 text-base font-bold text-gray-600 transition-colors hover:text-[#1016FF]"
     >
       <span className="transition-transform duration-300 group-hover/link:translate-x-0.5">{children}</span>
-      <ArrowUpRight className="h-3 w-3 -translate-x-0.5 opacity-0 transition-all duration-300 group-hover/link:translate-x-0 group-hover/link:opacity-100" />
+      <ArrowUpRight className="h-3.5 w-3.5 -translate-x-0.5 opacity-0 transition-all duration-300 group-hover/link:translate-x-0 group-hover/link:opacity-100 text-[#1016FF]" />
     </Link>
   );
 }
@@ -52,10 +52,10 @@ function FooterButton({ onClick, children }: { onClick: () => void; children: Re
   return (
     <button
       onClick={onClick}
-      className="group/link inline-flex items-center gap-1 text-sm text-white/65 transition-colors hover:text-white"
+      className="group/link inline-flex items-center gap-1 text-base font-bold text-gray-600 transition-colors hover:text-[#1016FF]"
     >
       <span className="transition-transform duration-300 group-hover/link:translate-x-0.5">{children}</span>
-      <ArrowUpRight className="h-3 w-3 -translate-x-0.5 opacity-0 transition-all duration-300 group-hover/link:translate-x-0 group-hover/link:opacity-100" />
+      <ArrowUpRight className="h-3.5 w-3.5 -translate-x-0.5 opacity-0 transition-all duration-300 group-hover/link:translate-x-0 group-hover/link:opacity-100 text-[#1016FF]" />
     </button>
   );
 }
@@ -64,37 +64,37 @@ export function Footer() {
   const { setCartOpen } = useShop();
 
   return (
-    // Always-dark violet stage — mirrors the Hero so the page opens and closes on the same brand color.
-    <footer className="relative mt-32 overflow-hidden bg-gradient-dark text-white">
-      {/* Top seam — glowing hairline instead of a hard theme border */}
-      <div className="absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+    // Redesigned premium light violet gradient footer to seamlessly match the hero section
+    <footer className="relative mt-32 overflow-hidden bg-gradient-to-r from-[#F4EFFF] via-[#FFFFFF] to-[#F0F7FF] text-gray-900 border-t border-gray-200/60">
+      {/* Top seam — glowing hairline aligned with theme primary color */}
+      <div className="absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-[#1016FF]/20 to-transparent" />
 
-      {/* Ambient orbs — same palette as Hero, pushed brighter for a stronger violet stage */}
-      <div className="orb -z-10" style={{ width: 640, height: 640, background: "#7c3aed", top: -280, left: -160, opacity: 0.3 }} />
-      <div className="orb -z-10" style={{ width: 520, height: 520, background: "#2563eb", bottom: -240, right: -140, opacity: 0.22 }} />
-      <div className="absolute inset-0 -z-10 bg-grid opacity-[0.08]" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.22),transparent_60%)]" />
+      {/* Ambient orbs — soft light opacity backing glow */}
+      <div className="orb -z-10 animate-pulse" style={{ width: 640, height: 640, background: "#1016FF", top: -280, left: -160, opacity: 0.05 }} />
+      <div className="orb -z-10 animate-pulse" style={{ width: 520, height: 520, background: "#2563eb", bottom: -240, right: -140, opacity: 0.04 }} />
+      <div className="absolute inset-0 -z-10 bg-grid opacity-[0.03]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(27,45,107,0.03),transparent_60%)]" />
 
-      {/* Ghost wordmark — visual continuity with the Hero section (background only, kept as plain white ghost text) */}
+      {/* Ghost wordmark — Visual continuity in faint ghost violet text */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 select-none overflow-hidden text-center"
       >
-        <span className="block whitespace-nowrap font-heading font-extrabold uppercase leading-none tracking-[-0.03em] text-white/[0.08] text-[clamp(4rem,17vw,13rem)]">
+        <span className="block whitespace-nowrap font-heading font-extrabold uppercase leading-none tracking-[-0.03em] text-[#1016FF]/[0.2] text-[clamp(4rem,17vw,13rem)]">
           TeleARGlass
         </span>
       </div>
 
-      <div className="section-container relative z-10 max-w-[1440px] py-20">
+      <div className="section-container relative z-10 max-w-[1440px] py-24">
         <div className="grid gap-14 md:grid-cols-12 md:gap-8">
           {/* Brand */}
           <div className="md:col-span-12 lg:col-span-4">
             <Link to="/" className="flex items-center gap-3">
-              <Logo className="h-11" />
-              <span className="font-heading text-base font-bold text-primary">TeleARGlass</span>
+              <Logo className="h-[3.1rem]" />
+              <span className="font-sans text-lg font-bold text-[#1016FF]">TeleARGlass</span>
             </Link>
-            <p className="mt-6 max-w-sm text-sm leading-relaxed text-white/65">
-              <b>Serving Humanity Through Technology.</b>
+            <p className="mt-6 max-w-sm text-base leading-relaxed text-[#1016FF]">
+              <b>Serving Humanity Through Technology</b>
             </p>
             <div className="mt-7 flex gap-3">
               {SOCIALS.map(({ label, href, icon: Icon, hover }) => (
@@ -104,7 +104,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className={`grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition-all duration-300 hover:-translate-y-0.5 hover:scale-110 ${hover}`}
+                  className={`grid h-10 w-10 place-items-center rounded-full border border-gray-200 bg-gray-50 text-[#1016FF]/80 transition-all duration-300 hover:-translate-y-0.5 hover:scale-110 ${hover}`}
                 >
                   {Icon ? (
                     <Icon className="h-4 w-4" />
@@ -123,7 +123,7 @@ export function Footer() {
 
             {/* Customer Service */}
             <div>
-              <div className="text-xs font-mono font-semibold uppercase tracking-widest text-[#a78bfa]">
+              <div className="text-sm font-mono font-semibold uppercase tracking-widest text-[#1016FF]">
                 Customer Service
               </div>
               <ul className="mt-5 space-y-3">
@@ -136,21 +136,21 @@ export function Footer() {
 
             {/* Support */}
             <div className="col-span-2 sm:col-span-1">
-              <div className="text-xs font-mono font-semibold uppercase tracking-widest text-[#a78bfa]">
+              <div className="text-sm font-mono font-semibold uppercase tracking-widest text-[#1016FF]">
                 Support
               </div>
               <ul className="mt-5 space-y-3">
                 <li><FooterLink to="/feedback">Contact Us</FooterLink></li>
-                <li className="flex items-start gap-2 text-sm text-white/65">
-                  <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/40" />
+                <li className="flex items-start gap-2 text-base font-bold text-gray-600">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
                   <span>{SUPPORT_ADDRESS}</span>
                 </li>
                 <li>
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="inline-flex items-center gap-2 text-sm text-white/65 transition-colors hover:text-white"
+                    className="inline-flex items-center gap-2 text-base font-bold text-gray-600 transition-colors hover:text-[#1016FF]"
                   >
-                    <Mail className="h-3.5 w-3.5 text-white/40" />
+                    <Mail className="h-4 w-4 text-gray-400" />
                     {SUPPORT_EMAIL}
                   </a>
                 </li>
@@ -161,17 +161,17 @@ export function Footer() {
       </div>
 
       {/* Divider */}
-      <div className="relative z-10 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="relative z-10 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
       {/* Bottom bar */}
       <div className="section-container relative z-10 max-w-[1440px]">
-        <div className="flex flex-col items-center justify-between gap-3 py-6 text-xs text-white/50 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 py-8 text-sm font-bold text-gray-500 sm:flex-row">
           <span>© 2026 TeleARGlass. All Rights Reserved.</span>
-          <div className="flex items-center gap-5">
-            <Link to="/" hash="policies" className="transition-colors hover:text-white">
+          <div className="flex items-center gap-6">
+            <Link to="/" hash="policies" className="font-bold transition-colors hover:text-[#1016FF]">
               Privacy Policy
             </Link>
-            <Link to="/" hash="policies" className="transition-colors hover:text-white">
+            <Link to="/" hash="policies" className="font-bold transition-colors hover:text-[#1016FF]">
               Terms &amp; Conditions
             </Link>
           </div>

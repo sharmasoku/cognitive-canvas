@@ -21,8 +21,8 @@ const TABS: TabItem[] = [
     renderGraphic: () => (
       <svg viewBox="0 0 200 200" className="h-full w-full stroke-primary/30" fill="none">
         <path d="M10,100 L40,100 L55,30 L70,170 L85,90 L95,110 L105,100 L190,100" strokeWidth="2" className="stroke-primary" />
-        <circle cx="70" cy="170" r="6" fill="#7c3aed" className="animate-ping" />
-        <circle cx="70" cy="170" r="3" fill="#7c3aed" />
+        <circle cx="70" cy="170" r="6" fill="#1016FF" className="animate-ping" />
+        <circle cx="70" cy="170" r="3" fill="#1016FF" />
         <rect x="110" y="30" width="70" height="50" rx="6" strokeDasharray="3 3" />
         <line x1="105" y1="100" x2="110" y2="55" strokeWidth="1" strokeDasharray="2 2" />
         <text x="120" y="60" fontSize="10" fill="currentColor" stroke="none" className="font-mono text-text-muted">98B-SCAN</text>
@@ -93,7 +93,7 @@ const TABS: TabItem[] = [
         <path d="M100,95 L100,160" strokeDasharray="5 5" />
         <path d="M60,130 L140,130" strokeDasharray="3 3" />
         <circle cx="100" cy="70" r="10" className="stroke-primary" />
-        <polygon points="100,65 105,73 95,73" fill="#7c3aed" stroke="none" />
+        <polygon points="100,65 105,73 95,73" fill="#1016FF" stroke="none" />
         <text x="118" y="74" fontSize="10" fill="currentColor" stroke="none" className="font-mono text-accent">50 m</text>
         <path d="M60,110 L80,105 L75,118 Z" className="stroke-primary" />
       </svg>

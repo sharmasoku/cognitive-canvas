@@ -10,12 +10,12 @@ export const Route = createFileRoute("/admin/theme")({
 
 const COLOR_GROUPS: { title: string; colors: { name: string; hex: string }[] }[] = [
   {
-    title: "Primary (Violet)",
+    title: "Primary (Navy)",
     colors: [
-      { name: "primary", hex: "#7c3aed" },
-      { name: "primary-hover", hex: "#6d28d9" },
-      { name: "primary-light", hex: "#a78bfa" },
-      { name: "primary-dark", hex: "#5b21b6" },
+      { name: "primary", hex: "#1016FF" },
+      { name: "primary-hover", hex: "#142252" },
+      { name: "primary-light", hex: "#4a5f9e" },
+      { name: "primary-dark", hex: "#0f1a3d" },
     ],
   },
   {
@@ -39,10 +39,10 @@ const COLOR_GROUPS: { title: string; colors: { name: string; hex: string }[] }[]
 ];
 
 const GRADIENTS: { name: string; css: string }[] = [
-  { name: "gradient-primary", css: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)" },
+  { name: "gradient-primary", css: "linear-gradient(135deg, #1016FF 0%, #2563eb 100%)" },
   { name: "gradient-accent", css: "linear-gradient(135deg, #10b981 0%, #2563eb 100%)" },
-  { name: "gradient-text", css: "linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #10b981 100%)" },
-  { name: "gradient-dark", css: "linear-gradient(135deg, #0a0d14 0%, #1a1430 60%, #0a0d14 100%)" },
+  { name: "gradient-text", css: "linear-gradient(135deg, #1016FF 0%, #2563eb 50%, #10b981 100%)" },
+  { name: "gradient-dark", css: "linear-gradient(135deg, #0a0d14 0%, #0f1a3d 60%, #0a0d14 100%)" },
 ];
 
 function copy(value: string) {
@@ -69,7 +69,7 @@ function AdminThemePage() {
             transition={{ delay: gi * 0.05 }}
             className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
           >
-            <h2 className="mb-4 text-sm font-bold text-gray-900">{group.title}</h2>
+            <h2 className="mb-4 text-sm font-bold text-primary">{group.title}</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {group.colors.map((c) => (
                 <button
@@ -102,7 +102,7 @@ function AdminThemePage() {
         transition={{ delay: 0.2 }}
         className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
       >
-        <h2 className="mb-4 text-sm font-bold text-gray-900">Gradients</h2>
+        <h2 className="mb-4 text-sm font-bold text-primary">Gradients</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {GRADIENTS.map((g) => (
             <button key={g.name} onClick={() => copy(g.css)} className="group text-left">
@@ -123,11 +123,11 @@ function AdminThemePage() {
         transition={{ delay: 0.3 }}
         className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-6"
       >
-        <h2 className="text-sm font-bold text-gray-900">Typography & Components</h2>
+        <h2 className="text-sm font-bold text-primary">Typography & Components</h2>
 
         <div>
           <div className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Wordmark heading</div>
-          <h3 className="mt-1 text-4xl font-bold tracking-tight text-gray-900">
+          <h3 className="mt-1 text-4xl font-bold tracking-tight text-primary">
             Tele<span className="gradient-text">ARGlass</span>
           </h3>
         </div>

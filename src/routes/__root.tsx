@@ -88,10 +88,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TeleARGlass 2.0 — Cognitive Interfaces, Shipped." },
+      { title: "TeleARGlass — Cognitive Interfaces, Shipped." },
       { name: "description", content: "AI + AR + Brain Computer Interface — neural-AR smart glasses, dry EEG bands, and TeleOS for builders, clinicians, and enterprises." },
       { name: "author", content: "TeleARGlass" },
-      { property: "og:title", content: "TeleARGlass 2.0" },
+      { property: "og:title", content: "TeleARGlass" },
       { property: "og:description", content: "The future doesn't wait for your hands. It understands your thoughts." },
       { property: "og:type", content: "website" },
       { property: "og:image", content: logoUrl },

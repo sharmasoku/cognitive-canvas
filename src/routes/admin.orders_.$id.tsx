@@ -12,6 +12,7 @@ import {
 import { replenishStock } from "@/hooks/useAdminData";
 import { AdminStatusBadge } from "./admin.index";
 import { inr, shortDate } from "@/lib/format";
+import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/admin/orders_/$id")({
   head: () => ({ meta: [{ title: "Order Detail — TeleARGlass Admin" }] }),
@@ -112,7 +113,7 @@ function AdminOrderDetail() {
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            <h1 className="text-2xl font-bold tracking-tight text-primary">
               Order #{order.id.slice(0, 8).toUpperCase()}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
@@ -145,7 +146,7 @@ function AdminOrderDetail() {
           <div className="space-y-6">
             {/* Items */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+              <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-primary">
                 <Package className="h-4 w-4" /> Items ({order.items?.length ?? 0})
               </h2>
               <table className="w-full text-sm">
@@ -191,7 +192,7 @@ function AdminOrderDetail() {
             {/* Shipping address */}
             {addr && (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-900">
+                <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-primary">
                   <MapPin className="h-4 w-4" /> Shipping Address
                 </h2>
                 <div className="space-y-0.5 text-sm text-gray-600">
@@ -212,7 +213,7 @@ function AdminOrderDetail() {
             {/* Notes */}
             {order.notes && (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-2 flex items-center gap-2 text-base font-semibold text-gray-900">
+                <h2 className="mb-2 flex items-center gap-2 text-base font-semibold text-primary">
                   <StickyNote className="h-4 w-4" /> Customer Notes
                 </h2>
                 <p className="whitespace-pre-wrap text-sm text-gray-600">{order.notes}</p>
@@ -224,7 +225,7 @@ function AdminOrderDetail() {
           <div className="space-y-4">
             {order.payments && order.payments.length > 0 && (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+                <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-primary">
                   <Banknote className="h-4 w-4" /> Payments
                 </h2>
                 <div className="space-y-3">
@@ -261,7 +262,7 @@ function AdminOrderDetail() {
             )}
 
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-base font-semibold text-gray-900">Update Status</h2>
+              <h2 className="mb-4 text-base font-semibold text-primary">Update Status</h2>
 
               <label className="mb-3 block">
                 <span className="text-sm font-medium text-gray-700">Order Status</span>
@@ -353,13 +354,13 @@ function AdminOrderDetail() {
       <div className="mx-auto hidden max-w-4xl bg-white p-8 font-sans text-black print:block">
         <div className="flex items-start justify-between border-b border-gray-300 pb-6">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-primary">TELEARGLASS PRIVATE LIMITED</h1>
+            <img src={logo} alt="TeleARGlass Logo" className="h-16 w-auto object-contain mb-2" />
             <p className="mt-1 text-xs leading-relaxed text-gray-500">
               Email: support@teleARglass.com | Phone: +91-80-4000-2020
             </p>
           </div>
           <div className="text-right">
-            <h2 className="text-xl font-bold tracking-wide text-gray-800">TAX INVOICE / PACKING SLIP</h2>
+            <h2 className="text-xl font-bold tracking-wide text-primary">TAX INVOICE / PACKING SLIP</h2>
             <p className="mt-1 text-xs text-gray-500">
               Order ID: <span className="font-mono uppercase">#{order.id.slice(0, 8).toUpperCase()}</span><br />
               Date: {shortDate(order.created_at)}<br />
@@ -370,7 +371,7 @@ function AdminOrderDetail() {
 
         <div className="mt-6 grid grid-cols-2 gap-8 text-sm">
           <div>
-            <h3 className="mb-2 border-b border-gray-200 pb-1 font-semibold text-gray-700">Ship To:</h3>
+            <h3 className="mb-2 border-b border-gray-200 pb-1 font-semibold text-primary">Ship To:</h3>
             {addr ? (
               <>
                 <div className="font-bold">{addr.name}</div>
@@ -391,7 +392,7 @@ function AdminOrderDetail() {
             )}
           </div>
           <div>
-            <h3 className="mb-2 border-b border-gray-200 pb-1 font-semibold text-gray-700">Order Summary:</h3>
+            <h3 className="mb-2 border-b border-gray-200 pb-1 font-semibold text-primary">Order Summary:</h3>
             <div className="space-y-1">
               <div>Order Status: <span className="font-medium capitalize">{order.status}</span></div>
               <div>Payment Status: <span className="font-medium capitalize">{order.payment_status}</span></div>

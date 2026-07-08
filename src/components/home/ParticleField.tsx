@@ -59,7 +59,7 @@ export function ParticleField() {
         if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(124, 58, 237, 0.25)"; // primary violet color hint
+        ctx.fillStyle = "rgba(27, 45, 107, 0.25)"; // primary navy color hint
         ctx.fill();
       }
     }
@@ -93,7 +93,7 @@ export function ParticleField() {
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(124, 58, 237, ${alpha})`;
+            ctx.strokeStyle = `rgba(27, 45, 107, ${alpha})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }

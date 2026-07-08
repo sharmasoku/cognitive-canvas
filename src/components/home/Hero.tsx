@@ -1,34 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowRight, Play, Instagram, Linkedin } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { ArrowRight, Play } from "lucide-react";
 import { useRef, useState, type MouseEvent } from "react";
-// TODO: replace hero-glasses.png with a transparent-background cutout PNG of the
-// product for the truest match to the reference (drop-in: overwrite this file or
-// repoint this single import).
-import heroProduct from "@/assets/hero-glasses.png";
+import heroPersonCutout from "@/assets/hero-person-cutout.png";
 import { DemoModal } from "@/components/shell/DemoModal";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-// Radial feather so the rectangular product photo melts into the dark stage.
-// Biased upward (40%) with a tight vertical ellipse to spotlight the glasses
-// and let the lower face fade out — no visible rectangle, no cropping.
-const FEATHER = {
-  WebkitMaskImage: "radial-gradient(ellipse 68% 82% at 50% 46%, #000 54%, transparent 84%)",
-  maskImage: "radial-gradient(ellipse 68% 82% at 50% 46%, #000 54%, transparent 84%)",
-} as const;
-
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const [demoOpen, setDemoOpen] = useState(false);
-
-  // Scroll parallax: product drifts up, wordmark drifts down — subtle depth.
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-  const productScrollY = useTransform(scrollYProgress, [0, 1], [0, -48]);
-  const wordmarkScrollY = useTransform(scrollYProgress, [0, 1], [0, 28]);
 
   // Very small mouse parallax (desktop pointer only).
   const mvX = useMotionValue(0);
@@ -37,7 +18,6 @@ export function Hero() {
   const py = useSpring(mvY, { stiffness: 70, damping: 22 });
   const productX = useTransform(px, [-0.5, 0.5], [-8, 8]);
   const productMouseY = useTransform(py, [-0.5, 0.5], [-5, 5]);
-  const wordmarkX = useTransform(px, [-0.5, 0.5], [5, -5]);
 
   const handleMove = (e: MouseEvent<HTMLElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -57,193 +37,132 @@ export function Hero() {
         onMouseLeave={handleLeave}
         className="w-full"
       >
-        {/* Always-dark editorial stage (independent of site light/dark theme) */}
-        <div className="relative isolate w-full overflow-hidden bg-gradient-dark text-white">
-          {/* --- Background layers --- */}
+        {/* Cohesive background layout matches the screenshot:
+            Left: soft violet glow, Center: clean white, Right: soft cyan-blue glow.
+            Added pt-12 (on mobile) to prevent collision with the navbar. */}
+        <div className="relative isolate w-full overflow-hidden bg-gradient-to-r from-[#F4EFFF] via-[#FFFFFF] to-[#F0F7FF] text-gray-900 pt-12 pb-16 md:pt-14 md:pb-24 lg:pt-16 lg:pb-28 min-h-[calc(100vh-80px)] flex items-center">
+          {/* --- Background Ambient Glow Orbs --- */}
           <div
-            className="orb -z-20"
+            className="orb -z-20 animate-pulse"
             style={{
-              width: 640,
-              height: 640,
-              background: "#7c3aed",
-              top: -240,
-              left: -200,
-              opacity: 0.32,
+              width: 580,
+              height: 580,
+              background: "#1016FF",
+              top: "10%",
+              left: "-15%",
+              opacity: 0.15,
             }}
           />
           <div
-            className="orb -z-20"
+            className="orb -z-20 animate-pulse"
             style={{
-              width: 600,
-              height: 600,
-              background: "#2563eb",
-              bottom: -260,
-              right: -200,
-              opacity: 0.28,
+              width: 540,
+              height: 540,
+              background: "#0ea5e9",
+              bottom: "10%",
+              right: "-15%",
+              opacity: 0.12,
             }}
           />
-          <div className="absolute inset-0 -z-20 bg-grid opacity-[0.10]" />
-          <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_38%,rgba(124,58,237,0.20),transparent_62%)]" />
-          {/* Bottom legibility gradient */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 -z-20 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+          <div className="absolute inset-0 -z-20 bg-grid opacity-[0.03]" />
+          <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_38%,rgba(27,45,107,0.04),transparent_62%)]" />
 
-          {/* Slight blur behind the background wordmark */}
-          <div className="pointer-events-none absolute inset-0 -z-10 backdrop-blur-[2px]" />
+          {/* Main Layout Container */}
+          <div className="relative mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12">
+            {/* Horizontal column gap optimized at gap-10 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
 
-          {/* One cohesive composition: visual zone (flex-1) + copy/CTA (auto).
-              Height fills the viewport minus the announcement bar + navbar so the
-              whole hero — including the buttons — is visible without scrolling. */}
-          <div className="relative mx-auto flex min-h-[calc(100svh_-_7.5rem)] w-full max-w-[1500px] flex-col px-5 pt-6 pb-8 sm:px-8 sm:pt-8 lg:px-12">
-            {/* ---------- VISUAL ZONE ---------- */}
-            <div className="relative flex flex-1 flex-col items-center justify-center">
-              {/* Ghost wordmark — largest surface, faintest ink, sits behind all */}
-              <motion.h1
-                aria-label="TeleARGlass"
-                style={{ y: wordmarkScrollY, x: wordmarkX }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.2, ease: EASE }}
-                className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 select-none text-center font-heading font-extrabold uppercase leading-[0.78] tracking-[-0.03em] text-white/[0.12]"
-              >
-                <span className="block text-[clamp(3.5rem,23vw,19rem)]">TeleAR</span>
-                <span className="block text-[clamp(3.5rem,23vw,19rem)]">Glass</span>
-              </motion.h1>
-
-              {/* Desktop script accents — flank the product (lg+ only) */}
-              <div className="pointer-events-none absolute inset-0 z-10 hidden lg:block">
-                <motion.span
-                  initial={{ opacity: 0, x: -24, rotate: -6 }}
-                  animate={{ opacity: 1, x: 0, rotate: -6 }}
-                  transition={{ delay: 0.5, duration: 0.7, ease: EASE }}
-                  className="absolute left-[3%] top-[30%] font-script text-7xl font-bold text-[#a78bfa] drop-shadow-[0_2px_16px_rgba(124,58,237,0.45)] xl:text-8xl"
-                >
-                  Serving
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, x: 24, rotate: 4 }}
-                  animate={{ opacity: 1, x: 0, rotate: 4 }}
-                  transition={{ delay: 0.62, duration: 0.7, ease: EASE }}
-                  className="absolute right-[3%] top-[30%] font-script text-7xl font-bold text-[#a78bfa] drop-shadow-[0_2px_16px_rgba(124,58,237,0.45)] xl:text-8xl"
-                >
-                  Humanity
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.78, duration: 0.7, ease: EASE }}
-                  className="absolute bottom-[14%] left-[7%] font-script text-4xl font-medium text-white/90 xl:text-5xl"
-                >
-                  Through
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.86, duration: 0.7, ease: EASE }}
-                  className="absolute bottom-[14%] right-[7%] text-right font-script text-4xl font-medium text-white/90 xl:text-5xl"
-                >
-                  Technology.
-                </motion.span>
-              </div>
-
-              {/* Mobile / tablet script — stacked above the product (below lg) */}
+              {/* Left Column (70% split on 12-column grid: col-span-8) - Styled with flex-col items-center */}
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.7, ease: EASE }}
-                className="relative z-10 mb-1 text-center lg:hidden"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: EASE }}
+                className="col-span-1 lg:col-span-8 flex flex-col items-center text-center z-10 w-full overflow-visible"
               >
-                <div className="font-script text-[clamp(2.75rem,13vw,5rem)] font-bold leading-[0.9] text-[#a78bfa] drop-shadow-[0_2px_14px_rgba(124,58,237,0.4)]">
-                  Serving Humanity
+                {/* Main Heading "TELEARGLASS" - sized appropriately to avoid overlap clipping and shifted upward.
+                    Changed negative margin to -mt-2 on mobile and -mt-12 on desktop to prevent navbar collision.
+                    Set responsive clamp text size to fit cleanly on phone screens with enhanced visibility. */}
+                <h1 className="font-display font-bold uppercase tracking-tight text-[clamp(3rem,11.5vw,7.2rem)] leading-[1.1] py-2 mb-3 bg-gradient-to-r from-[#1016FF] via-[#2a4090] to-[#1016FF] bg-clip-text text-transparent drop-shadow-[0_4px_30px_rgba(27,45,107,0.22)] -mt-2 lg:-mt-12 w-full text-center overflow-visible select-none">
+                  TELEARGLASS
+                </h1>
+
+                {/* Subtitle in Title Case (center aligned) - responsive text sizes to fit mobile */}
+                <h2 className="font-sans font-bold tracking-tight text-[#1016FF] text-[clamp(1.2rem,4vw,1.65rem)] leading-tight mb-4 w-full text-center max-w-3xl">
+                  Serving Humanity Through Technology
+                </h2>
+
+                {/* Description (center aligned) - text-sm on mobile, text-lg on desktop */}
+                <p className="max-w-3xl text-sm sm:text-lg text-gray-600 leading-relaxed font-normal mb-6 text-center mx-auto">
+                  We are functioning sustainable innovation by building the user-friendly TeleARGlass
+                  Minimum Viable Products.
+                </p>
+
+                {/* CTAs (center aligned) - equalized widths for perfect visual balance */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mx-auto">
+                  <Link
+                    to="/products"
+                    className="cta-button-premium inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#1016FF] via-[#2a4090] to-[#1016FF] py-5 text-base font-semibold text-white transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-[#1016FF]/25 w-full sm:w-[230px]"
+                  >
+                    Telepurchase now <ArrowRight className="h-5 w-5" />
+                  </Link>
+                  <button
+                    onClick={() => setDemoOpen(true)}
+                    className="inline-flex items-center justify-center gap-3 rounded-full border border-[#1016FF]/15 bg-[#1016FF]/5 py-5 text-base font-semibold text-[#1016FF] transition-all duration-300 hover:scale-[1.03] hover:bg-[#1016FF]/10 hover:border-[#1016FF]/35 hover:shadow-lg hover:shadow-[#1016FF]/5 group w-full sm:w-[230px]"
+                  >
+                    <Play className="h-5 w-5 text-[#1016FF] fill-[#1016FF]/10 transition-transform duration-300 group-hover:scale-110" />
+                    Watch demo
+                  </button>
                 </div>
               </motion.div>
 
-              {/* Floating product — front, centre, the clear focal point */}
+              {/* Right Column (30% split on 12-column grid: col-span-4) */}
               <motion.div
-                style={{ y: productScrollY }}
-                className="relative z-20 flex items-center justify-center"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, ease: EASE }}
+                className="col-span-1 lg:col-span-4 flex justify-center z-10 w-full relative"
               >
-                <motion.div
-                  style={{ x: productX, y: productMouseY }}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 1, ease: EASE }}
-                  className="relative w-[min(84vw,760px)]"
-                >
-                  <div className="animate-float relative">
-                    {/* Soft radial glow behind the glasses */}
-                    <div className="pointer-events-none absolute left-1/2 top-[45%] -z-10 h-[65%] w-[75%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.38)_0%,rgba(37,99,235,0.18)_50%,transparent_100%)] blur-[40px]" />
+                {/* Responsive top margin to offset spacing on mobile (mt-4 lg:-mt-8) */}
+                <div className="relative w-full max-w-[380px] aspect-[4/5] flex items-center justify-center mt-4 lg:-mt-8">
 
+                  {/* Premium visual tech rings in the background */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+                    className="absolute w-[95%] h-[95%] rounded-full border border-[#1016FF]/15 -z-10"
+                  />
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
+                    className="absolute w-[85%] h-[85%] rounded-full border border-indigo-500/5 border-dashed -z-10"
+                  />
+
+                  {/* Solid glowing background orb to highlight the person */}
+                  <div className="absolute w-[70%] h-[70%] rounded-full bg-gradient-to-br from-[#1016FF]/15 to-[#2563eb]/15 blur-3xl -z-10 animate-pulse" />
+
+                  {/* Cutout image container with high-fidelity drop-shadow */}
+                  <motion.div
+                    style={{ x: productX, y: productMouseY }}
+                    className="relative w-full h-full flex items-center justify-center"
+                  >
                     <img
-                      src={heroProduct}
-                      alt="TeleARGlass — next-generation AR eyewear"
-                      width={760}
-                      height={760}
-                      style={FEATHER}
-                      className="block max-h-[46vh] w-full object-contain drop-shadow-[0_40px_80px_rgba(0,0,0,0.65)] lg:max-h-[56vh]"
+                      src={heroPersonCutout}
+                      alt="TeleARGlass Prototype View"
+                      className="max-h-[52vh] object-contain drop-shadow-[0_25px_60px_rgba(27,45,107,0.38)] select-none filter contrast-[1.03]"
                     />
 
-                    {/* Visor pulsing glow highlight */}
-                    <div className="pointer-events-none absolute left-1/2 top-[35%] h-[12%] w-[48%] rounded-full bg-primary/25 opacity-70 shadow-[0_0_30px_10px_rgba(124,58,237,0.35),0_0_50px_20px_rgba(37,99,235,0.2)] blur-md mix-blend-screen animate-pulse-glow" />
+                    {/* Visor pulsing glow highlight matching the blue glasses */}
+                    <div className="pointer-events-none absolute left-[48%] top-[39%] h-[4%] w-[25%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/30 opacity-70 shadow-[0_0_20px_5px_rgba(34,211,238,0.4),0_0_40px_10px_rgba(99,102,241,0.3)] blur-sm mix-blend-screen animate-pulse" />
+                  </motion.div>
 
-                    {/* Soft visor light sweep, clipped + feathered to the product */}
-                    <div
-                      style={FEATHER}
-                      className="pointer-events-none absolute inset-0 overflow-hidden"
-                    >
-                      <div className="animate-visor-sweep absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-                    </div>
-                  </div>
-
-                  {/* Soft floor shadow under the model */}
-                  <div className="pointer-events-none absolute -bottom-8 left-1/2 h-5 w-[65%] rounded-full bg-black/60 blur-xl animate-shadow" />
-                </motion.div>
-              </motion.div>
-
-              {/* Mobile / tablet script — stacked below the product (below lg) */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.7, ease: EASE }}
-                className="relative z-20 mt-1 text-center lg:hidden"
-              >
-                <div className="font-script text-[clamp(1.75rem,7vw,2.75rem)] font-medium text-white/90">
-                  Through Technology.
+                  {/* Soft depth shadow under the portrait cutout */}
+                  <div className="absolute bottom-4 w-[75%] h-6 bg-black/5 blur-xl rounded-full -z-10" />
                 </div>
               </motion.div>
+
             </div>
-
-            {/* ---------- COPY + CTA (always in view) ---------- */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.95, duration: 0.6, ease: EASE }}
-              className="relative z-20 mt-4 flex flex-col items-center gap-4 text-center sm:mt-6"
-            >
-              <p className="max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">
-                We are functioning sustainable innovation by building the user-friendly TeleARGlass
-                Minimum Viable Products.
-              </p>
-              <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-                <Link
-                  to="/products"
-                  className="cta-button-premium inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-white sm:w-auto"
-                >
-                  Telepurchase now <ArrowRight className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={() => setDemoOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:text-white"
-                >
-                  <span className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/5 transition-shadow hover:shadow-glow-primary">
-                    <Play className="h-3.5 w-3.5" />
-                  </span>
-                  Watch demo
-                </button>
-              </div>
-
-
-            </motion.div>
           </div>
+
         </div>
       </section>
 

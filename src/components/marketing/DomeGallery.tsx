@@ -47,9 +47,9 @@ function buildItems(pool, seg) {
 
   const normalizedImages = pool.map(image => {
     if (typeof image === 'string') {
-      return { src: image, alt: '' };
+      return { src: image, alt: '', type: 'image' };
     }
-    return { src: image.src || '', alt: image.alt || '' };
+    return { src: image.src || '', alt: image.alt || '', type: image.type || 'image' };
   });
 
   const usedImages = Array.from({ length: totalSlots }, (_, i) => normalizedImages[i % normalizedImages.length]);
@@ -70,7 +70,8 @@ function buildItems(pool, seg) {
   return coords.map((c, i) => ({
     ...c,
     src: usedImages[i].src,
-    alt: usedImages[i].alt
+    alt: usedImages[i].alt,
+    type: usedImages[i].type
   }));
 }
 
@@ -364,10 +365,16 @@ export default function DomeGallery({
       animatingOverlay.className = 'enlarge-closing';
       animatingOverlay.style.cssText = `position:absolute;left:${overlayRelativeToRoot.left}px;top:${overlayRelativeToRoot.top}px;width:${overlayRelativeToRoot.width}px;height:${overlayRelativeToRoot.height}px;z-index:9999;border-radius: var(--enlarge-radius, 32px);overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);transition:all ${enlargeTransitionMs}ms ease-out;pointer-events:none;margin:0;transform:none;`;
       const originalImg = overlay.querySelector('img');
+      const originalVideo = overlay.querySelector('video');
       if (originalImg) {
         const img = originalImg.cloneNode();
         img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
         animatingOverlay.appendChild(img);
+      } else if (originalVideo) {
+        const video = originalVideo.cloneNode(true);
+        video.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        video.muted = true;
+        animatingOverlay.appendChild(video);
       }
       overlay.remove();
       rootRef.current.appendChild(animatingOverlay);
@@ -478,10 +485,21 @@ export default function DomeGallery({
       overlay.style.willChange = 'transform, opacity';
       overlay.style.transformOrigin = 'top left';
       overlay.style.transition = `transform ${enlargeTransitionMs}ms ease, opacity ${enlargeTransitionMs}ms ease`;
-      const rawSrc = parent.dataset.src || el.querySelector('img')?.src || '';
-      const img = document.createElement('img');
-      img.src = rawSrc;
-      overlay.appendChild(img);
+      const rawSrc = parent.dataset.src || el.querySelector('img')?.src || el.querySelector('video')?.src || '';
+      const itemType = el.dataset.type || 'image';
+      if (itemType === 'video') {
+        const video = document.createElement('video');
+        video.src = rawSrc;
+        video.autoplay = true;
+        video.loop = true;
+        video.controls = true;
+        video.playsInline = true;
+        overlay.appendChild(video);
+      } else {
+        const img = document.createElement('img');
+        img.src = rawSrc;
+        overlay.appendChild(img);
+      }
       viewerRef.current.appendChild(overlay);
       const tx0 = tileR.left - frameR.left;
       const ty0 = tileR.top - frameR.top;
@@ -602,20 +620,22 @@ export default function DomeGallery({
                   role="button"
                   tabIndex={0}
                   aria-label={it.alt || 'Open image'}
+                  data-type={it.type || 'image'}
                   onClick={onTileClick}
                   onPointerUp={onTilePointerUp}
                 >
-                  <img src={it.src} draggable={false} alt={it.alt} />
+                  {it.type === 'video' ? (
+                    <video src={it.src} draggable={false} muted autoPlay loop playsInline />
+                  ) : (
+                    <img src={it.src} draggable={false} alt={it.alt} />
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="overlay" />
-        <div className="overlay overlay--blur" />
-        <div className="edge-fade edge-fade--top" />
-        <div className="edge-fade edge-fade--bottom" />
+
 
         <div className="viewer" ref={viewerRef}>
           <div ref={scrimRef} className="scrim" />

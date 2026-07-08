@@ -36,7 +36,7 @@ function Feedback() {
   return (
     <div className="relative overflow-hidden">
       {/* Orbs */}
-      <div className="orb" style={{ width: 600, height: 600, background: "#7c3aed", top: -200, left: -200, opacity: 0.12 }} />
+      <div className="orb" style={{ width: 600, height: 600, background: "#1016FF", top: -200, left: -200, opacity: 0.12 }} />
       <div className="orb" style={{ width: 500, height: 500, background: "#10b981", bottom: -200, right: -150, opacity: 0.08 }} />
 
       <div className="section-container py-16 relative">

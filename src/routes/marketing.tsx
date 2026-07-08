@@ -6,6 +6,8 @@ import img3 from "@/assets/tele-marketing-3.jpeg";
 import img4 from "@/assets/tele-marketing-4.jpeg";
 import img5 from "@/assets/tele-marketing-5.jpeg";
 import img6 from "@/assets/tele-marketing-6.jpeg";
+import img7 from "@/assets/tele-marketing-7.jpeg";
+import vid1 from "@/assets/tele-marketing-video.mp4";
 
 export const Route = createFileRoute("/marketing")({
   head: () => ({ meta: [{ title: "TeleMarketing — TeleARGlass" }] }),
@@ -19,6 +21,8 @@ const MARKETING_IMAGES = [
   { src: img4, alt: "TeleARGlass marketing 4" },
   { src: img5, alt: "TeleARGlass marketing 5" },
   { src: img6, alt: "TeleARGlass marketing 6" },
+  { src: img7, alt: "TeleARGlass marketing 7" },
+  { src: vid1, alt: "TeleARGlass marketing video", type: "video" as const },
 ];
 
 function Marketing() {
