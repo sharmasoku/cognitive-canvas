@@ -79,6 +79,7 @@ const VEINS_LEFT = [
 
 function ServicesPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   // Separated desktop and mobile ref tracking to prevent collision/cleanup overrides
   const desktopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -241,7 +242,7 @@ function ServicesPage() {
                         ref={(el) => { desktopCardRefs.current[i] = el; }}
                         className="absolute right-[calc(50%+12px)] sm:right-[calc(50%+25px)] md:right-[calc(50%+40px)] bottom-[40px] w-[160px] sm:w-[220px] md:w-[440px] h-[150px] sm:h-[190px] md:h-[260px]"
                       >
-                        <LeafCard service={s} side="left" cardId="main" />
+                        <LeafCard service={s} side="left" cardId="main" onWatchDemo={() => setShowVideoModal(true)} />
                       </div>
 
                       {/* Left Branch */}
@@ -284,7 +285,7 @@ function ServicesPage() {
                         ref={(el) => { desktopCardRefs.current[i] = el; }}
                         className="absolute left-[calc(50%+12px)] sm:left-[calc(50%+25px)] md:left-[calc(50%+40px)] bottom-[40px] w-[160px] sm:w-[220px] md:w-[440px] h-[150px] sm:h-[190px] md:h-[260px]"
                       >
-                        <LeafCard service={s} side="right" cardId="main" />
+                        <LeafCard service={s} side="right" cardId="main" onWatchDemo={() => setShowVideoModal(true)} />
                       </div>
 
                       {/* Right Branch */}
@@ -311,6 +312,41 @@ function ServicesPage() {
           </ol>
         </div>
       </section>
+
+      {/* Video Modal Popup */}
+      {showVideoModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md cursor-default"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowVideoModal(false);
+          }}
+        >
+          <div 
+            className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setShowVideoModal(false)}
+              className="absolute right-4 top-4 z-50 rounded-full p-2.5 bg-black/60 text-white/90 hover:bg-black/90 hover:scale-110 transition cursor-pointer"
+              aria-label="Close video"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Video Element */}
+            <video
+              src={demoVideo}
+              controls
+              autoPlay
+              playsInline
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -318,9 +354,18 @@ function ServicesPage() {
 /* ================================================================
    Premium Botanical Leaf Card
    ================================================================ */
-function LeafCard({ service, side, cardId }: { service: Service; side: "left" | "right"; cardId: string }) {
+function LeafCard({ 
+  service, 
+  side, 
+  cardId, 
+  onWatchDemo 
+}: { 
+  service: Service; 
+  side: "left" | "right"; 
+  cardId: string; 
+  onWatchDemo?: () => void; 
+}) {
   const { icon: Icon, title, tags, desc } = service;
-  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const leafPath = side === "left" ? LEAF_PATH_LEFT : LEAF_PATH_RIGHT;
   const veins = side === "left" ? VEINS_LEFT : VEINS_RIGHT;
@@ -449,7 +494,7 @@ function LeafCard({ service, side, cardId }: { service: Service; side: "left" | 
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowVideoModal(true);
+                      if (onWatchDemo) onWatchDemo();
                     }}
                     className="rounded-full px-2 py-0.5 text-[8px] sm:text-[10px] md:text-xs font-bold transition hover:scale-105 hover:bg-white active:scale-95 cursor-pointer"
                     style={{
@@ -501,41 +546,6 @@ function LeafCard({ service, side, cardId }: { service: Service; side: "left" | 
           </div>
         )}
       </div>
-
-      {/* Video Modal Popup */}
-      {showVideoModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md cursor-default"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowVideoModal(false);
-          }}
-        >
-          <div 
-            className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-white/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              type="button"
-              onClick={() => setShowVideoModal(false)}
-              className="absolute right-4 top-4 z-50 rounded-full p-2.5 bg-black/60 text-white/90 hover:bg-black/90 hover:scale-110 transition cursor-pointer"
-              aria-label="Close video"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            {/* Video Element */}
-            <video
-              src={demoVideo}
-              controls
-              autoPlay
-              playsInline
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
