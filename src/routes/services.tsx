@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Code2, Compass, ShieldCheck, Wrench, type LucideIcon } from "lucide-react";
+import { Code2, Compass, ShieldCheck, Wrench, X, type LucideIcon } from "lucide-react";
+import demoVideo from "@/assets/demo-video.mp4";
 
 export const Route = createFileRoute("/services")({
   head: () => ({ meta: [{ title: "TeleServices" }] }),
@@ -319,6 +320,7 @@ function ServicesPage() {
    ================================================================ */
 function LeafCard({ service, side, cardId }: { service: Service; side: "left" | "right"; cardId: string }) {
   const { icon: Icon, title, tags, desc } = service;
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const leafPath = side === "left" ? LEAF_PATH_LEFT : LEAF_PATH_RIGHT;
   const veins = side === "left" ? VEINS_LEFT : VEINS_RIGHT;
@@ -438,25 +440,102 @@ function LeafCard({ service, side, cardId }: { service: Service; side: "left" | 
 
         {/* Tags */}
         {tags && (
-          <div className="mt-1 sm:mt-2 flex flex-wrap justify-center gap-1">
-            {tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full px-2 py-0.5 text-[8px] sm:text-[10px] md:text-xs font-bold"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.75)",
-                  color: "#1016FF",
-                  border: "1px solid rgba(27,45,107,0.2)",
-                  backdropFilter: "blur(4px)",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                }}
-              >
-                {t}
-              </span>
-            ))}
+          <div className="mt-1.5 sm:mt-2.5 flex flex-wrap justify-center gap-1.5 z-20">
+            {tags.map((t) => {
+              if (t === "TeleWatch") {
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowVideoModal(true);
+                    }}
+                    className="rounded-full px-2 py-0.5 text-[8px] sm:text-[10px] md:text-xs font-bold transition hover:scale-105 hover:bg-white active:scale-95 cursor-pointer"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.75)",
+                      color: "#1016FF",
+                      border: "1px solid rgba(27,45,107,0.2)",
+                      backdropFilter: "blur(4px)",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {t}
+                  </button>
+                );
+              }
+              if (t === "TeleBook Live in Store") {
+                return (
+                  <Link
+                    key={t}
+                    to="/products"
+                    className="rounded-full px-2 py-0.5 text-[8px] sm:text-[10px] md:text-xs font-bold transition hover:scale-105 hover:bg-white active:scale-95 cursor-pointer no-underline"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.75)",
+                      color: "#1016FF",
+                      border: "1px solid rgba(27,45,107,0.2)",
+                      backdropFilter: "blur(4px)",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {t}
+                  </Link>
+                );
+              }
+              return (
+                <span
+                  key={t}
+                  className="rounded-full px-2 py-0.5 text-[8px] sm:text-[10px] md:text-xs font-bold"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.75)",
+                    color: "#1016FF",
+                    border: "1px solid rgba(27,45,107,0.2)",
+                    backdropFilter: "blur(4px)",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  {t}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Video Modal Popup */}
+      {showVideoModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md cursor-default"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowVideoModal(false);
+          }}
+        >
+          <div 
+            className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setShowVideoModal(false)}
+              className="absolute right-4 top-4 z-50 rounded-full p-2.5 bg-black/60 text-white/90 hover:bg-black/90 hover:scale-110 transition cursor-pointer"
+              aria-label="Close video"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Video Element */}
+            <video
+              src={demoVideo}
+              controls
+              autoPlay
+              playsInline
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
