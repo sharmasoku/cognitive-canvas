@@ -35,6 +35,7 @@ export interface DbOrderItem {
   unit_price: number;
   qty: number;
   line_total: number;
+  product?: { image_url: string | null } | null;
 }
 
 export interface DbOrderPayment {
@@ -61,13 +62,16 @@ export function useUserOrders(userId: string | null | undefined) {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*)")
+        .select("*, order_items(*, products(id, image_url, slug))")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
       if (!error && data) {
         setOrders(
-          data.map((o: any) => ({ ...o, items: o.order_items ?? [] })),
+          data.map((o: any) => ({
+            ...o,
+            items: (o.order_items ?? []).map((it: any) => ({ ...it, product: it.products ?? null })),
+          })),
         );
       }
     } catch { /* */ }

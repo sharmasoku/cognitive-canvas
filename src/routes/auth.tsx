@@ -5,16 +5,23 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/shell/Logo";
 import { toast } from "sonner";
+import { z } from "zod";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
+const authSearchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Authentication — TeleARGlass" }] }),
+  validateSearch: (search) => authSearchSchema.parse(search),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -25,10 +32,10 @@ function AuthPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate({ to: "/" });
+        navigate({ to: redirect || "/" });
       }
     });
-  }, [navigate]);
+  }, [navigate, redirect]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,14 +61,14 @@ function AuthPage() {
               window.dispatchEvent(new Event("storage"));
             }
             toast.success("Account created successfully (Demo Mode)");
-            navigate({ to: "/" });
+            navigate({ to: redirect || "/" });
           } else {
             throw error;
           }
         } else {
           if (data.session) {
             toast.success("Successfully registered!");
-            navigate({ to: "/" });
+            navigate({ to: redirect || "/" });
           } else {
             toast.success("Check your email for the confirmation link!");
             setIsSignUp(false);
@@ -83,13 +90,13 @@ function AuthPage() {
               window.dispatchEvent(new Event("storage"));
             }
             toast.success("Logged in successfully (Demo Mode)");
-            navigate({ to: "/" });
+            navigate({ to: redirect || "/" });
           } else {
             throw error;
           }
         } else if (data.session) {
           toast.success("Successfully logged in!");
-          navigate({ to: "/" });
+          navigate({ to: redirect || "/" });
         }
       }
     } catch (err) {

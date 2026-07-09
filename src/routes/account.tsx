@@ -5,16 +5,18 @@ import { z } from "zod";
 import {
   User, Package, MapPin, Heart, Star, Loader2, LogOut, ChevronRight,
   Pencil, Trash2, Plus, Check, Phone, Mail, Calendar, ShieldCheck, KeyRound,
+  X, Truck, CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useUserOrders, type DbOrder } from "@/hooks/useOrders";
+import { resolveProductImage } from "@/data/products";
 import {
   useUserReviews, useUserAddresses,
   deleteAddress, upsertAddress,
   type UserAddress,
 } from "@/hooks/useAdminData";
 import { useUserSubscription } from "@/hooks/useLicense";
-import { useShop } from "@/context/ShopContext";
+import { useShop, type Order as LocalOrder } from "@/context/ShopContext";
 import { GlowCard } from "@/components/ui/GlowCard";
 import { SubscriptionDetailsCard } from "@/components/shared/SubscriptionDetailsCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -310,39 +312,44 @@ function ProfileTab({
         </div>
       </div>
 
-      {/* Security Section */}
-      <div className="rounded-2xl border border-[#e5e5df] bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="font-semibold text-[#1c1d1a] text-sm">Security</div>
-            <div className="text-xs text-[#8c8c86]">Your account is protected by Supabase Auth</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
+
+type MergedOrderRow = {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: string;
+  items: { key: string; name: string; qty: number; image: string; slug: string | null; productId: string | null }[];
+} & ({ source: "db"; raw: DbOrder } | { source: "local"; raw: LocalOrder });
 
 /* ═══════════════════════════════════════════════ Orders Tab ═══ */
 function OrdersTab({ userId }: { userId: string }) {
   const { orders: dbOrders, loading } = useUserOrders(userId);
   const { orders: localOrders } = useShop();
+  const [selectedOrder, setSelectedOrder] = useState<MergedOrderRow | null>(null);
 
   if (loading) return <LoadingSpinner />;
 
   // Merge: DB orders first, then local-only orders
   const dbIds = new Set(dbOrders.map((o) => o.id));
-  const mergedOrders = [
+  const mergedOrders: MergedOrderRow[] = [
     ...dbOrders.map((o) => ({
       id: o.id,
       total: o.total,
       status: o.status,
       createdAt: o.created_at,
-      itemCount: o.items?.length ?? 0,
+      items: (o.items ?? []).map((it) => ({
+        key: it.id,
+        name: it.name,
+        qty: it.qty,
+        image: resolveProductImage(it.product?.image_url ?? null),
+        slug: it.product?.slug ?? null,
+        productId: it.product?.id ?? null,
+      })),
       source: "db" as const,
+      raw: o,
     })),
     ...localOrders
       .filter((lo) => !dbIds.has(lo.id))
@@ -351,8 +358,16 @@ function OrdersTab({ userId }: { userId: string }) {
         total: lo.total,
         status: lo.status,
         createdAt: lo.createdAt,
-        itemCount: lo.items.length,
+        items: lo.items.map((ci, idx) => ({
+          key: `${lo.id}-${idx}`,
+          name: ci.product.name,
+          qty: ci.quantity,
+          image: resolveProductImage(ci.product.image),
+          slug: ci.product.slug || null,
+          productId: ci.product.id || null,
+        })),
         source: "local" as const,
+        raw: lo,
       })),
   ];
 
@@ -365,26 +380,470 @@ function OrdersTab({ userId }: { userId: string }) {
       ) : (
         <div className="space-y-3">
           {mergedOrders.map((order) => (
-            <div
+            <button
               key={order.id}
-              className="flex items-center justify-between rounded-2xl border border-[#e5e5df] bg-white p-5 shadow-sm"
+              type="button"
+              onClick={() => setSelectedOrder(order)}
+              className="w-full rounded-2xl border border-[#e5e5df] bg-white p-5 text-left shadow-sm transition hover:border-[#d4d4cd] hover:shadow-md"
             >
-              <div className="min-w-0">
-                <div className="font-semibold text-[#1c1d1a] text-sm truncate font-mono">{order.id}</div>
-                <div className="mt-1 text-xs text-[#8c8c86]">
-                  {shortDate(order.createdAt)} · {order.itemCount} item{order.itemCount !== 1 ? "s" : ""}
+              <div className="flex items-center gap-4">
+                {order.items.length > 0 ? (
+                  <div className="relative shrink-0">
+                    <img
+                      src={order.items[0].image}
+                      alt={order.items[0].name}
+                      className="h-16 w-16 rounded-xl border border-[#e5e5df] object-cover"
+                    />
+                    {order.items.length > 1 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1c1d1a] px-1 text-[10px] font-semibold text-white">
+                        +{order.items.length - 1}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 shrink-0 rounded-xl border border-[#e5e5df] bg-[#f5f5f3] flex items-center justify-center">
+                    <Package className="h-6 w-6 text-[#8c8c86]" />
+                  </div>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-[#1c1d1a] text-sm truncate">
+                    {order.items.length > 0 ? order.items[0].name : "Order"}
+                    {order.items.length > 1 && ` and ${order.items.length - 1} other item${order.items.length - 1 !== 1 ? "s" : ""}`}
+                  </div>
+                  <div className="mt-1 font-mono text-[11px] text-[#8c8c86] truncate">
+                    Order ID: {order.id}
+                  </div>
+                  <div className="mt-1.5 text-[11px] text-[#8c8c86]">
+                    {shortDate(order.createdAt)}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <StatusBadge status={order.status} />
+                  <div className="font-bold text-[#1c1d1a] text-sm">{inr(order.total)}</div>
+                  <ChevronRight className="h-4 w-4 text-[#a3a39e]" />
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <StatusBadge status={order.status} />
-                <div className="font-semibold text-[#1c1d1a] text-sm">{inr(order.total)}</div>
-              </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
+
+      <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
     </div>
   );
+}
+
+/* ═══════════════════════════════════════════════ Order Detail Modal ═══ */
+function SummaryRow({ label, value, accent }: { label: string; value: string; accent?: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-[#8c8c86]">{label}</span>
+      <span className={accent ?? "text-[#1c1d1a]"}>{value}</span>
+    </div>
+  );
+}
+
+function ProductReviewForm({
+  productSlug,
+  productName,
+  reviewerName,
+  existingReview,
+}: {
+  productSlug: string;
+  productName: string;
+  reviewerName: string;
+  existingReview?: { rating: number; comment: string } | null;
+}) {
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (rating === 0) {
+      toast.error("Please select a star rating.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { submitReview } = await import("@/lib/commerce");
+      const res = await submitReview(
+        productSlug,
+        rating,
+        comment,
+        reviewerName || "Verified Buyer"
+      );
+      if (res.ok) {
+        toast.success(`Thank you for reviewing ${productName}!`);
+        setSubmitted(true);
+      } else {
+        toast.error(res.error || "Failed to submit review.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred.");
+    }
+    setSubmitting(false);
+  };
+
+  const hasReview = submitted || !!existingReview;
+  const finalRating = rating || existingReview?.rating || 0;
+  const finalComment = comment || existingReview?.comment || "";
+
+  if (hasReview) {
+    return (
+      <div className="mt-3 border-t border-[#e5e5df] pt-3">
+        <div className="text-[11px] font-semibold text-[#1c1d1a] mb-1">
+          Your Review & Feedback
+        </div>
+        <div className="flex items-center gap-1 mb-1.5">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={`h-4.5 w-4.5 ${
+                finalRating >= star ? "fill-amber-400 text-amber-400" : "text-[#d4d4cd]"
+              }`}
+            />
+          ))}
+        </div>
+        {finalComment && (
+          <p className="text-xs text-[#5c5c56] italic bg-[#fafaf8] rounded-xl px-3 py-2 border border-[#e5e5df]">
+            "{finalComment}"
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-3 border-t border-[#e5e5df] pt-3">
+      <div className="text-[11px] font-semibold text-[#1c1d1a] mb-1.5">
+        Leave a Review & Feedback
+      </div>
+      
+      {/* Star Rating Select */}
+      <div className="flex items-center gap-1 mb-2">
+        {[1, 2, 3, 4, 5].map((star) => {
+          const isLit = (hoverRating || rating) >= star;
+          return (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHoverRating(star)}
+              onMouseLeave={() => setHoverRating(0)}
+              className="p-0.5 transition-transform hover:scale-110"
+            >
+              <Star
+                className={`h-4.5 w-4.5 ${
+                  isLit ? "fill-amber-400 text-amber-400" : "text-[#d4d4cd]"
+                }`}
+              />
+            </button>
+          );
+        })}
+        {rating > 0 && (
+          <span className="text-[11px] text-[#8c8c86] ml-1.5 font-medium">
+            {rating} / 5
+          </span>
+        )}
+      </div>
+
+      {/* Comment Input */}
+      <div className="relative">
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder={`Write your feedback for ${productName}...`}
+          className="w-full rounded-xl border border-[#e5e5df] bg-[#fafaf8] px-3 py-2 text-xs text-[#1c1d1a] outline-none focus:border-primary transition min-h-[50px] resize-none"
+          required
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="mt-1.5 rounded-full bg-[#1c1d1a] px-3.5 py-1 text-[11px] font-semibold text-white hover:bg-[#2c2d2a] transition disabled:opacity-50"
+      >
+        {submitting ? "Submitting..." : "Submit Review"}
+      </button>
+    </form>
+  );
+}
+
+function OrderDetailModal({ order, onClose }: { order: MergedOrderRow | null; onClose: () => void }) {
+  const vm = order && buildOrderDetailVM(order);
+  const { profile, user } = useAuth();
+  const { reviews: myReviews } = useUserReviews(user?.id);
+
+  return (
+    <AnimatePresence>
+      {vm && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 grid place-items-start overflow-y-auto bg-black/60 p-4 pt-10 backdrop-blur-sm sm:place-items-center"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="w-full max-w-2xl overflow-hidden rounded-3xl border border-[#e5e5df] bg-white shadow-card-hover"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b border-[#e5e5df] p-6">
+              <div>
+                <div className="font-mono text-sm font-semibold text-[#1c1d1a]">{vm.id}</div>
+                <div className="mt-1 text-xs text-[#8c8c86]">Placed on {shortDate(vm.createdAt)}</div>
+              </div>
+              <div className="flex items-center gap-3">
+                <StatusBadge status={vm.status} />
+                <button
+                  onClick={onClose}
+                  className="grid h-8 w-8 place-items-center rounded-full text-[#8c8c86] hover:bg-[#f0f0ec]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-[70vh] space-y-6 overflow-y-auto p-6">
+              {/* Items */}
+              <div>
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#8c8c86]">Items</h3>
+                <div className="space-y-3">
+                  {vm.items.map((item) => {
+                    const existingReview = myReviews.find((r) => r.product_id === item.productId);
+                    return (
+                      <div key={item.key} className="rounded-2xl border border-[#e5e5df] p-4 bg-white shadow-sm">
+                        <div className="flex items-center gap-4">
+                          {item.slug ? (
+                            <Link
+                              to="/products/$slug"
+                              params={{ slug: item.slug }}
+                              onClick={onClose}
+                              className="flex items-center gap-4 flex-1 min-w-0 hover:opacity-80 transition group"
+                            >
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="h-16 w-16 shrink-0 rounded-xl border border-[#e5e5df] object-cover"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-sm font-semibold text-[#1c1d1a] group-hover:text-primary transition-colors">
+                                  {item.name}
+                                </div>
+                                <div className="mt-0.5 text-xs text-[#8c8c86]">
+                                  Qty {item.qty} · {inr(item.unitPrice)} each
+                                </div>
+                              </div>
+                            </Link>
+                          ) : (
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="h-16 w-16 shrink-0 rounded-xl border border-[#e5e5df] object-cover"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-sm font-semibold text-[#1c1d1a]">
+                                  {item.name}
+                                </div>
+                                <div className="mt-0.5 text-xs text-[#8c8c86]">
+                                  Qty {item.qty} · {inr(item.unitPrice)} each
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          <div className="shrink-0 text-sm font-bold text-[#1c1d1a]">{inr(item.lineTotal)}</div>
+                        </div>
+
+                        {/* Review Section */}
+                        {item.slug && (
+                          <ProductReviewForm
+                            productSlug={item.slug}
+                            productName={item.name}
+                            reviewerName={profile?.full_name || ""}
+                            existingReview={existingReview}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="rounded-2xl border border-[#e5e5df] p-4 text-sm">
+                <SummaryRow label="Subtotal" value={inr(vm.subtotal)} />
+                {vm.discount > 0 && <SummaryRow label="Discount" value={`-${inr(vm.discount)}`} accent="text-emerald-600" />}
+                <SummaryRow label="Shipping" value={vm.shipping === 0 ? "Free" : inr(vm.shipping)} />
+                <SummaryRow label="Tax" value={inr(vm.tax)} />
+                <div className="mt-2 flex justify-between border-t border-[#e5e5df] pt-2 text-base font-bold text-[#1c1d1a]">
+                  <span>Total</span>
+                  <span>{inr(vm.total)}</span>
+                </div>
+                {vm.paymentPlan === "partial" && (
+                  <div className="mt-2 space-y-1 border-t border-[#e5e5df] pt-2">
+                    <SummaryRow label="Paid so far" value={inr(vm.amountPaid)} accent="text-emerald-600" />
+                    <SummaryRow label="Balance due" value={inr(vm.amountDue)} accent="text-amber-600" />
+                  </div>
+                )}
+              </div>
+
+              {/* Shipping address */}
+              {vm.address && (
+                <div className="rounded-2xl border border-[#e5e5df] p-4">
+                  <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8c8c86]">
+                    <MapPin className="h-3.5 w-3.5" /> Shipping Address
+                  </h3>
+                  <div className="space-y-0.5 text-sm text-[#1c1d1a]">
+                    <div className="font-medium">
+                      {vm.address.name}{vm.address.phone ? ` · ${vm.address.phone}` : ""}
+                    </div>
+                    <div className="text-[#5c5c56]">
+                      {[vm.address.line1, vm.address.line2].filter(Boolean).join(", ")}
+                    </div>
+                    <div className="text-[#5c5c56]">
+                      {[vm.address.city, vm.address.state].filter(Boolean).join(", ")}
+                      {vm.address.pincode ? ` — ${vm.address.pincode}` : ""}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delivery / tracking */}
+              <div className="rounded-2xl border border-[#e5e5df] p-4">
+                <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8c8c86]">
+                  <Truck className="h-3.5 w-3.5" /> Delivery
+                </h3>
+                <div className="space-y-1 text-sm text-[#1c1d1a]">
+                  <SummaryRow label="Speed" value={vm.deliverySpeed} />
+                  {vm.carrier && <SummaryRow label="Carrier" value={vm.carrier} />}
+                  {vm.trackingNumber && <SummaryRow label="Tracking #" value={vm.trackingNumber} />}
+                </div>
+              </div>
+
+              {vm.paymentMethod && (
+                <div className="rounded-2xl border border-[#e5e5df] p-4">
+                  <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#8c8c86]">
+                    <CreditCard className="h-3.5 w-3.5" /> Payment
+                  </h3>
+                  <SummaryRow label="Method" value={vm.paymentMethod} />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+interface OrderDetailVM {
+  id: string;
+  createdAt: string;
+  status: string;
+  items: { key: string; name: string; qty: number; unitPrice: number; lineTotal: number; image: string; slug: string | null; productId: string | null }[];
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  paymentPlan: string;
+  amountPaid: number;
+  amountDue: number;
+  paymentMethod: string | null;
+  deliverySpeed: string;
+  carrier: string | null;
+  trackingNumber: string | null;
+  address: { name: string; phone?: string; line1: string; line2?: string; city?: string; state?: string; pincode?: string } | null;
+}
+
+function buildOrderDetailVM(order: MergedOrderRow): OrderDetailVM {
+  if (order.source === "db") {
+    const o = order.raw;
+    const addr = typeof o.shipping_address === "object" && o.shipping_address ? o.shipping_address : null;
+    return {
+      id: o.id,
+      createdAt: o.created_at,
+      status: o.status,
+      items: (o.items ?? []).map((it) => ({
+        key: it.id,
+        name: it.name,
+        qty: it.qty,
+        unitPrice: it.unit_price,
+        lineTotal: it.line_total,
+        image: resolveProductImage(it.product?.image_url ?? null),
+        slug: it.product?.slug ?? null,
+        productId: it.product?.id ?? null,
+      })),
+      subtotal: o.subtotal,
+      discount: o.discount,
+      shipping: o.shipping,
+      tax: o.tax,
+      total: o.total,
+      paymentPlan: o.payment_plan,
+      amountPaid: o.amount_paid_inr,
+      amountDue: o.amount_due_inr,
+      paymentMethod: o.payment_method || null,
+      deliverySpeed: o.delivery_speed,
+      carrier: o.carrier,
+      trackingNumber: o.tracking_number,
+      address: addr
+        ? {
+            name: addr.name,
+            phone: addr.phone,
+            line1: addr.line1,
+            line2: addr.line2,
+            city: addr.city,
+            state: addr.state,
+            pincode: addr.pincode,
+          }
+        : null,
+    };
+  }
+
+  const lo = order.raw;
+  return {
+    id: lo.id,
+    createdAt: lo.createdAt,
+    status: lo.status,
+    items: lo.items.map((ci, idx) => ({
+      key: `${lo.id}-${idx}`,
+      name: ci.product.name,
+      qty: ci.quantity,
+      unitPrice: ci.product.price,
+      lineTotal: ci.product.price * ci.quantity,
+      image: resolveProductImage(ci.product.image),
+      slug: ci.product.slug || null,
+      productId: ci.product.id || null,
+    })),
+    subtotal: lo.subtotal,
+    discount: lo.discount,
+    shipping: lo.shipping,
+    tax: lo.tax,
+    total: lo.total,
+    paymentPlan: lo.paymentPlan,
+    amountPaid: lo.amountPaidNow,
+    amountDue: lo.amountDueLater,
+    paymentMethod: null,
+    deliverySpeed: lo.deliverySpeed,
+    carrier: null,
+    trackingNumber: null,
+    address: {
+      name: lo.shippingAddress.fullName,
+      phone: lo.shippingAddress.phone,
+      line1: lo.shippingAddress.address,
+      city: lo.shippingAddress.city,
+      pincode: lo.shippingAddress.postalCode,
+    },
+  };
 }
 
 /* ═══════════════════════════════════════════════ Addresses Tab ═══ */

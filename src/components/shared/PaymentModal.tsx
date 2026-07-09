@@ -13,10 +13,9 @@ interface PaymentModalProps {
 }
 
 /**
- * Simulated Razorpay checkout — no real gateway is wired in yet (see PayU
- * integration note in the commerce plan). Shared by product checkout and
- * license subscription so both call sites stay in lockstep until a real
- * gateway replaces this.
+ * Simulated PayU checkout — no real gateway is wired in yet. Shared by product
+ * checkout and license subscription so both call sites stay in lockstep until
+ * a real gateway replaces this.
  */
 export function PaymentModal({ open, amount, onClose, onSuccess, merchantName = "TeleARGlass Pvt. Ltd." }: PaymentModalProps) {
   const [cardNum, setCardNum] = useState("");
@@ -35,7 +34,7 @@ export function PaymentModal({ open, amount, onClose, onSuccess, merchantName = 
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
         <h3 class="mt-4 text-lg font-semibold">Authorising Neural Payment Vector…</h3>
-        <p class="mt-1 text-sm text-text-muted">Verifying secure signature with Razorpay gateway</p>
+        <p class="mt-1 text-sm text-text-muted">Verifying secure signature with PayU gateway</p>
       </div>
     `;
     document.body.appendChild(container);
@@ -53,9 +52,9 @@ export function PaymentModal({ open, amount, onClose, onSuccess, merchantName = 
             {/* Header */}
             <div className="bg-[#0b1426] px-6 py-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-[#3399cc] flex items-center justify-center font-bold text-lg">R</div>
+                <div className="h-8 w-8 rounded-lg bg-[#81bc00] flex items-center justify-center font-bold text-lg text-white">P</div>
                 <div>
-                  <h3 className="font-semibold text-sm">Razorpay Checkout</h3>
+                  <h3 className="font-semibold text-sm">PayU Checkout</h3>
                   <p className="text-[10px] text-white/60">{merchantName}</p>
                 </div>
               </div>
@@ -121,7 +120,7 @@ export function PaymentModal({ open, amount, onClose, onSuccess, merchantName = 
               {/* Submit Action */}
               <button
                 onClick={handlePay}
-                className="w-full py-3 bg-[#3399cc] hover:bg-[#287aa3] text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-soft"
+                className="w-full py-3 bg-[#81bc00] hover:bg-[#6fa000] text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-soft"
               >
                 <CreditCard className="h-4 w-4" /> Pay {inr(amount)} Securely
               </button>

@@ -80,7 +80,7 @@ export function Footer() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 select-none overflow-hidden text-center"
       >
-        <span className="block whitespace-nowrap font-heading font-extrabold uppercase leading-none tracking-[-0.03em] text-[#1016FF]/[0.2] text-[clamp(4rem,17vw,13rem)]">
+        <span className="block whitespace-nowrap font-heading font-extrabold uppercase leading-none tracking-[-0.03em] text-[#1016FF]/[0.2] text-[clamp(2.25rem,11.5vw,13rem)]">
           TeleARGlass
         </span>
       </div>

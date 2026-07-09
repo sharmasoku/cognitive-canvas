@@ -42,7 +42,7 @@ export function SearchModal() {
                     <img src={p.image} alt={p.name} width={48} height={48} loading="lazy" className="h-12 w-12 rounded-lg object-cover" />
                     <div className="flex-1">
                       <div className="text-sm font-medium">{p.name}</div>
-                      <div className="text-xs text-text-muted">{p.technology} · {p.category}</div>
+                      <div className="text-xs text-text-muted">{p.category}</div>
                     </div>
                     <div className="text-sm font-semibold">{inr(p.price)}</div>
                   </Link>

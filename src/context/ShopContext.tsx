@@ -237,31 +237,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             month: "short",
           });
 
-      void sendOrderEmailFn({
-        data: {
-          orderId: order.id,
-          items: order.items.map((c) => ({
-            name: c.product.name,
-            qty: c.quantity,
-            unitPrice: c.product.price,
-            lineTotal: c.product.price * c.quantity,
-          })),
-          subtotal,
-          discount,
-          shipping,
-          tax,
-          total,
-          paymentPlan,
-          amountPaidNow,
-          amountDueLater,
-          shippingAddress: addr,
-          deliverySpeed: speed,
-          estimatedDate,
-        },
-      }).catch(() => {
-        /* best-effort */
-      });
-
       return order;
     },
     [cart, cartSubtotal],

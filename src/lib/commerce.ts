@@ -201,3 +201,21 @@ export async function submitContactMessage(params: {
     return { ok: false, error: (e as Error).message };
   }
 }
+
+/** Fetch a single order by ID from Supabase including items. */
+export async function fetchOrderById(orderId: string): Promise<any | null> {
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*, order_items(*)")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return {
+      ...data,
+      items: data.order_items || [],
+    };
+  } catch {
+    return null;
+  }
+}

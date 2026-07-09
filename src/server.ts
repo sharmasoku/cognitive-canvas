@@ -40,6 +40,19 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      // Intercept PayU callback POST before TanStack Router (which has no
+      // API-route support in this version and would return 404).
+      const url = new URL(request.url);
+      if (
+        url.pathname === "/api/payu-callback" &&
+        request.method === "POST"
+      ) {
+        const { handlePayuCallback } = await import(
+          "./server/payu-callback.server"
+        );
+        return await handlePayuCallback(request);
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
