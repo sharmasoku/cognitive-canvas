@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Package, ShoppingCart, MessageSquare, KeyRound,
-  Loader2, Menu, X, FileText
+  Loader2, Menu, X, FileText, Video
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/shell/Logo";
@@ -18,6 +18,7 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/products", label: "Products", icon: Package, exact: false },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart, exact: false },
+  { to: "/admin/media", label: "Media & Demo", icon: Video, exact: false },
   { to: "/admin/license", label: "License", icon: KeyRound, exact: false },
   { to: "/admin/recruitment", label: "Recruitment", icon: FileText, exact: false },
   { to: "/admin/messages", label: "Messages", icon: MessageSquare, exact: false },

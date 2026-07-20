@@ -94,7 +94,7 @@ export function Hero() {
                 {/* Description (center aligned) - text-sm on mobile, text-lg on desktop */}
                 <p className="max-w-3xl text-sm sm:text-lg text-gray-600 leading-relaxed font-normal mb-6 text-center mx-auto">
                   We are functioning sustainable innovation by building the user-friendly TeleARGlass
-                  Minimum Viable Products.
+                  Products.
                 </p>
 
                 {/* CTAs (center aligned) - equalized widths for perfect visual balance */}

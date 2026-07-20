@@ -29,6 +29,7 @@ import { Route as AdminRecruitmentRouteImport } from './routes/admin.recruitment
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
+import { Route as AdminMediaRouteImport } from './routes/admin.media'
 import { Route as AdminLicenseRouteImport } from './routes/admin.license'
 import { Route as AdminOrdersIdRouteImport } from './routes/admin.orders_.$id'
 
@@ -132,6 +133,11 @@ const AdminMessagesRoute = AdminMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLicenseRoute = AdminLicenseRouteImport.update({
   id: '/license',
   path: '/license',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/recruitment': typeof RecruitmentRoute
   '/services': typeof ServicesRoute
   '/admin/license': typeof AdminLicenseRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/recruitment': typeof RecruitmentRoute
   '/services': typeof ServicesRoute
   '/admin/license': typeof AdminLicenseRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/recruitment': typeof RecruitmentRoute
   '/services': typeof ServicesRoute
   '/admin/license': typeof AdminLicenseRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/services'
     | '/admin/license'
+    | '/admin/media'
     | '/admin/messages'
     | '/admin/orders'
     | '/admin/products'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/services'
     | '/admin/license'
+    | '/admin/media'
     | '/admin/messages'
     | '/admin/orders'
     | '/admin/products'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/services'
     | '/admin/license'
+    | '/admin/media'
     | '/admin/messages'
     | '/admin/orders'
     | '/admin/products'
@@ -443,6 +455,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMessagesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/license': {
       id: '/admin/license'
       path: '/license'
@@ -462,6 +481,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminLicenseRoute: typeof AdminLicenseRoute
+  AdminMediaRoute: typeof AdminMediaRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -474,6 +494,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminLicenseRoute: AdminLicenseRoute,
+  AdminMediaRoute: AdminMediaRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,

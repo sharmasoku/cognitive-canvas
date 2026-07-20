@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import demoVideo from "@/assets/demo-video.mp4";
+import { useDemoVideo } from "@/hooks/useDemoVideo";
 
 interface DemoModalProps {
   open: boolean;
@@ -8,6 +8,8 @@ interface DemoModalProps {
 }
 
 export function DemoModal({ open, onClose }: DemoModalProps) {
+  const { videoUrl } = useDemoVideo();
+
   return (
     <AnimatePresence>
       {open && (
@@ -38,10 +40,10 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
             {/* Video content */}
             <div className="relative aspect-video w-full">
               <video
-                src={demoVideo}
+                key={`${videoUrl}-${open}`}
+                src={videoUrl}
                 controls
                 autoPlay
-                muted
                 playsInline
                 className="w-full h-full object-cover"
               />

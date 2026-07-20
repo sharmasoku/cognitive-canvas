@@ -21,7 +21,7 @@ export const Route = createFileRoute("/licence")({
 const GLOW_COLORS = ["#1016FF", "#2563eb", "#10b981"];
 
 const FEATURES = [
-  { icon: Glasses, title: "Thinking Immersive AR Display", desc: "Think immersive AR display UI communication and control ." },
+  { icon: Glasses, title: "Think UI Based Immersive AR Display", desc: "From Think Data Capturing Telepathy Sensor to Display Onto TeleARGlass Immersive AR Screen. " },
   { icon: Accessibility, title: "Speaking Accessibility", desc: "Our TeleARProducts Think to Speak feature for speaking disable ,vision impaired and paralyzed patients ." },
   { icon: Cpu, title: "PanOS Operating System", desc: "Our TeleARGlass product are powered by ThinkUI based communication and control - PanOS Operating System" },
   { icon: BrainCircuit, title: "Think Data AI Intepretation", desc: "We apply measured Think Data including alphabets ,digits, controlled actions in our Parijat Software as a AI Database." },
@@ -106,14 +106,18 @@ export function Licence() {
             Our Innovative, Sustainable Make-in-India Patented Product
           </h1>
           <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-text-secondary">
-            TeleARGlass runs on our proprietary <span className="font-semibold text-foreground">PanOS Operating System</span> with a customizable
-            range of <span className="font-semibold text-foreground">30+ product software apps</span> — delivering augmented reality and
-            advanced speaking accessibility.
+            TeleARGlass runs on our <span className="font-semibold text-primary">PanOS Operating System</span> with a customizable
+            range of <span className="font-semibold text-primary">30+ product software apps</span> — delivering augmented reality and
+            speaking accessibility.
+          </p>
+
+          <p className="mt-4 text-base sm:text-lg font-semibold text-primary">
+            TELEARGLASS products are More Secure, Productive and Inclusive.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {HIGHLIGHTS.map((h) => (
-              <span key={h} className="rounded-full border border-border-light bg-surface px-3 py-1 text-[11px] font-medium text-text-secondary">
+              <span key={h} className="rounded-full border border-border-light bg-surface px-3 py-1 text-[11px] font-medium text-primary">
                 {h}
               </span>
             ))}
@@ -211,7 +215,7 @@ export function Licence() {
               <h2 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-bold leading-snug text-primary md:text-[2rem]">
                 {((plan?.name ?? "TeleARGlass Patent License") || "").replace(/Enterprise/i, "").replace(/\s+/g, " ").trim()}
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-text-secondary">For innovative &amp; sustainable organisations only.</p>
+              <p className="mt-2 text-xs sm:text-sm text-text-secondary">For innovative &amp; sustainable organisations only including ISRO and DRDO.</p>
 
               {planLoading ? (
                 <div className="mx-auto mt-6 sm:mt-9 h-12 sm:h-16 w-36 sm:w-48 animate-pulse rounded-2xl bg-surface" />

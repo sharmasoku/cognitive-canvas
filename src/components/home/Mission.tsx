@@ -114,7 +114,7 @@ export function Mission() {
               </div>
               <div>
                 <h3 className="text-white text-base sm:text-lg font-semibold font-heading leading-snug">
-                  Telemmersing channel on WhatsApp
+                  Telemmersing Channel on WhatsApp
                 </h3>
                 <p className="text-white/90 text-xs sm:text-sm font-semibold mt-1">
                   Please follow, watch, like, share.
@@ -122,7 +122,7 @@ export function Mission() {
               </div>
             </div>
             <a
-              href="https://wa.me/917862939627"
+              href="https://whatsapp.com/channel/0029VbCflD67tkjFE9gNxo1O"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-bold text-[#1016FF] shadow-[0_4px_15px_rgba(0,0,0,0.08)] transition hover:scale-105 hover:bg-white/95 active:scale-95"

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Code2, Compass, ShieldCheck, Wrench, X, type LucideIcon } from "lucide-react";
-import demoVideo from "@/assets/demo-video.mp4";
+import { DemoModal } from "@/components/shell/DemoModal";
 
 export const Route = createFileRoute("/services")({
   head: () => ({ meta: [{ title: "TeleServices" }] }),
@@ -314,39 +314,7 @@ function ServicesPage() {
       </section>
 
       {/* Video Modal Popup */}
-      {showVideoModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md cursor-default"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowVideoModal(false);
-          }}
-        >
-          <div 
-            className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-white/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              type="button"
-              onClick={() => setShowVideoModal(false)}
-              className="absolute right-4 top-4 z-50 rounded-full p-2.5 bg-black/60 text-white/90 hover:bg-black/90 hover:scale-110 transition cursor-pointer"
-              aria-label="Close video"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            {/* Video Element */}
-            <video
-              src={demoVideo}
-              controls
-              autoPlay
-              playsInline
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </div>
-      )}
+      <DemoModal open={showVideoModal} onClose={() => setShowVideoModal(false)} />
     </div>
   );
 }
