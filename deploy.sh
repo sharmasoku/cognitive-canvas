@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Direct Deployment Script for Cognitive Canvas
+# Direct Deployment Script for TeleARGlass
 # (Docker Container + Nginx Reverse Proxy with SSL on Port 443)
 # ==============================================================================
 # Usage: ./deploy.sh
@@ -10,7 +10,7 @@
 
 set -e # Exit script on any command failure
 
-APP_NAME="cognitive-canvas"
+APP_NAME="telearglass"
 PORT="3000"
 ENV_FILE=".env"
 
