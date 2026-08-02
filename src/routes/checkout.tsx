@@ -584,7 +584,7 @@ function Checkout() {
 
                       <div className="mt-6 rounded-2xl border border-accent/20 bg-background/60 p-4 max-w-sm mx-auto">
                         <div className="text-xs font-mono uppercase tracking-widest text-text-muted">Estimated Delivery</div>
-                        <div className="mt-1 font-semibold text-accent-dark">{getEstimatedDate(order.deliverySpeed)}</div>
+                        <div className="mt-1 font-semibold text-accent-dark">{getEstimatedDate()}</div>
                       </div>
                     </div>
 
