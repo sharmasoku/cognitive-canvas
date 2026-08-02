@@ -5,7 +5,7 @@ import { submitContactMessage } from "@/lib/commerce";
 import { TestimonialMarquee } from "@/components/shared/TestimonialMarquee";
 
 export const Route = createFileRoute("/feedback")({
-  head: () => ({ meta: [{ title: "TeleFeedback — Customers" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: Feedback,
 });
 

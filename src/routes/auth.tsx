@@ -14,7 +14,7 @@ const authSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Authentication — TeleARGlass" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   validateSearch: (search) => authSearchSchema.parse(search),
   component: AuthPage,
 });

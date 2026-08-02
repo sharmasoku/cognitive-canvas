@@ -10,7 +10,7 @@ import { inr } from "@/lib/format";
 export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
-      { title: "TeleProducts — Catalogue" },
+      { title: "TeleARGlass" },
       { name: "description", content: "Smart glasses, BCI bands, developer kits and accessories from TeleARGlass." },
       { property: "og:title", content: "TeleProducts Catalogue" },
       { property: "og:description", content: "Browse Vision Pro, Lite, Neural Band X, dev kits and more." },

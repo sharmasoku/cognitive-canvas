@@ -11,7 +11,7 @@ import vid1 from "@/assets/tele-marketing-video.mp4";
 import vid2 from "@/assets/tele-marketing-video-2.mp4";
 
 export const Route = createFileRoute("/marketing")({
-  head: () => ({ meta: [{ title: "TeleMarketing — TeleARGlass" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: Marketing,
 });
 

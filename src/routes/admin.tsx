@@ -10,7 +10,7 @@ import { Logo } from "@/components/shell/Logo";
 import { useContactMessages } from "@/hooks/useAdminData";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin Panel — TeleARGlass" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: AdminLayout,
 });
 

@@ -26,6 +26,38 @@ RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
 BEGIN NEW.updated_at = now(); RETURN NEW; END $$;
 
 -- =============================================================
+-- USER ROLES (admin/customer role management)
+-- Defined early so has_role() helper is available to all RLS policies.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS public.user_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role public.app_role NOT NULL,
+  UNIQUE (user_id, role)
+);
+
+-- Role check helper functions
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role)
+$$;
+
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role text)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role::public.app_role)
+$$;
+
+-- RLS & Grants for user_roles
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON public.user_roles TO authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.user_roles TO authenticated;
+GRANT ALL ON public.user_roles TO service_role;
+
+-- Policies for user_roles
+CREATE POLICY "own roles select" ON public.user_roles FOR SELECT TO authenticated USING (auth.uid() = user_id);
+CREATE POLICY "admins manage roles" ON public.user_roles FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- =============================================================
 -- PROFILES
 -- =============================================================
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -64,32 +96,6 @@ END $$;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- =============================================================
--- USER ROLES (admin/customer role management)
--- =============================================================
-CREATE TABLE IF NOT EXISTS public.user_roles (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role public.app_role NOT NULL,
-  UNIQUE (user_id, role)
-);
-
--- RLS & Grants
-ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
-GRANT SELECT ON public.user_roles TO authenticated;
-GRANT INSERT, UPDATE, DELETE ON public.user_roles TO authenticated;
-GRANT ALL ON public.user_roles TO service_role;
-
--- Policies
-CREATE POLICY "own roles select" ON public.user_roles FOR SELECT TO authenticated USING (auth.uid() = user_id);
-CREATE POLICY "admins manage roles" ON public.user_roles FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
-
--- Role check helper function
-CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role)
-$$;
 
 -- =============================================================
 -- ADDRESSES (customer shipping address book)
@@ -626,6 +632,7 @@ GRANT EXECUTE ON FUNCTION public.subscribe_to_license_tx(uuid) TO authenticated,
 REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.tg_set_updated_at() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, text) FROM PUBLIC, anon;
 
 -- =============================================================
 -- PERFORMANCE INDEXES

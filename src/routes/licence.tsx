@@ -14,7 +14,7 @@ import { sendSubscriptionEmailFn } from "@/lib/email.functions";
 import { inr, shortDate } from "@/lib/format";
 
 export const Route = createFileRoute("/licence")({
-  head: () => ({ meta: [{ title: "TeleLicence — Patent Licensing" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: Licence,
 });
 

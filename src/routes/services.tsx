@@ -6,7 +6,7 @@ import { Code2, Compass, ShieldCheck, Wrench, X, type LucideIcon } from "lucide-
 import { DemoModal } from "@/components/shell/DemoModal";
 
 export const Route = createFileRoute("/services")({
-  head: () => ({ meta: [{ title: "TeleServices" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: ServicesPage,
 });
 

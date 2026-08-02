@@ -21,7 +21,7 @@ const checkoutSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — TeleARGlass" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   validateSearch: (search) => checkoutSearchSchema.parse(search),
   component: Checkout,
 });
@@ -63,24 +63,29 @@ function Checkout() {
         }
       }
     });
-    if (extracted.length === 0) {
-      return [
-        {
-          fullName: "Sorav Sharma",
-          phone: "6353086637",
-          address: "Gujarat, India, Gandhinagar-382721, Gujarat, India, Ahmedabad, GUJARAT",
-          city: "Ahmedabad",
-          postalCode: "382721",
-          email: "sorav@telearglass.com",
-        },
-      ];
-    }
     return extracted;
   });
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
-  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(() => savedAddresses.length === 0);
 
-  const form = useForm<ShippingAddress>({ resolver: zodResolver(shippingSchema), mode: "onBlur" });
+  const form = useForm<ShippingAddress>({
+    resolver: zodResolver(shippingSchema),
+    mode: "onBlur",
+    defaultValues: {
+      fullName: user?.user_metadata?.full_name || "",
+      email: user?.email || "",
+      phone: "",
+      address: "",
+      city: "",
+      postalCode: "",
+    },
+  });
+
+  useEffect(() => {
+    if (user?.email) {
+      form.setValue("email", user.email);
+    }
+  }, [user?.email, form]);
 
   // Cart items snapshot product data at add-to-cart time, so a part-payment
   // rule (or price) changed afterwards wouldn't otherwise show up here.

@@ -39,7 +39,7 @@ const accountSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "My Account — TeleARGlass" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   validateSearch: accountSearchSchema,
   component: AccountPage,
 });

@@ -15,14 +15,10 @@ export interface SendResult {
   error?: string;
 }
 
-let _resend: Resend | undefined;
 function resend(): Resend {
-  if (!_resend) {
-    const key = process.env.RESEND_API_KEY;
-    if (!key) throw new Error("RESEND_API_KEY is not set");
-    _resend = new Resend(key);
-  }
-  return _resend;
+  const key = (process.env.RESEND_API_KEY || "").trim();
+  if (!key) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(key);
 }
 
 function fromAddress(): string {

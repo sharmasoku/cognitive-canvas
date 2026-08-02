@@ -29,7 +29,7 @@ export async function handlePayuCallback(request: Request): Promise<Response> {
       bank_ref_num,
     } = body;
 
-    const salt = process.env.PAYU_SALT || "";
+    const salt = (process.env.PAYU_SALT || "").trim();
 
     // Reverse hash formula:
     // sha512(salt|status|udf10|udf9|...|udf1|email|firstname|productinfo|amount|txnid|key)

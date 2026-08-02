@@ -7,7 +7,7 @@ import { useDemoVideo } from "@/hooks/useDemoVideo";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/media")({
-  head: () => ({ meta: [{ title: "Media & Demo Video — Admin" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: AdminMediaPage,
 });
 

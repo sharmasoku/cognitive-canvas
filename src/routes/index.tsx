@@ -8,7 +8,7 @@ import { ProductShowcase } from "@/components/home/ProductShowcase";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TeleARGlass — Cognitive Interfaces, Shipped." },
+      { title: "TeleARGlass" },
       { name: "description", content: "The flagship neural-AR system: 16-channel BCI, 2400-nit waveguide lenses, and TeleOS spatial computing." },
       { property: "og:title", content: "TeleARGlass" },
       { property: "og:description", content: "The future doesn't wait for your hands. It understands your thoughts." },

@@ -5,7 +5,7 @@ import { Upload } from "lucide-react";
 import { submitRecruitmentFn } from "@/lib/email.functions";
 
 export const Route = createFileRoute("/recruitment")({
-  head: () => ({ meta: [{ title: "Join TeleARGlass - Careers" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: Recruitment,
 });
 

@@ -42,8 +42,7 @@ export function TestimonialMarquee() {
     let active = true;
     fetchAllReviews(48).then((dbReviews) => {
       if (active) {
-        // Merge the two guest comments at the front of reviews list
-        setReviews([...STATIC_REVIEWS, ...dbReviews]);
+        setReviews(dbReviews.length > 0 ? dbReviews : STATIC_REVIEWS);
         setLoading(false);
       }
     });

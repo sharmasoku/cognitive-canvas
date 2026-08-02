@@ -15,7 +15,7 @@ import { inr, shortDate } from "@/lib/format";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/admin/orders_/$id")({
-  head: () => ({ meta: [{ title: "Order Detail — TeleARGlass Admin" }] }),
+  head: () => ({ meta: [{ title: "TeleARGlass" }] }),
   component: AdminOrderDetail,
 });
 
