@@ -112,7 +112,7 @@ function Checkout() {
     }
   }, [queryOrderId]);
 
-  const shipping = speed === "priority" ? 499 : 0;
+  const shipping = 0;
   const total = cartSubtotal + shipping;
 
   const advanceFromItems = cart.reduce((s, c) => s + computeAdvanceAmount(c.product, c.quantity), 0);
@@ -122,7 +122,7 @@ function Checkout() {
 
   const order = fetchedOrder || (orderId ? getOrder(orderId) : undefined);
 
-  const getEstimatedDate = (deliverySpeed: "standard" | "priority") => {
+  const getEstimatedDate = () => {
     if (order && order.items && order.items.length > 0) {
       const estimates = order.items
         .map((c: any) => {
@@ -135,7 +135,7 @@ function Checkout() {
       }
     }
     const date = new Date();
-    date.setDate(date.getDate() + (deliverySpeed === "priority" ? 1 : 4));
+    date.setDate(date.getDate() + 4);
     return date.toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
   };
 
