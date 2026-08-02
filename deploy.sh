@@ -25,15 +25,12 @@ git pull origin main
 # 2. Verify .env file existence
 echo "[2/6] Checking environment configuration..."
 if [ ! -f "$ENV_FILE" ]; then
-    if [ -f "env" ]; then
-        echo "Found 'env' file without dot. Copying to '$ENV_FILE'..."
-        cp env "$ENV_FILE"
-    else
-        echo "Error: $ENV_FILE file not found!"
-        echo "Please create a $ENV_FILE file with your production keys before deploying."
-        exit 1
-    fi
+    echo "Error: $ENV_FILE file not found!"
+    echo "Please create a $ENV_FILE file with your production keys before deploying."
+    exit 1
 fi
+
+echo "Active configuration loaded from $ENV_FILE"
 
 # 3. Build Docker Image
 echo "[3/6] Building Docker image '${APP_NAME}:latest'..."
@@ -44,12 +41,12 @@ echo "[4/6] Stopping existing container..."
 existingContainer=$(docker ps -aq -f "name=^/${APP_NAME}$")
 if [ -n "$existingContainer" ]; then
     echo "Stopping container $APP_NAME..."
-    docker stop "$APP_NAME" > /dev/null
+    docker stop "$APP_NAME" > /dev/null || true
     echo "Removing container $APP_NAME..."
-    docker rm "$APP_NAME" > /dev/null
+    docker rm "$APP_NAME" > /dev/null || true
 fi
 
-# 5. Run new container
+# 5. Run new container with --env-file .env
 echo "[5/6] Starting container listening on localhost:$PORT..."
 docker run -d \
   --name "$APP_NAME" \
