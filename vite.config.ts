@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 import viteReact from "@vitejs/plugin-react";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
@@ -21,9 +21,10 @@ export default defineConfig(({ command }) => ({
   css: { transformer: "lightningcss" },
 
   resolve: {
-    // `@` -> ./src (also covered by vite-tsconfig-paths, kept for robustness).
+    tsconfigPaths: true,
+    // `@` -> ./src (also covered by tsconfig paths resolution, kept for robustness).
     alias: {
-      "@": new URL("./src", import.meta.url).pathname,
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
     dedupe: [
       "react",
@@ -55,7 +56,6 @@ export default defineConfig(({ command }) => ({
 
   plugins: [
     tailwindcss(),
-    tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart({
       // Route TanStack Start's bundled server entry to src/server.ts (our SSR
       // error wrapper). nitro/vite builds from this.

@@ -171,7 +171,7 @@ function Checkout() {
       form.action = response.actionUrl;
 
       const fields = {
-        key: response.key,
+        key: '6CQ4IJ',
         txnid: response.txnid,
         amount: response.amount,
         productinfo: response.productinfo,
@@ -322,14 +322,13 @@ function Checkout() {
                 type="button"
                 onClick={() => isClickable && handleStepClick(i)}
                 disabled={!isClickable}
-                className={`grid h-8 w-8 place-items-center rounded-full text-xs font-semibold transition ${
-                  i <= step && queryStatus !== "failed" ? "bg-gradient-primary text-white" : "bg-surface text-text-muted"
-                } ${isClickable ? "hover:scale-105 cursor-pointer" : "cursor-default"}`}
+                className={`grid h-8 w-8 place-items-center rounded-full text-xs font-semibold transition ${i <= step && queryStatus !== "failed" ? "bg-gradient-primary text-white" : "bg-surface text-text-muted"
+                  } ${isClickable ? "hover:scale-105 cursor-pointer" : "cursor-default"}`}
               >
                 {i < step && queryStatus !== "failed" ? <Check className="h-4 w-4" /> : i + 1}
               </button>
               <span className={`text-sm ${i === step && queryStatus !== "failed" ? "font-semibold" : "text-text-muted"}`}>{s}</span>
-{i < STEPS.length - 1 && <div className={`h-px w-8 ${i < step && queryStatus !== "failed" ? "bg-primary" : "bg-border"}`} />}
+              {i < STEPS.length - 1 && <div className={`h-px w-8 ${i < step && queryStatus !== "failed" ? "bg-primary" : "bg-border"}`} />}
             </div>
           );
         })}
@@ -397,11 +396,10 @@ function Checkout() {
                             <div
                               key={idx}
                               onClick={() => setSelectedAddressIndex(idx)}
-                              className={`relative flex items-start gap-4 rounded-3xl p-5 border-2 cursor-pointer transition-all duration-200 ${
-                                selectedAddressIndex === idx
+                              className={`relative flex items-start gap-4 rounded-3xl p-5 border-2 cursor-pointer transition-all duration-200 ${selectedAddressIndex === idx
                                   ? "border-[#1016FF] bg-[#1016FF]/[0.02]"
                                   : "border-border bg-background hover:border-text-secondary/40"
-                              }`}
+                                }`}
                             >
                               <div className="mt-1 flex h-5 items-center">
                                 <input
@@ -762,7 +760,7 @@ function OrderRatingModal({ isOpen, onClose, order }: { isOpen: boolean; onClose
               <p className="mt-2 text-sm text-text-secondary">
                 Thank you for your order! Please rate the <strong>{productName}</strong>.
               </p>
-              
+
               <div className="mt-6 flex justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <button
@@ -774,11 +772,10 @@ function OrderRatingModal({ isOpen, onClose, order }: { isOpen: boolean; onClose
                     className="p-1 transition duration-150 hover:scale-125"
                   >
                     <Star
-                      className={`h-9 w-9 transition-colors ${
-                        i <= (hoverRating ?? rating)
+                      className={`h-9 w-9 transition-colors ${i <= (hoverRating ?? rating)
                           ? "fill-amber-400 text-amber-400"
                           : "text-border"
-                      }`}
+                        }`}
                     />
                   </button>
                 ))}
