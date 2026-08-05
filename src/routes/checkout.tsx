@@ -397,8 +397,8 @@ function Checkout() {
                               key={idx}
                               onClick={() => setSelectedAddressIndex(idx)}
                               className={`relative flex items-start gap-4 rounded-3xl p-5 border-2 cursor-pointer transition-all duration-200 ${selectedAddressIndex === idx
-                                  ? "border-[#1016FF] bg-[#1016FF]/[0.02]"
-                                  : "border-border bg-background hover:border-text-secondary/40"
+                                ? "border-[#1016FF] bg-[#1016FF]/[0.02]"
+                                : "border-border bg-background hover:border-text-secondary/40"
                                 }`}
                             >
                               <div className="mt-1 flex h-5 items-center">
@@ -773,8 +773,8 @@ function OrderRatingModal({ isOpen, onClose, order }: { isOpen: boolean; onClose
                   >
                     <Star
                       className={`h-9 w-9 transition-colors ${i <= (hoverRating ?? rating)
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-border"
+                        ? "fill-amber-400 text-amber-400"
+                        : "text-border"
                         }`}
                     />
                   </button>
