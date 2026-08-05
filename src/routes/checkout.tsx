@@ -171,7 +171,7 @@ function Checkout() {
       form.action = response.actionUrl;
 
       const fields = {
-        key: '6CQ4IJ',
+        key: response.key,
         txnid: response.txnid,
         amount: response.amount,
         productinfo: response.productinfo,

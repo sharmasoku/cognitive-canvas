@@ -29,11 +29,31 @@ export async function handlePayuCallback(request: Request): Promise<Response> {
       bank_ref_num,
     } = body;
 
-    const salt = (process.env.PAYU_SALT || "").trim();
+    const salt = (process.env.PAYU_SALT || "4imomd6TLClAg7KyUS5LJ5AtIJBxThwk").trim();
 
     // Reverse hash formula:
-    // sha512(salt|status|udf10|udf9|...|udf1|email|firstname|productinfo|amount|txnid|key)
-    const rawString = `${salt}|${status}|||||||||||${email || ""}|${firstname || ""}|${productinfo || ""}|${amount || ""}|${txnid || ""}|${key || ""}`;
+    // sha512(salt|status|udf10|udf9|udf8|udf7|udf6|udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key)
+    const reverseHashSequence = [
+      salt,
+      status,
+      body.udf10 || "",
+      body.udf9 || "",
+      body.udf8 || "",
+      body.udf7 || "",
+      body.udf6 || "",
+      body.udf5 || "",
+      body.udf4 || "",
+      body.udf3 || "",
+      body.udf2 || "",
+      body.udf1 || "",
+      email || "",
+      firstname || "",
+      productinfo || "",
+      amount || "",
+      txnid || "",
+      key || "",
+    ];
+    const rawString = reverseHashSequence.join("|");
     const calculatedHash = createHash("sha512")
       .update(rawString)
       .digest("hex");
