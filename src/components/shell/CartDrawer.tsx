@@ -44,7 +44,6 @@ export function CartDrawer() {
                         <div className="flex justify-between gap-2">
                           <div>
                             <div className="font-medium leading-tight">{c.product.name}</div>
-                            <div className="text-xs text-text-muted">{c.product.technology}</div>
                           </div>
                           <button onClick={() => removeFromCart(c.product.id)} aria-label="Remove" className="text-text-muted hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
                         </div>

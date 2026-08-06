@@ -191,18 +191,11 @@ export function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
             <FieldWrap label="Tagline">
               <input value={tagline} onChange={(e) => setTagline(e.target.value)} className={inputCls} placeholder="Short tagline…" />
             </FieldWrap>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FieldWrap label="Category">
-                <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
-                  {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                </select>
-              </FieldWrap>
-              <FieldWrap label="Technology">
-                <select value={technology} onChange={(e) => setTechnology(e.target.value)} className={inputCls}>
-                  {TECHNOLOGIES.map((t) => <option key={t}>{t}</option>)}
-                </select>
-              </FieldWrap>
-            </div>
+            <FieldWrap label="Category">
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
+                {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              </select>
+            </FieldWrap>
             <FieldWrap label="Short Description">
               <textarea value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} rows={2} className={inputCls} placeholder="One-line summary shown on cards…" />
             </FieldWrap>
