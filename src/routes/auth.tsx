@@ -67,13 +67,22 @@ function AuthPage() {
           }
         } else {
           if (data.session) {
-            toast.success("Successfully registered!");
+            toast.success("Account created & logged in successfully!");
             navigate({ to: redirect || "/" });
           } else {
-            toast.success("Check your email for the confirmation link!");
-            setIsSignUp(false);
-            setEmail("");
-            setPassword("");
+            // Attempt immediate sign in with credentials
+            const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+
+            if (!loginErr && loginData.session) {
+              toast.success("Account created & logged in successfully!");
+              navigate({ to: redirect || "/" });
+            } else {
+              toast.success("Account created! You can now sign in with your credentials.");
+              setIsSignUp(false);
+            }
           }
         }
       } else {
@@ -100,7 +109,12 @@ function AuthPage() {
         }
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication failed. Check your credentials.");
+      const msg = err instanceof Error ? err.message : "Authentication failed. Check your credentials.";
+      if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("rate_limit")) {
+        toast.error("Email rate limit exceeded. Supabase restricts confirmation emails per hour. Please wait a few minutes or switch to Custom SMTP in Supabase.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }

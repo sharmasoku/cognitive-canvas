@@ -29,7 +29,7 @@ const FEATURES = [
   { icon: PackageCheck, title: "Telepathy Sensor Programable Control Board", desc: "It is the board schematic design layout to transmit the Think Data wirelessly to the AR Display , Mobile , Computer or the automation control action ." },
 ];
 
-const DESIGN_FEATURES = [
+const DESIGN_FEATURES: { icon: any; title: string; desc?: string }[] = [
   { icon: Brush, title: "TeleARGlass Aesthetics and Erognomics Design with Analysis" },
   { icon: Radar, title: "Think Data Capturing Telepathy  Sensor Design." },
 ];

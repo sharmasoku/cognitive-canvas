@@ -35,7 +35,7 @@ export interface DbOrderItem {
   unit_price: number;
   qty: number;
   line_total: number;
-  product?: { image_url: string | null } | null;
+  product?: { id?: string | null; slug?: string | null; image_url: string | null } | null;
 }
 
 export interface DbOrderPayment {
