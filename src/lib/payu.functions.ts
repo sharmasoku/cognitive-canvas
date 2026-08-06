@@ -31,29 +31,29 @@ export const generatePayuHashFn = createServerFn({ method: "POST" })
     // Format amount to 2 decimal places for consistency
     const formattedAmount = Number(data.amount).toFixed(2);
 
-    // PayU hash formula (official):
+    // PayU hash formula (from PayU Integration Team):
     // sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
-    // 5 empty udf fields + 6 reserved empty fields = 11 empty segments between email and SALT.
-    // Total: 18 pipe-separated fields.
+    //                                                      ─── 5 udf (empty) ───  ─5 reserved─
+    // "||||||" after udf5 = 6 pipes = 5 empty reserved segments.
+    // Total: 6 named + 5 udf + 5 reserved + 1 salt = 17 fields, 16 pipes.
     const hashSequence = [
-      key,
-      data.txnid,
-      formattedAmount,
-      productinfo,
-      firstname,
-      email,
-      "", // udf1
-      "", // udf2
-      "", // udf3
-      "", // udf4
-      "", // udf5
-      "", // reserved
-      "", // reserved
-      "", // reserved
-      "", // reserved
-      "", // reserved
-      "", // reserved
-      salt,
+      key,              // [0]  key
+      data.txnid,       // [1]  txnid
+      formattedAmount,  // [2]  amount
+      productinfo,      // [3]  productinfo
+      firstname,        // [4]  firstname
+      email,            // [5]  email
+      "",               // [6]  udf1
+      "",               // [7]  udf2
+      "",               // [8]  udf3
+      "",               // [9]  udf4
+      "",               // [10] udf5
+      "",               // [11] reserved (pipe 1 of ||||||)
+      "",               // [12] reserved (pipe 2)
+      "",               // [13] reserved (pipe 3)
+      "",               // [14] reserved (pipe 4)
+      "",               // [15] reserved (pipe 5)
+      salt,             // [16] SALT   (pipe 6 leads into SALT)
     ];
     const rawString = hashSequence.join("|");
 

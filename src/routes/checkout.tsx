@@ -181,6 +181,7 @@ function Checkout() {
         surl: response.surl,
         furl: response.furl,
         hash: response.hash,
+        service_provider: "payu_paisa",
       };
 
       for (const [name, val] of Object.entries(fields)) {
@@ -242,6 +243,7 @@ function Checkout() {
         surl: response.surl,
         furl: response.furl,
         hash: response.hash,
+        service_provider: "payu_paisa",
       };
 
       for (const [name, val] of Object.entries(fields)) {
