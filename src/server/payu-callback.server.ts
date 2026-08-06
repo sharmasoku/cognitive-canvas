@@ -1,5 +1,8 @@
 import { createHash } from "crypto";
 
+/** Strip leading/trailing double-quotes that some .env editors inject. */
+const stripQuotes = (v: string) => v.replace(/^"|"$/g, "");
+
 /**
  * Handles the PayU callback POST request.
  * Called from server.ts when the URL matches /api/payu-callback.
@@ -29,7 +32,7 @@ export async function handlePayuCallback(request: Request): Promise<Response> {
       bank_ref_num,
     } = body;
 
-    const salt = (process.env.PAYU_SALT || "4imomd6TLClAg7KyUS5LJ5AtIJBxThwk").trim();
+    const salt = stripQuotes((process.env.PAYU_SALT || "").trim());
 
     // Reverse hash formula:
     // sha512(salt|status|udf10|udf9|udf8|udf7|udf6|udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key)

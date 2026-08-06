@@ -12,12 +12,15 @@ const hashInputSchema = z.object({
   origin: z.string(),
 });
 
+/** Strip leading/trailing double-quotes that some .env editors inject. */
+const stripQuotes = (v: string) => v.replace(/^"|"$/g, "");
+
 export const generatePayuHashFn = createServerFn({ method: "POST" })
   .validator((d: unknown) => hashInputSchema.parse(d))
   .handler(async ({ data }) => {
-    const key = (process.env.PAYU_MERCHANT_KEY || "6CQ4IJ").trim();
-    const salt = (process.env.PAYU_SALT || "4imomd6TLClAg7KyUS5LJ5AtIJBxThwk").trim();
-    const env = (process.env.PAYU_ENV || "test").trim();
+    const key = stripQuotes((process.env.PAYU_MERCHANT_KEY || "").trim());
+    const salt = stripQuotes((process.env.PAYU_SALT || "").trim());
+    const env = stripQuotes((process.env.PAYU_ENV || "test").trim());
 
     // Sanitize fields to match standard PayU requirements
     const firstname = data.firstname.trim().replace(/[^a-zA-Z0-9 ]/g, "") || "Customer";
@@ -27,7 +30,11 @@ export const generatePayuHashFn = createServerFn({ method: "POST" })
 
     // Format amount to 2 decimal places for consistency
     const formattedAmount = Number(data.amount).toFixed(2);
-    // Standard PayU hash sequence: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5|udf6|udf7|udf8|udf9|udf10|salt
+
+    // PayU hash formula (official):
+    // sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
+    // 5 empty udf fields + 6 reserved empty fields = 11 empty segments between email and SALT.
+    // Total: 18 pipe-separated fields.
     const hashSequence = [
       key,
       data.txnid,
@@ -40,17 +47,20 @@ export const generatePayuHashFn = createServerFn({ method: "POST" })
       "", // udf3
       "", // udf4
       "", // udf5
-      "", // udf6
-      "", // udf7
-      "", // udf8
-      "", // udf9
-      "", // udf10
+      "", // reserved
+      "", // reserved
+      "", // reserved
+      "", // reserved
+      "", // reserved
+      "", // reserved
       salt,
     ];
     const rawString = hashSequence.join("|");
+
     const hash = createHash("sha512").update(rawString).digest("hex");
 
     console.log("[PayU Hash Debug]", {
+      rawString,
       key,
       txnid: data.txnid,
       amount: formattedAmount,

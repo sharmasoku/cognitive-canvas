@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap");
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/caveat";
-@import "tailwindcss" source(none);
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @source "../src";
@@ -200,85 +200,85 @@
   }
 }
 
-@utility section-container {
-  width: 100%;
-  max-width: 1440px;
-  margin-inline: auto;
-  padding-inline: 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .section-container {
-    padding-inline: 3rem;
-  }
-}
-
-@media (min-width: 1536px) {
-  .section-container {
-    padding-inline: 4rem;
-  }
-}
-
-@utility glass {
-  background: color-mix(in srgb, white 70%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgb(27 45 107 / 0.1);
-}
-
-@utility glass-dark {
-  background: color-mix(in srgb, #0a0d14 70%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgb(27 45 107 / 0.25);
-}
-
-@utility gradient-text {
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-@utility magnetic {
-  transition:
-    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-card-hover);
-  }
-}
-
-@utility orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-@utility bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(27 45 107 / 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(27 45 107 / 0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-@utility glow-dot {
-  position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: 9999px;
-    background: rgb(27 45 107 / 0.35);
-    filter: blur(6px);
-    animation: glow-pulse 2s ease-in-out infinite;
-  }
-}
-
 @layer utilities {
+  .section-container {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-container {
+      padding-inline: 3rem;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .section-container {
+      padding-inline: 4rem;
+    }
+  }
+
+  .glass {
+    background: color-mix(in srgb, white 70%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgb(27 45 107 / 0.1);
+  }
+
+  .glass-dark {
+    background: color-mix(in srgb, #0a0d14 70%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgb(27 45 107 / 0.25);
+  }
+
+  .gradient-text {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .magnetic {
+    transition:
+      transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card-hover);
+    }
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(27 45 107 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(27 45 107 / 0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .glow-dot {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      background: rgb(27 45 107 / 0.35);
+      filter: blur(6px);
+      animation: glow-pulse 2s ease-in-out infinite;
+    }
+  }
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
@@ -330,7 +330,6 @@
   }
 
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0);
@@ -372,7 +371,6 @@
 
   /* Synchronized soft floor shadow */
   @keyframes shadow-pulse {
-
     0%,
     100% {
       transform: translateX(-50%) scale(1);
@@ -391,7 +389,6 @@
 
   /* Visor glow breathing animation */
   @keyframes pulse-glow {
-
     0%,
     100% {
       opacity: 0.5;
@@ -427,7 +424,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-
     .animate-float,
     .animate-visor-sweep,
     .animate-marquee,
@@ -480,7 +476,6 @@
   }
 
   @keyframes glow-pulse {
-
     0%,
     100% {
       opacity: 0.4;
@@ -516,4 +511,4 @@
   .animate-particle {
     animation: particle-drift var(--dur, 6s) var(--delay, 0s) ease-in-out infinite;
   }
-}
+}
