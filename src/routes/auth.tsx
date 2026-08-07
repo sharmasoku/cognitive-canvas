@@ -11,6 +11,7 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const authSearchSchema = z.object({
   redirect: z.string().optional(),
+  mode: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -21,28 +22,97 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { redirect, mode: queryMode } = Route.useSearch();
+  const [authMode, setAuthMode] = useState<"signin" | "signup" | "forgot" | "reset">(
+    queryMode === "reset" ? "reset" : "signin"
+  );
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
-  // Check if already logged in and redirect
+  // Sync recovery mode cleanly on client mount or URL change
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isReset =
+        queryMode === "reset" ||
+        window.location.search.includes("mode=reset") ||
+        window.location.hash.includes("type=recovery") ||
+        window.location.hash.includes("access_token");
+      if (isReset) {
+        setAuthMode("reset");
+      }
+    }
+  }, [queryMode]);
+
+  // Check if already logged in and redirect (ONLY if NOT resetting password)
+  useEffect(() => {
+    if (authMode === "reset") return;
+
+    if (typeof window !== "undefined") {
+      const isReset =
+        window.location.search.includes("mode=reset") ||
+        window.location.hash.includes("type=recovery");
+      if (isReset) {
+        setAuthMode("reset");
+        return;
+      }
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate({ to: redirect || "/" });
       }
     });
-  }, [navigate, redirect]);
+  }, [navigate, redirect, authMode]);
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
+  // Listen for Supabase PASSWORD_RECOVERY event
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setAuthMode("reset");
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      if (authMode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth?mode=reset`,
+        });
+
+        if (error) {
+          if (error.message.includes("environment variables")) {
+            toast.success("Password reset instructions sent to your email (Demo Mode).");
+            setAuthMode("signin");
+          } else {
+            throw error;
+          }
+        } else {
+          toast.success("Password reset link has been sent to your email!");
+          setAuthMode("signin");
+        }
+      } else if (authMode === "reset") {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) {
+          if (error.message.includes("environment variables")) {
+            toast.success("Password updated successfully (Demo Mode)!");
+            setAuthMode("signin");
+          } else {
+            throw error;
+          }
+        } else {
+          toast.success("Your password has been reset successfully! Please sign in with your new password.");
+          setAuthMode("signin");
+        }
+      } else if (authMode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -81,11 +151,12 @@ function AuthPage() {
               navigate({ to: redirect || "/" });
             } else {
               toast.success("Account created! You can now sign in with your credentials.");
-              setIsSignUp(false);
+              setAuthMode("signin");
             }
           }
         }
       } else {
+        // Sign In
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -120,6 +191,24 @@ function AuthPage() {
     }
   };
 
+  const getTitle = () => {
+    switch (authMode) {
+      case "signup": return "Create account";
+      case "forgot": return "Reset Password";
+      case "reset": return "Set New Password";
+      default: return "Welcome back";
+    }
+  };
+
+  const getSubtitle = () => {
+    switch (authMode) {
+      case "signup": return "Register to start managing your orders.";
+      case "forgot": return "Enter your email to receive a password reset link.";
+      case "reset": return "Enter your new password below.";
+      default: return "Sign in to manage your orders.";
+    }
+  };
+
   return (
     <div className="relative isolate flex min-h-[90vh] items-center justify-center overflow-hidden bg-gradient-to-r from-[#F4EFFF] via-[#FFFFFF] to-[#F0F7FF] px-4 py-16 text-[#1016FF] sm:px-6 lg:px-8">
       {/* Background layers, matching the Hero's light editorial stage */}
@@ -142,16 +231,16 @@ function AuthPage() {
         {/* Header Text */}
         <div className="mt-8">
           <h2 className="text-3xl font-bold tracking-tight text-[#1016FF]">
-            {isSignUp ? "Create account" : "Welcome back"}
+            {getTitle()}
           </h2>
           <p className="mt-2 text-sm text-[#1016FF]/70">
-            {isSignUp ? "Register to start managing your orders." : "Sign in to manage your orders."}
+            {getSubtitle()}
           </p>
         </div>
 
         {/* Email & Password Form */}
-        <form className="mt-8 space-y-4" onSubmit={handleEmailAuth}>
-          {isSignUp && (
+        <form className="mt-8 space-y-4" onSubmit={handleAuthSubmit}>
+          {authMode === "signup" && (
             <div>
               <input
                 type="text"
@@ -164,27 +253,31 @@ function AuthPage() {
             </div>
           )}
 
-          <div>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              className="w-full rounded-2xl border border-border bg-white/50 backdrop-blur-sm py-3.5 px-4 text-sm text-[#1016FF] placeholder-[#1016FF]/40 outline-none transition focus:border-[#1016FF] focus:ring-2 focus:ring-[#1016FF]/20"
-            />
-          </div>
+          {authMode !== "reset" && (
+            <div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full rounded-2xl border border-border bg-white/50 backdrop-blur-sm py-3.5 px-4 text-sm text-[#1016FF] placeholder-[#1016FF]/40 outline-none transition focus:border-[#1016FF] focus:ring-2 focus:ring-[#1016FF]/20"
+              />
+            </div>
+          )}
 
-          <div>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full rounded-2xl border border-border bg-white/50 backdrop-blur-sm py-3.5 px-4 text-sm text-[#1016FF] placeholder-[#1016FF]/40 outline-none transition focus:border-[#1016FF] focus:ring-2 focus:ring-[#1016FF]/20"
-            />
-          </div>
+          {authMode !== "forgot" && (
+            <div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={authMode === "reset" ? "New password" : "Password"}
+                className="w-full rounded-2xl border border-border bg-white/50 backdrop-blur-sm py-3.5 px-4 text-sm text-[#1016FF] placeholder-[#1016FF]/40 outline-none transition focus:border-[#1016FF] focus:ring-2 focus:ring-[#1016FF]/20"
+              />
+            </div>
+          )}
 
           {/* Action Button */}
           <button
@@ -193,35 +286,47 @@ function AuthPage() {
             className="magnetic mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#1016FF] py-3.5 px-6 text-sm font-semibold text-white shadow-glow-primary transition hover:bg-[#142252] disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isSignUp ? "Sign Up" : "Sign In"}
+            {authMode === "signup" && "Sign Up"}
+            {authMode === "signin" && "Sign In"}
+            {authMode === "forgot" && "Send Reset Link"}
+            {authMode === "reset" && "Update Password"}
           </button>
         </form>
 
         {/* Footer Links */}
         <div className="mt-6 flex flex-col items-center gap-3 text-center text-sm">
-          {!isSignUp && (
-            <a href="#" className="font-medium text-[#1016FF] hover:underline hover:text-[#142252]">
+          {authMode === "signin" && (
+            <button
+              type="button"
+              onClick={() => setAuthMode("forgot")}
+              className="font-medium text-[#1016FF] hover:underline hover:text-[#142252]"
+            >
               Forgot password?
-            </a>
+            </button>
           )}
 
           <div className="text-[#1016FF]/70">
-            {isSignUp ? (
+            {authMode === "signup" && (
               <>
                 Already have an account?{" "}
-                <button onClick={() => setIsSignUp(false)} className="font-semibold text-[#1016FF] hover:underline">
+                <button type="button" onClick={() => setAuthMode("signin")} className="font-semibold text-[#1016FF] hover:underline">
                   Sign in
                 </button>
               </>
-            ) : (
+            )}
+            {authMode === "signin" && (
               <>
                 No account?{" "}
-                <button onClick={() => setIsSignUp(true)} className="font-semibold text-[#1016FF] hover:underline">
+                <button type="button" onClick={() => setAuthMode("signup")} className="font-semibold text-[#1016FF] hover:underline">
                   Sign up
                 </button>
               </>
-            )
-            }
+            )}
+            {(authMode === "forgot" || authMode === "reset") && (
+              <button type="button" onClick={() => setAuthMode("signin")} className="font-semibold text-[#1016FF] hover:underline">
+                Back to Sign In
+              </button>
+            )}
           </div>
         </div>
 
